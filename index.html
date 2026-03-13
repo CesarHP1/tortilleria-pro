@@ -274,10 +274,10 @@ main{max-width:1340px;margin:0 auto;padding:2rem 1.75rem;position:relative;z-ind
 }
 
 /* ════════════════════════════════════════════════
-   CILINDRO v5.0 — Canvas 3D
+   CILINDRO v5.0 — Canvas 3D Improved
    ════════════════════════════════════════════════ */
 .cyl-outer{
-  position:relative;width:160px;margin:0 auto;
+  position:relative;width:180px;margin:0 auto;
   filter:drop-shadow(0 20px 50px rgba(0,0,0,.18));
   transition:filter .6s;
 }
@@ -807,7 +807,7 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
 
       <!-- CILINDRO CANVAS v5 -->
       <div class="cyl-outer" id="cyl-wrapper">
-        <canvas id="cylCanvas" width="160" height="340"></canvas>
+        <canvas id="cylCanvas" width="180" height="360"></canvas>
         <div class="clbl">
           <big id="cpct">50.0</big>
           <small>kg</small>
@@ -1150,33 +1150,199 @@ function toggleSonido(){
 setTimeout(function(){const btn=document.getElementById('sndBtn');if(btn)btn.classList.toggle('muted',!soundEnabled);},100);
 
 // ══════════════════════════════════════════
-//  AUDIO ENGINE
+//  AUDIO ENGINE v5.1 (Improved ASMR)
 // ══════════════════════════════════════════
 let AC=null,masterOut=null,ambInt=null;
 function getAC(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();return AC;}
-function getMaster(){if(masterOut)return masterOut;const ac=getAC(),cmp=ac.createDynamicsCompressor();cmp.threshold.value=-20;cmp.knee.value=12;cmp.ratio.value=3;cmp.attack.value=.003;cmp.release.value=.18;cmp.connect(ac.destination);masterOut=cmp;return cmp;}
+function getMaster(){
+  if(masterOut)return masterOut;
+  const ac=getAC(),cmp=ac.createDynamicsCompressor();
+  cmp.threshold.value=-18;cmp.knee.value=20;cmp.ratio.value=2.5;cmp.attack.value=.005;cmp.release.value=.25;
+  cmp.connect(ac.destination);
+  masterOut=cmp;
+  return cmp;
+}
 function checkSnd(){return soundEnabled;}
-function sndClick(){if(!checkSnd())return;try{const ac=getAC(),out=getMaster(),t=ac.currentTime;const o1=ac.createOscillator(),g1=ac.createGain(),f1=ac.createBiquadFilter();o1.type='sine';o1.frequency.setValueAtTime(220,t);o1.frequency.exponentialRampToValueAtTime(60,t+.055);f1.type='lowpass';f1.frequency.value=500;g1.gain.setValueAtTime(.18,t);g1.gain.exponentialRampToValueAtTime(.001,t+.07);o1.connect(f1);f1.connect(g1);g1.connect(out);o1.start(t);o1.stop(t+.08);const o2=ac.createOscillator(),g2=ac.createGain();o2.type='triangle';o2.frequency.value=2200;g2.gain.setValueAtTime(.03,t);g2.gain.exponentialRampToValueAtTime(.001,t+.03);o2.connect(g2);g2.connect(out);o2.start(t);o2.stop(t+.04);}catch{}}
-function sndSuccess(){if(!checkSnd())return;try{const ac=getAC(),out=getMaster(),t=ac.currentTime;[523.25,659.25,783.99].forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f;const s=t+i*.09;g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(.16,s+.025);g.gain.exponentialRampToValueAtTime(.001,s+.55);o.connect(g);g.connect(out);o.start(s);o.stop(s+.6);});}catch{}}
-function sndPour(){if(!checkSnd())return;try{const ac=getAC(),out=getMaster(),t=ac.currentTime,dur=1.1;const buf=ac.createBuffer(2,ac.sampleRate*dur,ac.sampleRate);for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);for(let i=0;i<d.length;i++){const tt=i/ac.sampleRate;const env=Math.min(tt/.12,1)*Math.max(1-(tt-dur*.7)/.35,0);d[i]=(Math.random()*2-1)*env*.38;}}const src=ac.createBufferSource(),bp=ac.createBiquadFilter(),hp=ac.createBiquadFilter(),gn=ac.createGain();bp.type='bandpass';bp.frequency.value=700;bp.Q.value=.3;hp.type='highpass';hp.frequency.value=250;gn.gain.setValueAtTime(.3,t);gn.gain.exponentialRampToValueAtTime(.001,t+dur);src.buffer=buf;src.connect(bp);bp.connect(hp);hp.connect(gn);gn.connect(out);src.start(t);[.04,.14,.28,.46,.64,.82].forEach((td,i)=>{const o=ac.createOscillator(),g=ac.createGain();const fr=700+Math.random()*500;o.type='sine';o.frequency.setValueAtTime(fr,t+td);o.frequency.exponentialRampToValueAtTime(fr*.55,t+td+.075);g.gain.setValueAtTime(.14-i*.015,t+td);g.gain.exponentialRampToValueAtTime(.001,t+td+.1);o.connect(g);g.connect(out);o.start(t+td);o.stop(t+td+.11);});}catch{}}
-function sndDelete(){if(!checkSnd())return;try{const ac=getAC(),out=getMaster(),t=ac.currentTime;const o=ac.createOscillator(),g=ac.createGain();o.type='sawtooth';o.frequency.setValueAtTime(340,t);o.frequency.exponentialRampToValueAtTime(35,t+.24);g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+.24);o.connect(g);g.connect(out);o.start(t);o.stop(t+.25);}catch{}}
-function sndError(){if(!checkSnd())return;try{const ac=getAC(),out=getMaster(),t=ac.currentTime;[0,.055].forEach(td=>{const o=ac.createOscillator(),g=ac.createGain();o.type='square';o.frequency.value=85;g.gain.setValueAtTime(.09,t+td);g.gain.exponentialRampToValueAtTime(.001,t+td+.09);o.connect(g);g.connect(out);o.start(t+td);o.stop(t+td+.1);});}catch{}}
-function sndHover(){if(!checkSnd())return;try{const ac=getAC(),out=getMaster(),t=ac.currentTime;const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(820,t);o.frequency.exponentialRampToValueAtTime(1050,t+.06);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.045,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.18);o.connect(g);g.connect(out);o.start(t);o.stop(t+.2);}catch{}}
-function startAmbient(){if(ambInt)return;ambInt=setInterval(()=>{try{const ac=getAC(),out=getMaster(),t=ac.currentTime;const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=2400+Math.random()*300;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.013,t+.008);g.gain.exponentialRampToValueAtTime(.001,t+.055);o.connect(g);g.connect(out);o.start(t);o.stop(t+.06);}catch{}},4200);}
-document.addEventListener('click',()=>{getAC();startAmbient();},{once:true});
 
-// ── TTS ──
-if(window.speechSynthesis){window.speechSynthesis.onvoiceschanged=()=>{};}
+// Soft click ASMR
+function sndClick(){
+  if(!checkSnd())return;
+  try{
+    const ac=getAC(),out=getMaster(),t=ac.currentTime;
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.type='sine';
+    o.frequency.setValueAtTime(880,t);
+    o.frequency.exponentialRampToValueAtTime(220,t+.08);
+    g.gain.setValueAtTime(0.15,t);
+    g.gain.exponentialRampToValueAtTime(0.001,t+.09);
+    o.connect(g);g.connect(out);
+    o.start(t);o.stop(t+.1);
+  }catch(e){}
+}
+
+// Success Arpeggio
+function sndSuccess(){
+  if(!checkSnd())return;
+  try{
+    const ac=getAC(),out=getMaster(),t=ac.currentTime;
+    const notes=[523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    notes.forEach((freq, i) => {
+      const osc=ac.createOscillator(), gain=ac.createGain();
+      osc.type='triangle';
+      osc.frequency.value=freq;
+      const s=t+i*0.08;
+      gain.gain.setValueAtTime(0, s);
+      gain.gain.linearRampToValueAtTime(0.12, s+.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, s+.5);
+      osc.connect(gain);gain.connect(out);
+      osc.start(s);osc.stop(s+.6);
+    });
+  }catch(e){}
+}
+
+// Pouring liquid ASMR (Rich texture)
+function sndPour(){
+  if(!checkSnd())return;
+  try{
+    const ac=getAC(),out=getMaster(),t=ac.currentTime,dur=1.4;
+    // Noise buffer
+    const buf=ac.createBuffer(2,ac.sampleRate*dur,ac.sampleRate);
+    for(let ch=0;ch<2;ch++){
+      const d=buf.getChannelData(ch);
+      let lastOut=0.0;
+      for(let i=0;i<d.length;i++){
+        const white=Math.random()*2-1;
+        // Brown noise for liquid "gurgle"
+        d[i]=(lastOut+(0.02*white))/1.02;
+        lastOut=d[i];
+        d[i]*=3.5; // amplify
+      }
+    }
+    const src=ac.createBufferSource();
+    const hp=ac.createBiquadFilter(), bp=ac.createBiquadFilter(), lp=ac.createBiquadFilter(), gn=ac.createGain();
+    
+    hp.type='highpass'; hp.frequency.value=200; // Remove rumble
+    bp.type='bandpass'; bp.frequency.value=800; bp.Q.value=0.5; // Liquid body
+    lp.type='lowpass'; lp.frequency.value=2000; // Smooth top
+    
+    src.buffer=buf;
+    gn.gain.setValueAtTime(0.35, t);
+    gn.gain.exponentialRampToValueAtTime(0.001, t+dur);
+    
+    src.connect(hp);hp.connect(bp);bp.connect(lp);lp.connect(gn);gn.connect(out);
+    src.start(t);src.stop(t+dur);
+    
+    // Bubbles
+    for(let i=0; i<8; i++){
+      setTimeout(() => {
+        if(!checkSnd())return;
+        const t2=ac.currentTime;
+        const bOsc=ac.createOscillator(), bGain=ac.createGain();
+        bOsc.type='sine';
+        bOsc.frequency.setValueAtTime(400+Math.random()*200, t2);
+        bOsc.frequency.exponentialRampToValueAtTime(100, t2+0.05);
+        bGain.gain.setValueAtTime(0.04, t2);
+        bGain.gain.exponentialRampToValueAtTime(0.001, t2+0.05);
+        bOsc.connect(bGain);bGain.connect(out);
+        bOsc.start(t2);bOsc.stop(t2+0.1);
+      }, i*120 + Math.random()*80);
+    }
+  }catch(e){}
+}
+
+function sndDelete(){
+  if(!checkSnd())return;
+  try{
+    const ac=getAC(),out=getMaster(),t=ac.currentTime;
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.type='sawtooth';
+    o.frequency.setValueAtTime(300,t);
+    o.frequency.exponentialRampToValueAtTime(50,t+.15);
+    g.gain.setValueAtTime(0.1,t);
+    g.gain.exponentialRampToValueAtTime(.001,t+.2);
+    o.connect(g);g.connect(out);
+    o.start(t);o.stop(t+.25);
+  }catch(e){}
+}
+
+function sndError(){
+  if(!checkSnd())return;
+  try{
+    const ac=getAC(),out=getMaster(),t=ac.currentTime;
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.type='square';o.frequency.value=150;
+    g.gain.setValueAtTime(.08,t);
+    g.gain.exponentialRampToValueAtTime(.001,t+.1);
+    o.connect(g);g.connect(out);
+    o.start(t);o.stop(t+.15);
+  }catch(e){}
+}
+
+function sndHover(){
+  if(!checkSnd())return;
+  try{
+    const ac=getAC(),out=getMaster(),t=ac.currentTime;
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.type='sine';
+    o.frequency.setValueAtTime(1200,t);
+    o.frequency.exponentialRampToValueAtTime(1800,t+.04);
+    g.gain.setValueAtTime(0.03,t);
+    g.gain.exponentialRampToValueAtTime(0.001,t+.08);
+    o.connect(g);g.connect(out);
+    o.start(t);o.stop(t+.1);
+  }catch(e){}
+}
+
+// ── TTS v5.1 (Natural Voice) ──
+// Pre-load voices
+if(window.speechSynthesis){
+  speechSynthesis.getVoices(); // Prime the pump
+  speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
+}
+
 function speak(txt){
   if(!soundEnabled||!window.speechSynthesis)return;
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(txt);
-  u.lang='es-MX';u.rate=0.92;u.pitch=1.18;u.volume=0.88;
+  u.lang='es-MX';
+  
+  // Speed and Pitch tuning for "natural" feel
+  // Rate 1.0 is standard. Going slightly slower (0.95) helps clarity on mobile.
+  u.rate=0.95; 
+  u.pitch=1.0; // Normal pitch avoids "munchkin" or "giant" sound
+  u.volume=0.9;
+
   const vv=speechSynthesis.getVoices();
-  const femKws=['female','mujer','woman','sabina','paulina','mónica','monica','lucia','lucía'];
-  const isF=v=>femKws.some(k=>v.name.toLowerCase().includes(k));
-  const v=vv.find(v=>v.lang==='es-MX'&&isF(v))||vv.find(v=>v.lang==='es-MX')||vv.find(v=>v.lang.startsWith('es')&&isF(v))||vv.find(v=>v.lang.startsWith('es'))||null;
-  if(v)u.voice=v;
+  
+  // Priority list for best voices
+  // 1. Neural/Microsoft Online (usually very good)
+  // 2. Google female (standard on Android/Chrome)
+  // 3. Any female Spanish voice
+  // 4. Any Spanish voice
+  const priorityKws = [
+    {k:'Neural',score:100}, {k:'Microsoft',score:90}, {k:'Google',score:80},
+    {k:'Sabina',score:85}, {k:'Paulina',score:85}, {k:'Monica',score:85},
+    {k:'female',score:70}, {k:'mujer',score:70}
+  ];
+
+  let bestV=null, bestScore=-1;
+  vv.forEach(v => {
+    if(v.lang.startsWith('es')){
+      let score=20; // Base score for being Spanish
+      priorityKws.forEach(p => {
+        if(v.name.toLowerCase().includes(p.k.toLowerCase())) score+=p.score;
+      });
+      // Penalty for obviously robotic names if better exist
+      if(v.name.includes('eSpeak')) score-=50;
+      if(score>bestScore){
+        bestScore=score;
+        bestV=v;
+      }
+    }
+  });
+
+  if(bestV) u.voice=bestV;
+  
   speechSynthesis.speak(u);
 }
 
@@ -1209,7 +1375,7 @@ function toast(msg,type){
 }
 
 // ══════════════════════════════════════════
-//  CYLINDER v5.0 — Canvas 3D
+//  CYLINDER v5.1 — Canvas 3D LIQUID
 // ══════════════════════════════════════════
 var cylState={
   level:0,targetLevel:0,t:0,
@@ -1219,24 +1385,24 @@ var cylState={
 };
 
 (function initCylinder(){
-  for(var i=0;i<10;i++){
+  for(var i=0;i<8;i++){
     cylState.caustics.push({
-      x:22+Math.random()*106,
+      x:20+Math.random()*140,
       y:Math.random(),
-      r:4+Math.random()*10,
+      r:5+Math.random()*12,
       phase:Math.random()*Math.PI*2,
-      speed:0.4+Math.random()*0.9,
+      speed:0.3+Math.random()*0.7,
       wobbleX:Math.random()*Math.PI*2,
-      wobbleSpeed:0.3+Math.random()*0.5,
+      wobbleSpeed:0.2+Math.random()*0.4,
     });
   }
 })();
 
 function cylAnimate(){
-  cylState.t+=0.018;
+  cylState.t+=0.02;
   // Smooth level
-  cylState.level+=(cylState.targetLevel-cylState.level)*0.025;
-  if(cylState.pouring){cylState.pourT+=0.04;if(cylState.pourT>1){cylState.pouring=false;cylState.pourT=0;}}
+  cylState.level+=(cylState.targetLevel-cylState.level)*0.03;
+  if(cylState.pouring){cylState.pourT+=0.05;if(cylState.pourT>1){cylState.pouring=false;cylState.pourT=0;}}
   drawCylinder();
   cylState.animFrame=requestAnimationFrame(cylAnimate);
 }
@@ -1245,61 +1411,82 @@ function drawCylinder(){
   var canvas=document.getElementById('cylCanvas');
   if(!canvas)return;
   var ctx=canvas.getContext('2d');
-  var W=160,H=340;
+  var W=180,H=360;
   var isDark=document.documentElement.getAttribute('data-theme')==='dark';
   ctx.clearRect(0,0,W,H);
 
-  var rx=52,ry=14,cx=W/2;
-  var topY=28,botY=H-16,cylH=botY-topY;
+  var cx=W/2;
+  var rx=60, ry=16; // Radius X, Radius Y for ellipse
+  var topY=40, botY=H-20, cylH=botY-topY;
   var lvl=Math.min(Math.max(cylState.level,0),1);
   var liqTop=botY-lvl*cylH;
-
+  
   // Color palette by level
   var c1,c2,c3,cSurf;
-  if(lvl>=0.5){c1='#D4A86A';c2='#B8804A';c3='#A07040';cSurf='rgba(220,170,90,.75)';}
-  else if(lvl>=0.2){c1='#C49060';c2='#9E6438';c3='#8A5028';cSurf='rgba(196,130,80,.75)';}
-  else{c1='#D46860';c2='#B83C30';c3='#A02828';cSurf='rgba(220,80,70,.75)';}
+  if(lvl>=0.5){c1='#D4A86A';c2='#B8804A';c3='#A07040';cSurf='rgba(220,170,90,.85)';}
+  else if(lvl>=0.2){c1='#C49060';c2='#9E6438';c3='#8A5028';cSurf='rgba(196,130,80,.85)';}
+  else{c1='#D46860';c2='#B83C30';c3='#A02828';cSurf='rgba(220,80,70,.85)';}
 
-  // ── 1. Bottom cap (dark) ──
-  drawEllipseFilled(ctx,cx,botY,rx-1,ry-1,'rgba(80,60,40,.45)','rgba(160,120,80,.5)',1.5);
-
-  // ── 2. Cylinder body path for clipping ──
+  // ── 1. Cylinder Shadow ──
   ctx.save();
-  cylPath(ctx,cx,topY,botY,rx,ry);
-  ctx.clip();
+  ctx.beginPath();
+  ctx.ellipse(cx,botY+5,rx,ry,0,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,0,0,0.15)';
+  ctx.fill();
+  ctx.restore();
 
-  // Body background — glass tint
+  // ── 2. Back Face (Bottom Cap) ──
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(cx,botY,rx,ry,0,0,Math.PI*2);
+  ctx.fillStyle=isDark?'#1A1714':'#E8D8B8';
+  ctx.fill();
+  ctx.restore();
+  
+  // ── 3. Cylinder Body (Glass) ──
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(cx-rx,topY);
+  ctx.lineTo(cx-rx,botY);
+  ctx.ellipse(cx,botY,rx,ry,0,Math.PI,0,false);
+  ctx.lineTo(cx+rx,topY);
+  ctx.ellipse(cx,topY,rx,ry,0,0,Math.PI,false);
+  ctx.closePath();
+  
+  // Body Gradient (Glass)
   var bodyGrad=ctx.createLinearGradient(cx-rx,0,cx+rx,0);
   if(isDark){
-    bodyGrad.addColorStop(0,'rgba(60,50,40,.45)');
-    bodyGrad.addColorStop(0.12,'rgba(255,255,255,.06)');
-    bodyGrad.addColorStop(0.5,'rgba(255,255,255,.02)');
-    bodyGrad.addColorStop(0.88,'rgba(255,255,255,.04)');
-    bodyGrad.addColorStop(1,'rgba(60,50,40,.3)');
+    bodyGrad.addColorStop(0,'rgba(30,25,20,0.9)');
+    bodyGrad.addColorStop(0.2,'rgba(60,50,40,0.7)');
+    bodyGrad.addColorStop(0.5,'rgba(80,70,60,0.4)');
+    bodyGrad.addColorStop(0.8,'rgba(60,50,40,0.7)');
+    bodyGrad.addColorStop(1,'rgba(30,25,20,0.9)');
   }else{
-    bodyGrad.addColorStop(0,'rgba(255,251,242,.28)');
-    bodyGrad.addColorStop(0.12,'rgba(255,255,255,.07)');
-    bodyGrad.addColorStop(0.5,'rgba(255,251,242,.03)');
-    bodyGrad.addColorStop(0.88,'rgba(255,255,255,.05)');
-    bodyGrad.addColorStop(1,'rgba(255,251,242,.18)');
+    bodyGrad.addColorStop(0,'rgba(240,230,207,0.8)');
+    bodyGrad.addColorStop(0.2,'rgba(255,255,255,0.6)');
+    bodyGrad.addColorStop(0.5,'rgba(255,255,255,0.3)');
+    bodyGrad.addColorStop(0.8,'rgba(255,255,255,0.6)');
+    bodyGrad.addColorStop(1,'rgba(240,230,207,0.8)');
   }
   ctx.fillStyle=bodyGrad;
   ctx.fill();
+  ctx.restore();
 
-  // ── 3. Liquid fill ──
+  // ── 4. Liquid Fill ──
   if(lvl>0.005){
     ctx.save();
-    // Wave path
     ctx.beginPath();
-    var wAmp=cylState.pouring?5:2.5;
     ctx.moveTo(cx-rx,botY);
-    ctx.lineTo(cx-rx,liqTop+wAmp+1);
-    // Top wave (left→right)
-    for(var px=cx-rx;px<=cx+rx;px+=1.5){
+    ctx.lineTo(cx-rx,liqTop);
+    
+    // Animated Wave Top
+    var wAmp=cylState.pouring?6:2;
+    for(var px=cx-rx;px<=cx+rx;px+=1){
       var prog=(px-(cx-rx))/(2*rx);
-      var wave=Math.sin(prog*Math.PI*4+cylState.t*2.2)*wAmp*0.7
-              +Math.sin(prog*Math.PI*7+cylState.t*1.5)*wAmp*0.3
-              +Math.cos(prog*Math.PI*2.5+cylState.t*3)*wAmp*0.25;
+      // Combine multiple waves for realistic liquid
+      var wave=Math.sin(prog*Math.PI*3+cylState.t*2.5)*wAmp*0.6
+              +Math.sin(prog*Math.PI*5+cylState.t*1.8)*wAmp*0.3
+              +Math.cos(prog*Math.PI*2+cylState.t*3)*wAmp*0.2;
       ctx.lineTo(px,liqTop+wave);
     }
     ctx.lineTo(cx+rx,botY);
@@ -1307,161 +1494,123 @@ function drawCylinder(){
 
     var liqGrad=ctx.createLinearGradient(0,liqTop,0,botY);
     liqGrad.addColorStop(0,c1);
-    liqGrad.addColorStop(0.45,c2);
+    liqGrad.addColorStop(0.5,c2);
     liqGrad.addColorStop(1,c3);
     ctx.fillStyle=liqGrad;
     ctx.fill();
 
-    // Caustics
+    // Caustics (Light patterns)
     cylState.caustics.forEach(function(c){
       if(c.y>lvl)return;
       var cy2=botY-c.y*cylH;
-      var wobX=c.x+Math.sin(cylState.t*c.wobbleSpeed+c.wobbleX)*8;
-      var pulse=0.35+0.3*Math.sin(cylState.t*c.speed+c.phase);
+      var wobX=c.x+Math.sin(cylState.t*c.wobbleSpeed+c.wobbleX)*10;
+      var pulse=0.4+0.3*Math.sin(cylState.t*c.speed+c.phase);
       var rg=ctx.createRadialGradient(wobX,cy2,0,wobX,cy2,c.r*(1.2+pulse));
-      rg.addColorStop(0,'rgba(255,230,130,.22)');
-      rg.addColorStop(0.5,'rgba(255,210,100,.08)');
+      rg.addColorStop(0,'rgba(255,230,130,.15)');
       rg.addColorStop(1,'rgba(255,210,100,0)');
       ctx.fillStyle=rg;
       ctx.beginPath();
-      ctx.ellipse(wobX,cy2,c.r*(1.2+pulse),c.r*0.55*(1.2+pulse),0,0,Math.PI*2);
+      ctx.ellipse(wobX,cy2,c.r*(1.2+pulse),c.r*0.6,0,0,Math.PI*2);
       ctx.fill();
     });
 
-    // Shine sweep
-    var shineAlpha=0.12+0.1*Math.sin(cylState.t*0.5);
-    var shineGrad=ctx.createLinearGradient(cx-rx,0,cx+rx,0);
-    shineGrad.addColorStop(0,'transparent');
-    shineGrad.addColorStop(0.38,'rgba(255,255,255,'+shineAlpha+')');
-    shineGrad.addColorStop(0.5,'rgba(255,255,255,'+(shineAlpha*1.6)+')');
-    shineGrad.addColorStop(0.62,'rgba(255,255,255,'+shineAlpha+')');
-    shineGrad.addColorStop(1,'transparent');
+    // Shine sweep (moving light)
+    var shinePhase=(cylState.t*0.5)%2;
+    var shineX=cx-rx+shinePhase*(2*rx);
+    var shineGrad=ctx.createLinearGradient(shineX-30,0,shineX+30,0);
+    shineGrad.addColorStop(0,'rgba(255,255,255,0)');
+    shineGrad.addColorStop(0.5,'rgba(255,255,255,0.15)');
+    shineGrad.addColorStop(1,'rgba(255,255,255,0)');
     ctx.fillStyle=shineGrad;
     ctx.fillRect(cx-rx,liqTop,2*rx,botY-liqTop);
 
     ctx.restore();
 
-    // Bubbles in liquid
+    // Bubbles
     cylState.bubbles.forEach(function(b,i){
       b.y-=b.vy*(1+0.3*Math.sin(cylState.t+i));
-      b.x+=Math.sin(cylState.t*b.wobble+i)*0.3;
-      b.life-=0.008;
+      b.x+=Math.sin(cylState.t*b.wobble+i)*0.4;
+      b.life-=0.006;
       if(b.y<liqTop||b.life<=0)b.dead=true;
       if(b.dead)return;
       ctx.save();
-      ctx.globalAlpha=b.life*0.6;
+      ctx.globalAlpha=b.life*0.7;
       ctx.beginPath();
       ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,.4)';
+      ctx.fillStyle='rgba(255,255,255,.5)';
       ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,.6)';
+      ctx.strokeStyle='rgba(255,255,255,.8)';
       ctx.lineWidth=0.5;
       ctx.stroke();
       ctx.restore();
     });
     cylState.bubbles=cylState.bubbles.filter(function(b){return !b.dead;});
-    if(cylState.pouring&&Math.random()<0.3){
-      spawnBubble(cx,botY,liqTop,rx);
-    }else if(Math.random()<0.015){
-      spawnBubble(cx,botY,liqTop,rx);
-    }
+    if(cylState.pouring&&Math.random()<0.4)spawnBubble(cx,botY,liqTop,rx);
+    else if(Math.random()<0.02)spawnBubble(cx,botY,liqTop,rx);
   }
 
-  // ── 4. Glass highlights (over everything) ──
-  // Left specular strip
-  var hl1=ctx.createLinearGradient(cx-rx,0,cx-rx+20,0);
-  hl1.addColorStop(0,isDark?'rgba(255,255,255,.18)':'rgba(255,255,255,.42)');
-  hl1.addColorStop(0.6,isDark?'rgba(255,255,255,.04)':'rgba(255,255,255,.1)');
-  hl1.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=hl1;ctx.fillRect(cx-rx,topY,20,cylH);
-  // Thin bright edge left
-  var hl2=ctx.createLinearGradient(cx-rx,0,cx-rx+5,0);
-  hl2.addColorStop(0,'rgba(255,255,255,.55)');hl2.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=hl2;ctx.fillRect(cx-rx,topY,5,cylH);
-  // Right subtle
-  var hr=ctx.createLinearGradient(cx+rx-12,0,cx+rx,0);
-  hr.addColorStop(0,'rgba(255,255,255,0)');hr.addColorStop(1,isDark?'rgba(255,255,255,.1)':'rgba(255,255,255,.18)');
-  ctx.fillStyle=hr;ctx.fillRect(cx+rx-12,topY,12,cylH);
-
-  ctx.restore(); // end clip
-
-  // ── 5. Cylinder border ──
-  ctx.save();
-  cylPath(ctx,cx,topY,botY,rx,ry);
-  ctx.strokeStyle=isDark?'rgba(80,65,50,.8)':'rgba(200,175,130,.85)';
-  ctx.lineWidth=2.5;
-  ctx.stroke();
-  ctx.restore();
-
-  // ── 6. Neck ──
-  var nw=46,nrx=23,nry=8;
+  // ── 5. Front Face (Top Cap) ──
   ctx.save();
   ctx.beginPath();
-  ctx.moveTo(cx-nrx,topY);
-  ctx.lineTo(cx-nrx,topY-28);
-  ctx.quadraticCurveTo(cx-nrx,topY-36,cx-nrx+6,topY-36);
-  ctx.lineTo(cx+nrx-6,topY-36);
-  ctx.quadraticCurveTo(cx+nrx,topY-36,cx+nrx,topY-28);
-  ctx.lineTo(cx+nrx,topY);
-  var nkGrad=ctx.createLinearGradient(cx-nrx,0,cx+nrx,0);
-  nkGrad.addColorStop(0,isDark?'rgba(60,50,40,.7)':'rgba(255,255,255,.55)');
-  nkGrad.addColorStop(0.5,isDark?'rgba(30,25,20,.4)':'rgba(255,251,242,.2)');
-  nkGrad.addColorStop(1,isDark?'rgba(60,50,40,.55)':'rgba(255,255,255,.4)');
-  ctx.fillStyle=nkGrad;ctx.fill();
-  ctx.strokeStyle=isDark?'rgba(80,65,50,.8)':'rgba(200,175,130,.85)';
-  ctx.lineWidth=2.5;ctx.stroke();
+  ctx.ellipse(cx,topY,rx,ry,0,0,Math.PI*2);
+  ctx.fillStyle=isDark?'rgba(30,25,20,0.95)':'rgba(255,255,255,0.95)';
+  ctx.fill();
+  ctx.strokeStyle=isDark?'rgba(80,65,50,.9)':'rgba(200,175,130,1)';
+  ctx.lineWidth=2;
+  ctx.stroke();
+  ctx.restore();
+  
+  // Top cap shine
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(cx-15,topY-2,20,6,-0.3,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,0.35)';
+  ctx.fill();
   ctx.restore();
 
-  // ── 7. Liquid surface ellipse ──
-  if(lvl>0.02&&liqTop>topY+ry+2){
+  // ── 6. Liquid Surface Ellipse (Inside top cap) ──
+  if(lvl>0.02&&liqTop<topY+ry){
     ctx.save();
     ctx.beginPath();
-    ctx.ellipse(cx,liqTop,rx-5,ry-3,0,0,Math.PI*2);
-    var surfGrad=ctx.createRadialGradient(cx-8,liqTop-2,0,cx,liqTop,rx-5);
-    surfGrad.addColorStop(0,'rgba(255,235,160,.6)');
-    surfGrad.addColorStop(0.4,cSurf);
-    surfGrad.addColorStop(1,'rgba(100,70,40,.25)');
+    ctx.ellipse(cx,Math.max(liqTop, topY+ry),rx-3,ry-2,0,0,Math.PI*2);
+    var surfGrad=ctx.createRadialGradient(cx-5,Math.max(liqTop, topY+ry)-2,0,cx,Math.max(liqTop, topY+ry),rx-3);
+    surfGrad.addColorStop(0,'rgba(255,235,160,.7)');
+    surfGrad.addColorStop(0.5,cSurf);
+    surfGrad.addColorStop(1,'rgba(100,70,40,.2)');
     ctx.fillStyle=surfGrad;
-    ctx.fill();
-    // Shimmer on surface
-    ctx.beginPath();
-    ctx.ellipse(cx-5,liqTop-1,16,4,0,0,Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,'+(0.15+0.1*Math.sin(cylState.t*2))+')';
     ctx.fill();
     ctx.restore();
   }
 
-  // ── 8. Top cap ──
-  drawEllipseFilled(ctx,cx,topY,rx+3,ry+2,
-    isDark?'rgba(50,42,34,.75)':'rgba(255,253,248,.85)',
-    isDark?'rgba(90,75,55,.8)':'rgba(200,175,130,.9)',2);
-  // cap shine
-  ctx.save();ctx.beginPath();ctx.ellipse(cx-8,topY-1,12,3.5,0,0,Math.PI*2);
-  ctx.fillStyle='rgba(255,255,255,.45)';ctx.fill();ctx.restore();
-}
+  // ── 7. Glass Reflection (Vertical Strip) ──
+  ctx.save();
+  var hl1=ctx.createLinearGradient(cx-rx,0,cx-rx+18,0);
+  hl1.addColorStop(0,isDark?'rgba(255,255,255,.05)':'rgba(255,255,255,.4)');
+  hl1.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=hl1;
+  ctx.fillRect(cx-rx+2,topY,18,cylH);
+  ctx.restore();
 
-function cylPath(ctx,cx,topY,botY,rx,ry){
+  // ── 8. Side Outlines ──
+  ctx.save();
+  ctx.strokeStyle=isDark?'rgba(80,65,50,.9)':'rgba(180,155,110,1)';
+  ctx.lineWidth=2;
   ctx.beginPath();
   ctx.moveTo(cx-rx,topY);
   ctx.lineTo(cx-rx,botY);
-  ctx.ellipse(cx,botY,rx,ry,0,0,Math.PI);
-  ctx.lineTo(cx+rx,topY);
-  ctx.ellipse(cx,topY,rx,ry,0,Math.PI,0);
-  ctx.closePath();
-}
-
-function drawEllipseFilled(ctx,cx,cy,rx,ry,fill,stroke,lw){
-  ctx.save();ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);
-  if(fill){var g=ctx.createRadialGradient(cx,cy-ry*.3,0,cx,cy,rx);g.addColorStop(0,fill);g.addColorStop(1,'rgba(80,60,40,.15)');ctx.fillStyle=g;ctx.fill();}
-  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||2;ctx.stroke();}
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx+rx,topY);
+  ctx.lineTo(cx+rx,botY);
+  ctx.stroke();
   ctx.restore();
 }
 
 function spawnBubble(cx,botY,liqTop,rx){
-  var x=cx-rx+10+Math.random()*(2*rx-20);
-  var y=botY-8-Math.random()*((botY-liqTop)*0.7);
+  var x=cx-rx+15+Math.random()*(2*rx-30);
+  var y=botY-5-Math.random()*((botY-liqTop)*0.8);
   if(y<liqTop)return;
-  cylState.bubbles.push({x:x,y:y,r:1.2+Math.random()*3.5,vy:0.4+Math.random()*0.9,wobble:0.5+Math.random()*2,life:1});
+  cylState.bubbles.push({x:x,y:y,r:1+Math.random()*3,vy:0.3+Math.random()*0.8,wobble:0.5+Math.random()*2,life:1});
 }
 
 function updateCylinder(animate){
@@ -1514,8 +1663,7 @@ function drawSparkline(canvasId,data,color){
   ctx.lineTo(pad+(data.length-1)/(data.length-1)*(W-2*pad),H-pad);
   ctx.lineTo(pad,H-pad);
   ctx.closePath();
-  ctx.fillStyle=color.replace(')',',0.12)').replace('rgb','rgba');
-  if(color.indexOf('rgba')<0)ctx.fillStyle=color+'22';
+  ctx.fillStyle=color+'22';
   ctx.fill();
 }
 function updSparklines(){
@@ -1862,419 +2010,4 @@ function buildPList(){
 
 function renderPList(){
   document.getElementById('prl').innerHTML=preciosList.map(function(item,i){
-    return '<div class="prow" style="background:'+(item._del?'var(--rl)':'var(--bg)')+';opacity:'+(item._del?.35:1)+';transition:.2s">'+
-      '<button type="button" onclick="delPR('+i+')" style="background:none;border:1.5px solid '+(item._del?'var(--re)':'var(--bor)')+';cursor:pointer;color:'+(item._del?'var(--re)':'var(--s4)')+';font-size:15px;padding:.2rem .5rem;border-radius:8px;font-weight:900;transition:.15s;min-width:32px">'+(item._del?'↩':'✕')+'</button>'+
-      '<span class="pname" style="'+(item._del?'text-decoration:line-through;color:var(--s4)':'')+'">'+item.n+'</span>'+
-      '<div class="piw"><span>$</span><input type="number" value="'+item.p+'" min="0" step="0.5" style="width:65px" '+(item._del?'disabled':'')+' oninput="preciosList['+i+'].p=parseFloat(this.value)||0"/></div></div>';
-  }).join('')||'<p style="text-align:center;color:var(--s4);padding:.875rem;font-size:.82rem">Sin productos</p>';
-}
-
-function delPR(i){sndDelete();preciosList[i]._del=!preciosList[i]._del;renderPList();}
-
-function savePrecios(){
-  var np2=document.getElementById('apc').value.trim();
-  var nn=document.getElementById('nn').value.trim();
-  var np=parseFloat(document.getElementById('nprice').value);
-  if(nn&&np>0){var existe=preciosList.find(function(x){return x.n===nn;});if(!existe)preciosList.push({n:nn,p:np});else existe.p=np;logOp('PROD_AGREGA',{nombre:nn,precio:np});}
-  var up={};
-  preciosList.forEach(function(item){if(!item._del)up[item.n]=item.p;else logOp('PROD_ELIMINA',{nombre:item.n,precioAntes:item.p});});
-  Object.keys(precios).forEach(function(k){if(k in up&&precios[k]!==up[k])logOp('PROD_PRECIO',{nombre:k,antes:precios[k],despues:up[k]});});
-  precios=up;if(np2)pass=np2;save();closeM('mp');toast('Catálogo guardado — '+Object.keys(precios).length+' productos 💾');
-}
-
-// ══════════════════════════════════════════
-//  REPORTE / WHATSAPP / PDF
-// ══════════════════════════════════════════
-var rptTab='res';
-function abrirReporte(){openM('mrpt');setTimeout(function(){renderTab('res');},30);}
-function showTab(t){
-  rptTab=t;
-  ['res','bit','wa','led'].forEach(function(x){
-    var btn=document.getElementById('tab-'+x);var cnt=document.getElementById('tab-'+x+'-c');
-    if(btn)btn.classList.toggle('on',x===t);if(cnt)cnt.style.display=(x===t)?'block':'none';
-  });renderTab(t);
-}
-function renderTab(t){
-  if(t==='res')renderResumen();if(t==='bit')renderBitacora();if(t==='wa')renderWA();if(t==='led')renderLedger();
-}
-
-function renderLedger(){
-  var el=document.getElementById('tab-led-c');
-  var entries=[];try{entries=JSON.parse(localStorage.getItem('ledger')||'[]');}catch(e){}
-  var iconos={CARGA:'⬆️',QUITA:'⬇️',VENTA:'💰',CANCEL:'↩️',PEDIDO:'📦'};
-  var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.65rem">'+
-    '<span style="font-size:.7rem;font-weight:700;color:var(--s4)">'+entries.length+' registros totales (permanentes)</span>'+
-    '<button class="btn bno" onclick="exportarLedger()" style="padding:.3rem .7rem;font-size:.72rem">📥 CSV</button></div>';
-  if(!entries.length){html+='<div class="es" style="padding:2rem"><span>🗄️</span><p>Sin registros</p></div>';el.innerHTML=html;return;}
-  var totalCarga=entries.filter(function(e){return e.tipo==='CARGA';}).reduce(function(a,e){return a+e.kg;},0);
-  var totalQuita=entries.filter(function(e){return e.tipo==='QUITA';}).reduce(function(a,e){return a+e.kg;},0);
-  var totalVenta=entries.filter(function(e){return e.tipo==='VENTA';}).reduce(function(a,e){return a+e.kg;},0);
-  html+='<div class="rpt-box"><h4>📊 Totales Históricos</h4>'+
-    '<div class="rpt-row g"><span>Total cargado</span><strong>+'+totalCarga.toFixed(1)+' kg</strong></div>'+
-    '<div class="rpt-row r"><span>Total vendido</span><strong>−'+totalVenta.toFixed(1)+' kg</strong></div>'+
-    (totalQuita>0?'<div class="rpt-row r"><span>Total quitado</span><strong>−'+totalQuita.toFixed(1)+' kg</strong></div>':'')+
-    '<div class="rpt-row b"><span>Balance neto</span><strong>'+(totalCarga-totalVenta-totalQuita).toFixed(1)+' kg</strong></div></div>';
-  html+='<div style="max-height:320px;overflow-y:auto;font-size:.78rem">';
-  [...entries].reverse().slice(0,200).forEach(function(e){
-    html+='<div class="bit-row"><span class="bit-hora">'+e.fecha.split('/').slice(0,2).join('/')+'<br>'+e.hora+'</span>'+
-      '<span class="bit-ico">'+(iconos[e.tipo]||'•')+'</span>'+
-      '<span class="bit-txt"><strong>'+e.tipo+'</strong> '+e.kg+' kg <span style="color:var(--s4)">('+e.masaAntes+'→'+e.masaDespues+' kg)</span>'+
-      (e.nota?' <em style="color:var(--s3)">'+e.nota+'</em>':'')+
-    '</span></div>';
-  });
-  html+='</div>';el.innerHTML=html;
-}
-
-function exportarLedger(){
-  var entries=[];try{entries=JSON.parse(localStorage.getItem('ledger')||'[]');}catch(e){}
-  if(!entries.length){toast('No hay registros para exportar','e');return;}
-  var csv='Fecha,Hora,Tipo,KG,MasaAntes,MasaDespues,Nota\n';
-  entries.forEach(function(e){csv+='"'+e.fecha+'","'+e.hora+'","'+e.tipo+'",'+e.kg+','+e.masaAntes+','+e.masaDespues+',"'+e.nota+'"\n';});
-  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  var url=URL.createObjectURL(blob);var a=document.createElement('a');
-  a.href=url;a.download='ledger_tortilleria_'+new Date().toISOString().split('T')[0]+'.csv';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
-  toast('Ledger exportado ✅');
-}
-
-function renderResumen(){
-  var el=document.getElementById('tab-res-c');
-  var totalVentas=ventas.reduce(function(a,v){return a+v.total;},0);
-  var masaConsumida=ventas.reduce(function(a,v){return a+v.masaUsada;},0);
-  var cargas=bitacora.filter(function(b){return b.tipo==='CARGA_MASA';});
-  var quitas=bitacora.filter(function(b){return b.tipo==='QUITA_MASA';});
-  var canceladas=bitacora.filter(function(b){return b.tipo==='VENTA_CANCEL';});
-  var pedListos=bitacora.filter(function(b){return b.tipo==='PEDIDO_LISTO';});
-  var pedCancelados=bitacora.filter(function(b){return b.tipo==='PEDIDO_CANCEL';});
-  var totalCargado=cargas.reduce(function(a,b){return a+b.kg;},0);
-  var totalQuitado=quitas.reduce(function(a,b){return a+b.kg;},0);
-  var html='';
-  html+='<div class="rpt-box"><h4>⚖️ Control de Masa</h4>';
-  html+='<div class="rpt-row"><span>Masa al inicio del día</span><strong>'+masaInicioHoy.toFixed(1)+' kg</strong></div>';
-  if(totalCargado>0)html+='<div class="rpt-row g"><span>➕ Total cargado ('+cargas.length+' cargas)</span><strong>+'+totalCargado.toFixed(1)+' kg</strong></div>';
-  if(totalQuitado>0)html+='<div class="rpt-row r"><span>⬇️ Total quitado</span><strong>−'+totalQuitado.toFixed(1)+' kg</strong></div>';
-  html+='<div class="rpt-row r"><span>🫓 Consumido en ventas</span><strong>−'+masaConsumida.toFixed(1)+' kg</strong></div>';
-  html+='<div class="rpt-row b"><span>📦 Masa actual en tanque</span><strong>'+masa.toFixed(1)+' kg</strong></div></div>';
-  html+='<div class="rpt-box"><h4>💰 Ventas del Día</h4>';
-  if(ventas.length){ventas.forEach(function(v){html+='<div class="rpt-row"><span><span class="ftag">'+v.folio+'</span> '+v.prod+'</span><strong>$'+v.total.toFixed(2)+'</strong></div>';});}
-  else{html+='<p style="font-size:.82rem;color:var(--s4);text-align:center;padding:.5rem">Sin ventas registradas</p>';}
-  html+='<div class="rpt-total"><div class="lbl">Total Ingresos</div><div class="val">$'+totalVentas.toFixed(2)+'</div></div></div>';
-  if(canceladas.length){html+='<div class="rpt-box"><h4>🗑️ Ventas Canceladas</h4>';canceladas.forEach(function(c){html+='<div class="rpt-row r"><span>'+c.folio+' — '+c.prod+'</span><strong>$'+c.total.toFixed(2)+'</strong></div>';});html+='</div>';}
-  html+='<div class="rpt-box"><h4>📦 Pedidos</h4>';
-  html+='<div class="rpt-row g"><span>✅ Completados hoy</span><strong>'+pedListos.length+'</strong></div>';
-  html+='<div class="rpt-row"><span>⏳ Pendientes ahora</span><strong>'+pedidos.length+'</strong></div>';
-  if(pedCancelados.length)html+='<div class="rpt-row r"><span>❌ Cancelados</span><strong>'+pedCancelados.length+'</strong></div>';
-  html+='</div>';
-  var prodOps=bitacora.filter(function(b){return b.tipo==='PROD_AGREGA'||b.tipo==='PROD_ELIMINA'||b.tipo==='PROD_PRECIO';});
-  if(prodOps.length){
-    html+='<div class="rpt-box"><h4>📋 Cambios en Catálogo</h4>';
-    prodOps.forEach(function(c){
-      if(c.tipo==='PROD_AGREGA')html+='<div class="rpt-row g"><span>➕ '+c.nombre+'</span><strong>$'+c.precio+'</strong></div>';
-      if(c.tipo==='PROD_ELIMINA')html+='<div class="rpt-row r"><span>🗑️ '+c.nombre+'</span><strong>era $'+c.precioAntes+'</strong></div>';
-      if(c.tipo==='PROD_PRECIO')html+='<div class="rpt-row b"><span>✏️ '+c.nombre+'</span><strong>$'+c.antes+'→$'+c.despues+'</strong></div>';
-    });
-    html+='</div>';
-  }
-  el.innerHTML=html;
-}
-
-function renderBitacora(){
-  var el=document.getElementById('tab-bit-c');
-  if(!bitacora.length){el.innerHTML='<div class="es" style="padding:2rem"><span>📜</span><p>Sin operaciones hoy</p></div>';return;}
-  var iconos={CARGA_MASA:'⬆️',QUITA_MASA:'⬇️',VENTA:'💰',VENTA_CANCEL:'🗑️',PEDIDO_NUEVO:'📋',PEDIDO_LISTO:'✅',PEDIDO_CANCEL:'❌',PROD_AGREGA:'➕',PROD_ELIMINA:'🗑️',PROD_PRECIO:'✏️'};
-  function textoOp(b){
-    if(b.tipo==='CARGA_MASA')return 'Cargaron '+b.kg+' kg ('+b.masaAntes+'→'+b.masaDespues+' kg)';
-    if(b.tipo==='QUITA_MASA')return 'Quitaron '+b.kg+' kg — '+b.motivo;
-    if(b.tipo==='VENTA')return 'Venta '+b.folio+': '+b.prod+' × '+b.cantidad+' = $'+b.total.toFixed(2);
-    if(b.tipo==='VENTA_CANCEL')return 'Cancelación '+b.folio+': '+b.prod;
-    if(b.tipo==='PEDIDO_NUEVO')return 'Pedido: '+b.nom+' para '+b.hora;
-    if(b.tipo==='PEDIDO_LISTO')return 'Completado: '+b.nom+' '+b.folio+' $'+b.total.toFixed(2);
-    if(b.tipo==='PEDIDO_CANCEL')return 'Cancelado: '+b.nom;
-    if(b.tipo==='PROD_AGREGA')return '"'+b.nombre+'" $'+b.precio;
-    if(b.tipo==='PROD_ELIMINA')return 'Eliminar "'+b.nombre+'"';
-    if(b.tipo==='PROD_PRECIO')return '"'+b.nombre+'" $'+b.antes+'→$'+b.despues;
-    return b.tipo;
-  }
-  var html='<div style="max-height:400px;overflow-y:auto">';
-  [...bitacora].reverse().forEach(function(b){
-    html+='<div class="bit-row"><span class="bit-hora">'+b.hora+'</span><span class="bit-ico">'+(iconos[b.tipo]||'•')+'</span><span class="bit-txt">'+textoOp(b)+'</span></div>';
-  });
-  html+='</div>';el.innerHTML=html;
-}
-
-function renderWA(){
-  var el=document.getElementById('tab-wa-c');
-  var html='<div class="adds" style="margin-bottom:.875rem">'+
-    '<span class="slbl">Agregar / Actualizar Contacto</span>'+
-    '<div style="display:flex;gap:.5rem;flex-wrap:wrap">'+
-      '<input type="text" id="wa-nom" placeholder="Nombre" style="flex:1;min-width:110px"/>'+
-      '<input type="tel" id="wa-tel" placeholder="52XXXXXXXXXX (sin +)" style="flex:1;min-width:140px"/>'+
-      '<button class="btn bng" onclick="saveWAContact()" style="padding:.6rem .9rem;font-size:.8rem">＋ Guardar</button>'+
-    '</div></div>';
-  html+='<span class="slbl">Contactos — toca para seleccionar</span>';
-  if(contactosWA.length){
-    html+='<div style="max-height:175px;overflow-y:auto;margin:.4rem 0 1rem">';
-    contactosWA.forEach(function(c,i){
-      html+='<div class="wa-card '+(waSel===i?'sel':'')+'" onclick="selWA('+i+')">'+
-        '<div class="wa-av">'+c.nom.charAt(0).toUpperCase()+'</div>'+
-        '<div class="wa-name">'+c.nom+'</div>'+
-        '<div class="wa-num">+'+c.tel+'</div>'+
-        '<button class="wa-del" onclick="delWA('+i+');event.stopPropagation()">✕</button></div>';
-    });
-    html+='</div>';
-  }else{html+='<p style="font-size:.78rem;color:var(--s4);text-align:center;padding:.6rem 0 1rem">Sin contactos guardados</p>';}
-  html+='<button class="btn bnwa btn-block btn-lg" onclick="enviarWA()">📲 Enviar Resumen por WhatsApp</button>';
-  el.innerHTML=html;
-}
-
-function selWA(i){waSel=i;renderWA();}
-function delWA(i){contactosWA.splice(i,1);ss('contactosWA',contactosWA);if(waSel===i)waSel=null;renderWA();}
-function saveWAContact(){
-  var nomEl=document.getElementById('wa-nom'),telEl=document.getElementById('wa-tel');
-  if(!nomEl||!telEl)return;
-  var nom=nomEl.value.trim(),tel=telEl.value.trim().replace(/\D/g,'');
-  if(!nom||!tel){toast('Completa nombre y número','e');return;}
-  var idx=contactosWA.findIndex(function(c){return c.tel===tel;});
-  if(idx>=0)contactosWA[idx]={nom:nom,tel:tel};else contactosWA.push({nom:nom,tel:tel});
-  ss('contactosWA',contactosWA);nomEl.value='';telEl.value='';
-  renderWA();sndSuccess();toast('Contacto '+nom+' guardado ✅');
-}
-
-function enviarWA(){
-  if(waSel===null||waSel===undefined){toast('Selecciona un contacto primero','e');return;}
-  var c=contactosWA[waSel];if(!c){toast('Contacto no válido','e');return;}
-  var totalVentas=ventas.reduce(function(a,v){return a+v.total;},0);
-  var masaConsumida=ventas.reduce(function(a,v){return a+v.masaUsada;},0);
-  var cargasKg=bitacora.filter(function(b){return b.tipo==='CARGA_MASA';}).reduce(function(a,b){return a+b.kg;},0);
-  var quitasKg=bitacora.filter(function(b){return b.tipo==='QUITA_MASA';}).reduce(function(a,b){return a+b.kg;},0);
-  var pedListos=bitacora.filter(function(b){return b.tipo==='PEDIDO_LISTO';}).length;
-  var fecha=new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
-  var detalleVentas=ventas.map(function(v){return '• '+v.folio+' '+v.prod+': $'+v.total.toFixed(2);}).join('\n')||'Sin ventas';
-  var msg='🫓 *REPORTE TORTILLERÍA PRO v5.0*\n📅 '+fecha+'\n\n';
-  msg+='*💰 VENTAS*\nTotal: $'+totalVentas.toFixed(2)+'\nTransacciones: '+ventas.length+'\n\n';
-  msg+='*⚖️ MASA*\nInicio: '+masaInicioHoy.toFixed(1)+' kg\n';
-  if(cargasKg>0)msg+='Cargado: +'+cargasKg.toFixed(1)+' kg\n';
-  if(quitasKg>0)msg+='Quitado: −'+quitasKg.toFixed(1)+' kg\n';
-  msg+='Consumido: −'+masaConsumida.toFixed(1)+' kg\nActual: '+masa.toFixed(1)+' kg\n\n';
-  msg+='*📦 PEDIDOS*\nCompletados: '+pedListos+'\nPendientes: '+pedidos.length+'\n\n';
-  msg+='*📋 DETALLE*\n'+detalleVentas+'\n\n_Tortillería Pro v5.0_';
-  window.open('https://wa.me/'+c.tel+'?text='+encodeURIComponent(msg),'_blank');
-  speak('Abriendo WhatsApp para enviar reporte a '+c.nom+'.');
-}
-
-function imprimirPDF(){
-  var totalVentas=ventas.reduce(function(a,v){return a+v.total;},0);
-  var masaConsumida=ventas.reduce(function(a,v){return a+v.masaUsada;},0);
-  var cargas=bitacora.filter(function(b){return b.tipo==='CARGA_MASA';});
-  var quitas=bitacora.filter(function(b){return b.tipo==='QUITA_MASA';});
-  var pedListos=bitacora.filter(function(b){return b.tipo==='PEDIDO_LISTO';});
-  var canceladas=bitacora.filter(function(b){return b.tipo==='VENTA_CANCEL';});
-  var fecha=new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  var totalCargado=cargas.reduce(function(a,b){return a+b.kg;},0);
-  var totalQuitado=quitas.reduce(function(a,b){return a+b.kg;},0);
-  function textoOp(b){
-    if(b.tipo==='CARGA_MASA')return 'Carga '+b.kg+' kg ('+b.masaAntes+'→'+b.masaDespues+')';
-    if(b.tipo==='QUITA_MASA')return 'Quitar '+b.kg+' kg — '+b.motivo;
-    if(b.tipo==='VENTA')return 'Venta '+b.folio+': '+b.prod+' × '+b.cantidad+' = $'+b.total.toFixed(2);
-    if(b.tipo==='VENTA_CANCEL')return 'Cancelación '+b.folio+': '+b.prod;
-    if(b.tipo==='PEDIDO_NUEVO')return 'Pedido: '+b.nom+' '+b.hora;
-    if(b.tipo==='PEDIDO_LISTO')return 'Completado: '+b.nom+' '+b.folio+' $'+b.total.toFixed(2);
-    if(b.tipo==='PEDIDO_CANCEL')return 'Cancelado: '+b.nom;
-    if(b.tipo==='PROD_AGREGA')return 'Nuevo: "'+b.nombre+'" $'+b.precio;
-    if(b.tipo==='PROD_ELIMINA')return 'Elimina: "'+b.nombre+'"';
-    if(b.tipo==='PROD_PRECIO')return 'Precio "'+b.nombre+'": $'+b.antes+'→$'+b.despues;
-    return b.tipo;
-  }
-  var venRow=ventas.map(function(v){return '<tr><td>'+v.folio+'</td><td>'+v.prod+'</td><td>'+v.cantidad.toFixed(3)+'</td><td>$'+v.total.toFixed(2)+'</td></tr>';}).join('');
-  var bitRow=[...bitacora].reverse().map(function(b){return '<tr><td>'+b.hora+'</td><td>'+textoOp(b)+'</td></tr>';}).join('');
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Reporte '+fecha+'</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;padding:2rem;color:#1C1917;font-size:13px}h1{font-size:22px;font-weight:900;margin-bottom:4px}.sub{color:#78716C;font-size:12px;margin-bottom:1.5rem}.fecha{font-weight:800;color:#D97706}h2{font-size:14px;font-weight:800;margin:1.2rem 0 .5rem;padding-bottom:.3rem;border-bottom:2px solid #F59E0B}table{width:100%;border-collapse:collapse;margin-bottom:1rem}th{background:#1C1917;color:#fff;padding:.4rem .6rem;text-align:left;font-size:11px}td{padding:.38rem .6rem;border-bottom:1px solid #F0E6CF;font-size:12px}tr:nth-child(even) td{background:#FFFBF2}.kpi{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}.kpi-box{flex:1;min-width:130px;border:2px solid #F0E6CF;border-radius:10px;padding:.6rem .9rem}.kpi-box .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#A8A29E}.kpi-box .val{font-size:20px;font-weight:900;margin-top:2px}.green{color:#16A34A}.red{color:#DC2626}.blue{color:#2563EB}.total-row td{font-weight:900;background:#FEF3C7!important}.footer{margin-top:2rem;padding-top:.75rem;border-top:1px solid #F0E6CF;font-size:11px;color:#A8A29E;text-align:center}.no-print{position:fixed;top:1rem;right:1rem;background:#16A34A;color:#fff;border:none;padding:.6rem 1.2rem;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px}@media print{.no-print{display:none}}<\/style><\/head><body>'+
-  '<button class="no-print" onclick="window.print()">🖨️ Imprimir / PDF</button>'+
-  '<h1>🫓 TORTILLERÍA PRO v5.0 — REPORTE</h1>'+
-  '<div class="sub"><span class="fecha">'+fecha+'</span> · '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})+' · '+bitacora.length+' operaciones</div>'+
-  '<div class="kpi">'+
-    '<div class="kpi-box"><div class="lbl">Masa Inicio</div><div class="val">'+masaInicioHoy.toFixed(1)+' kg</div></div>'+
-    (totalCargado>0?'<div class="kpi-box"><div class="lbl">Cargado</div><div class="val green">+'+totalCargado.toFixed(1)+' kg</div></div>':'')+
-    (totalQuitado>0?'<div class="kpi-box"><div class="lbl">Quitado</div><div class="val red">−'+totalQuitado.toFixed(1)+' kg</div></div>':'')+
-    '<div class="kpi-box"><div class="lbl">Consumido</div><div class="val red">−'+masaConsumida.toFixed(1)+' kg</div></div>'+
-    '<div class="kpi-box"><div class="lbl">Masa Actual</div><div class="val blue">'+masa.toFixed(1)+' kg</div></div>'+
-    '<div class="kpi-box"><div class="lbl">Ingresos</div><div class="val green">$'+totalVentas.toFixed(2)+'</div></div>'+
-    '<div class="kpi-box"><div class="lbl">Tx</div><div class="val">'+ventas.length+'</div></div>'+
-    '<div class="kpi-box"><div class="lbl">Pedidos Compl.</div><div class="val green">'+pedListos.length+'</div></div></div>'+
-  '<h2>💰 VENTAS</h2>'+(ventas.length?'<table><tr><th>Folio</th><th>Producto</th><th>Cant.</th><th>Total</th></tr>'+venRow+'<tr class="total-row"><td colspan="3">TOTAL</td><td>$'+totalVentas.toFixed(2)+'</td></tr></table>':'<p style="color:#A8A29E;margin-bottom:1rem">Sin ventas</p>')+
-  (canceladas.length?'<h2>🗑️ CANCELADAS</h2><table><tr><th>Folio</th><th>Producto</th><th>Total</th></tr>'+canceladas.map(function(c){return '<tr><td>'+c.folio+'</td><td>'+c.prod+'</td><td>$'+c.total.toFixed(2)+'</td></tr>';}).join('')+'</table>':'')+
-  (pedListos.length?'<h2>✅ PEDIDOS COMPLETADOS</h2><table><tr><th>Cliente</th><th>Folio</th><th>Total</th></tr>'+pedListos.map(function(p){return '<tr><td>'+p.nom+'</td><td>'+p.folio+'</td><td>$'+p.total.toFixed(2)+'</td></tr>';}).join('')+'</table>':'')+
-  (pedidos.length?'<h2>⏳ PEDIDOS PENDIENTES</h2><table><tr><th>Cliente</th><th>Hora</th></tr>'+pedidos.map(function(p){return '<tr><td>'+p.nom+'</td><td>'+p.hora+'</td></tr>';}).join('')+'</table>':'')+
-  '<h2>📜 BITÁCORA</h2>'+(bitacora.length?'<table><tr><th>Hora</th><th>Operación</th></tr>'+bitRow+'</table>':'<p style="color:#A8A29E;margin-bottom:1rem">Sin operaciones</p>')+
-  '<div class="footer">Tortillería Pro v5.0 — '+new Date().toLocaleString('es-MX')+'</div><\/body><\/html>';
-  var win=window.open('','_blank','width=860,height=1100');
-  if(win){win.document.write(html);win.document.close();}
-  else{toast('Activa ventanas emergentes para el PDF','e');}
-}
-
-// ══════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════
-updateCylinder(false);
-updStats();renderV();renderP();
-
-// Stat card hover ASMR
-var cardCfg=[{id:'sv',label:'Ventas de hoy'},{id:'sm',label:'Masa consumida'},{id:'stx',label:'Transacciones del día'}];
-['sc0','sc1','sc2'].forEach(function(cid,i){
-  var card=document.getElementById(cid);if(!card)return;
-  var lastSpoke=0;
-  card.addEventListener('mouseenter',function(){
-    sndHover();var now=Date.now();if(now-lastSpoke<4000)return;lastSpoke=now;
-    var val=(document.getElementById(cardCfg[i].id)||{}).textContent||'';speak(cardCfg[i].label+': '+val);
-  });
-});
-
-// ══════════════════════════════════════════
-//  LEDGER PERMANENTE
-// ══════════════════════════════════════════
-function logLedger(tipo,kg,masaAntes,masaDespues,nota){
-  try{
-    var entries=JSON.parse(localStorage.getItem('ledger')||'[]');
-    var now=new Date();
-    entries.push({ts:now.getTime(),fecha:now.toLocaleDateString('es-MX'),
-      hora:now.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}),
-      tipo:tipo,kg:Math.round(kg*100)/100,masaAntes:Math.round(masaAntes*100)/100,
-      masaDespues:Math.round(masaDespues*100)/100,nota:nota||''});
-    localStorage.setItem('ledger',JSON.stringify(entries));
-  }catch(e){}
-}
-
-var _origAddMasa=addMasa;
-addMasa=function(){var masaAntes=masa;_origAddMasa();if(masa!==masaAntes)logLedger('CARGA',masa-masaAntes,masaAntes,masa,'Recarga manual');};
-var _origConfirmDel=confirmDel;
-confirmDel=function(){var masaAntes=masa;_origConfirmDel();if(masa!==masaAntes)logLedger('CANCEL',masa-masaAntes,masaAntes,masa,'Cancelación venta');};
-
-// ══════════════════════════════════════════
-//  RESET SEMANAL
-// ══════════════════════════════════════════
-function checkSemanalReset(){
-  var now=new Date(),esDomingo=(now.getDay()===0),despues18=(now.getHours()>=18);
-  var semana=Math.ceil(now.getDate()/7),claveReset='semReset_'+now.getFullYear()+'_'+(now.getMonth()+1)+'_sem'+semana;
-  var yaHizo=localStorage.getItem(claveReset);
-  if(esDomingo&&despues18&&!yaHizo){
-    var totalV=ventas.reduce(function(a,v){return a+v.total;},0);
-    var masaConsumida=ventas.reduce(function(a,v){return a+v.masaUsada;},0);
-    logLedger('RESET_SEMANAL',0,masa,masa,'Reset semana. Ventas: $'+totalV.toFixed(2)+' ('+ventas.length+' tx). Masa consumida: '+masaConsumida.toFixed(1)+' kg. Conservada: '+masa.toFixed(1)+' kg');
-    ventas=[];bitacora=[];folio=1;save();saveBit();ss('masaInicioHoy',masa);updStats();renderV();
-    localStorage.setItem(claveReset,'1');
-    toast('🔄 Reset semanal. Masa: '+masa.toFixed(1)+' kg conservada.');
-    speak('Reset semanal realizado. La masa conservada es de '+masa.toFixed(0)+' kilogramos.');
-  }
-}
-checkSemanalReset();setInterval(checkSemanalReset,3600000);
-
-// ══════════════════════════════════════════
-//  ATAJOS DE TECLADO
-// ══════════════════════════════════════════
-document.addEventListener('keydown',function(e){
-  var tag=(document.activeElement||{}).tagName||'';
-  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')return;
-  if(e.key==='n'||e.key==='N'){e.preventDefault();openM('mv');}
-  if(e.key==='p'||e.key==='P'){e.preventDefault();openM('mpe');}
-  if(e.key==='r'||e.key==='R'){e.preventDefault();abrirReporte();}
-  if(e.key==='c'||e.key==='C'){e.preventDefault();openM('mp');}
-  if(e.key==='d'||e.key==='D'){e.preventDefault();toggleDark();}
-  if(e.key==='?'){var sh=document.getElementById('shortcuts-hint');if(sh)sh.classList.toggle('hidden');}
-  if(e.key==='Escape'){
-    ['mv','mpe','mp','mdp','mel','mqm','mrpt'].forEach(function(id){
-      var el=document.getElementById(id);if(el&&el.classList.contains('open'))closeM(id);
-    });
-  }
-});
-setTimeout(function(){var sh=document.getElementById('shortcuts-hint');if(sh){sh.classList.remove('hidden');setTimeout(function(){sh.classList.add('hidden');},5500);}},2200);
-
-// ══════════════════════════════════════════
-//  META DEL DÍA
-// ══════════════════════════════════════════
-var metaDia=gs('metaDia')||500,metaAlcanzadaNotif=false;
-function updMeta(){
-  var totalV=ventas.reduce(function(a,v){return a+v.total;},0);
-  var pct=Math.min(Math.round(totalV/metaDia*100),100);
-  var bar=document.getElementById('s-meta-bar'),lbl=document.getElementById('s-meta-lbl'),pctEl=document.getElementById('s-meta-pct');
-  if(!bar)return;
-  bar.style.width=pct+'%';
-  bar.style.background=pct>=100?'linear-gradient(90deg,var(--gr),#4ADE80)':'linear-gradient(90deg,var(--pu),#A855F7)';
-  if(pctEl)pctEl.textContent=pct+'%';
-  if(lbl)lbl.textContent='$'+totalV.toFixed(0)+' / $'+metaDia+' · toca para editar';
-  if(pct>=100&&!metaAlcanzadaNotif){
-    metaAlcanzadaNotif=true;
-    setTimeout(function(){toast('🎯 ¡Meta del día alcanzada! 🎉');speak('Felicidades. Meta del día alcanzada.');lanzarConfeti();},500);
-  }
-  if(pct<100)metaAlcanzadaNotif=false;
-}
-function openMetaConfig(){
-  var nueva=prompt('💰 Meta de ventas del día:\n(Actual: $'+metaDia+')',metaDia);
-  if(nueva&&!isNaN(parseFloat(nueva))&&parseFloat(nueva)>0){metaDia=parseFloat(nueva);ss('metaDia',metaDia);metaAlcanzadaNotif=false;updMeta();toast('Meta actualizada: $'+metaDia+' 🎯');}
-}
-
-// ══════════════════════════════════════════
-//  CONFETI v5 — Canvas dedicado
-// ══════════════════════════════════════════
-function lanzarConfeti(){
-  var canvas=document.getElementById('confetti-canvas');
-  if(!canvas)return;
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  var ctx=canvas.getContext('2d');
-  var piezas=[];
-  var shapes=['rect','circle','triangle'];
-  var colores=['#F59E0B','#3B82F6','#10B981','#EF4444','#8B5CF6','#F97316','#EC4899','#FDE68A','#34D399','#60A5FA'];
-  for(var i=0;i<160;i++){
-    var shape=shapes[Math.floor(Math.random()*shapes.length)];
-    piezas.push({
-      x:Math.random()*canvas.width,y:-20-Math.random()*canvas.height*0.5,
-      w:5+Math.random()*12,h:4+Math.random()*8,
-      color:colores[Math.floor(Math.random()*colores.length)],
-      rot:Math.random()*360,rotV:(Math.random()-0.5)*10,
-      vy:2.5+Math.random()*5,vx:(Math.random()-0.5)*4,shape:shape,
-      wobble:Math.random()*Math.PI*2,wobbleSpeed:0.05+Math.random()*0.08
-    });
-  }
-  var frame=0;
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    piezas.forEach(function(p){
-      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
-      ctx.fillStyle=p.color;ctx.globalAlpha=Math.max(0,1-frame/115);
-      if(p.shape==='rect'){ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);}
-      else if(p.shape==='circle'){ctx.beginPath();ctx.arc(0,0,p.w/2,0,Math.PI*2);ctx.fill();}
-      else{ctx.beginPath();ctx.moveTo(0,-p.h);ctx.lineTo(p.w/2,p.h/2);ctx.lineTo(-p.w/2,p.h/2);ctx.closePath();ctx.fill();}
-      ctx.restore();
-      p.y+=p.vy;p.x+=p.vx+Math.sin(p.wobble)*0.6;p.rot+=p.rotV;p.wobble+=p.wobbleSpeed;
-    });
-    frame++;
-    if(frame<120)requestAnimationFrame(draw);
-    else{ctx.clearRect(0,0,canvas.width,canvas.height);}
-  }
-  draw();
-}
-
-// ══════════════════════════════════════════
-//  NOTIFICACIONES PEDIDOS
-// ══════════════════════════════════════════
-var pedidosNotificados={};
-function mostrarAlertaPedido(nom,hora,minFaltan,esUrgente){
-  var el=document.getElementById('ped-alert');
-  document.getElementById('pal-title').textContent='📦 Pedido — '+nom;
-  if(esUrgente){el.classList.add('urgent');document.getElementById('pal-sub').textContent='¡HORA DE ENTREGA AHORA!';document.getElementById('pal-tiempo').textContent=hora;speak('Urgente. El pedido de '+nom+' debe entregarse ahora.');}
-  else{el.classList.remove('urgent');document.getElementById('pal-sub').textContent='Entrega a las '+hora+' — faltan '+minFaltan+' min';document.getElementById('pal-tiempo').textContent=hora;speak('Atención. Pedido de '+nom+' a las '+hora+'. Faltan '+minFaltan+' minutos.');}
-  el.classList.add('show');sndSuccess();
-  setTimeout(function(){el.classList.remove('show');},esUrgente?16000:11000);
-}
-setInterval(function(){
-  if(!pedidos||!pedidos.length)return;
-  var now=new Date(),nowMin=now.getHours()*60+now.getMinutes();
-  pedidos.forEach(function(p){
-    if(!p.hora)return;
-    var parts=p.hora.split(':');var pedMin=parseInt(parts[0],10)*60+parseInt(parts[1],10);var diff=pedMin-nowMin;
-    if(diff>=14&&diff<=16){var k=p.id+'_15';if(!pedidosNotificados[k]){pedidosNotificados[k]=true;mostrarAlertaPedido(p.nom,p.hora,diff,false);}}
-    if(diff>=4&&diff<=6){var k2=p.id+'_5';if(!pedidosNotificados[k2]){pedidosNotificados[k2]=true;mostrarAlertaPedido(p.nom,p.hora,diff,false);}}
-    if(diff===0){var k3=p.id+'_0';if(!pedidosNotificados[k3]){pedidosNotificados[k3]=true;mostrarAlertaPedido(p.nom,p.hora,0,true);toast('🚨 ¡Entregar pedido de '+p.nom+' AHORA!','e');}}
-  });
-},30000);
-</script>
-</body>
-</html>
+    return '<div class="prow" style="background:'+(item._del?'var(--rl
