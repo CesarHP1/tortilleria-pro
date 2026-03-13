@@ -66,21 +66,37 @@ body{
 }
 
 /* ── DARK MODE SMOOTH TRANSITION ──
-   Only fires during the 350ms window while toggling.
-   Keeps hover/active animations snappy the rest of the time. */
-html.theme-transitioning,
-html.theme-transitioning *,
-html.theme-transitioning *::before,
-html.theme-transitioning *::after {
+   Only key surfaces, NOT every element — keeps it snappy */
+html.theme-transitioning body,
+html.theme-transitioning nav,
+html.theme-transitioning .sc,
+html.theme-transitioning .ic,
+html.theme-transitioning .panel,
+html.theme-transitioning .md,
+html.theme-transitioning .mo,
+html.theme-transitioning .abtn,
+html.theme-transitioning .oc,
+html.theme-transitioning .prow,
+html.theme-transitioning .adds,
+html.theme-transitioning .tab-row,
+html.theme-transitioning .rpt-box,
+html.theme-transitioning .clbl,
+html.theme-transitioning .ph,
+html.theme-transitioning .mh,
+html.theme-transitioning .mf,
+html.theme-transitioning .warn,
+html.theme-transitioning .plm,
+html.theme-transitioning .dpr,
+html.theme-transitioning .wa-card,
+html.theme-transitioning input,
+html.theme-transitioning select,
+html.theme-transitioning .sr,
+html.theme-transitioning .nt h1 {
   transition:
-    background-color  .32s ease,
-    background        .32s ease,
-    border-color      .28s ease,
-    color             .22s ease,
-    box-shadow        .32s ease,
-    fill              .28s ease,
-    stroke            .28s ease,
-    opacity           .28s ease !important;
+    background-color .28s ease,
+    border-color .22s ease,
+    color .18s ease,
+    box-shadow .28s ease !important;
 }
 
 /* ── GRAIN OVERLAY ── */
@@ -1268,7 +1284,7 @@ function updateCylinder(animate){
   var lbl = document.getElementById('cpct');
   if(lbl){
     lbl.textContent = pct.toFixed(1);
-    lbl.style.color = fraction < 0.20 ? 'var(--re)' : fraction < 0.50 ? 'var(--ad)' : 'var(--gr)';
+    lbl.style.color = fraction < 0.15 ? 'var(--re)' : fraction < 0.40 ? 'var(--ad)' : 'var(--gr)';
   }
   checkMasaBaja();
 }
@@ -1986,16 +2002,19 @@ setTimeout(function(){var sh=document.getElementById('shortcuts-hint');if(sh){sh
 // ══════════════════════════════════════════
 //  META DEL DÍA
 // ══════════════════════════════════════════
-var metaDia=gs('metaDia')||500,metaAlcanzadaNotif=false;
+var metaDia = parseFloat(gs('metaDia')) || 500;
+if (isNaN(metaDia) || metaDia <= 0) metaDia = 500;
+var metaAlcanzadaNotif = false;
 function updMeta(){
+  var meta = (typeof metaDia === 'number' && !isNaN(metaDia) && metaDia > 0) ? metaDia : 500;
   var totalV=ventas.reduce(function(a,v){return a+v.total;},0);
-  var pct=Math.min(Math.round(totalV/metaDia*100),100);
+  var pct=Math.min(Math.round(totalV/meta*100),100);
   var bar=document.getElementById('s-meta-bar'),lbl=document.getElementById('s-meta-lbl'),pctEl=document.getElementById('s-meta-pct');
   if(!bar)return;
   bar.style.width=pct+'%';
   bar.style.background=pct>=100?'linear-gradient(90deg,var(--gr),#4ADE80)':'linear-gradient(90deg,var(--pu),#A855F7)';
   if(pctEl)pctEl.textContent=pct+'%';
-  if(lbl)lbl.textContent='$'+totalV.toFixed(0)+' / $'+metaDia+' · toca para editar';
+  if(lbl)lbl.textContent='$'+totalV.toFixed(0)+' / $'+meta+' · toca para editar';
   if(pct>=100&&!metaAlcanzadaNotif){
     metaAlcanzadaNotif=true;
     setTimeout(function(){toast('🎯 ¡Meta del día alcanzada! 🎉');speak('Felicidades. Meta del día alcanzada.');lanzarConfeti();},500);
@@ -2090,10 +2109,10 @@ const CX = W / 2;
 const TOP_Y = 42, BOT_Y = H - 22;
 const CYL_H = BOT_Y - TOP_Y;
 
-/* ─ Palette ─ */
+/* ─ Palette — thresholds tuned for 300 kg tank ─ */
 function palette(lvl) {
-  if (lvl >= 0.60) return { top:'#E8C878', mid:'#C8944A', bot:'#A87030', surf:'rgba(230,185,100,.82)', ring:'rgba(255,215,120,.55)' };
-  if (lvl >= 0.30) return { top:'#D4A060', mid:'#B07038', bot:'#8C5020', surf:'rgba(200,140,80,.80)', ring:'rgba(220,160,90,.5)' };
+  if (lvl >= 0.40) return { top:'#E8C878', mid:'#C8944A', bot:'#A87030', surf:'rgba(230,185,100,.82)', ring:'rgba(255,215,120,.55)' };
+  if (lvl >= 0.15) return { top:'#D4A060', mid:'#B07038', bot:'#8C5020', surf:'rgba(200,140,80,.80)', ring:'rgba(220,160,90,.5)' };
   return                    { top:'#E07060', mid:'#C04038', bot:'#9A2828', surf:'rgba(220,80,70,.82)', ring:'rgba(255,100,80,.55)' };
 }
 
@@ -2147,7 +2166,9 @@ function TankCylinder({ initialFraction }) {
   });
 
   const [displayKg, setDisplayKg] = useState((initialFraction * MAX_KG).toFixed(1));
-  const [levelClass, setLevelClass] = useState('cyl-glow-high');
+  const [levelClass, setLevelClass] = useState(
+    initialFraction >= 0.40 ? 'cyl-glow-high' : initialFraction >= 0.15 ? 'cyl-glow-mid' : 'cyl-glow-low'
+  );
 
   /* Expose setter for vanilla JS */
   useEffect(() => {
@@ -2160,23 +2181,22 @@ function TankCylinder({ initialFraction }) {
       /* Spawn concentric ripple rings on liquid surface */
       if (animate && s.target > 0.02) {
         const liqTop = BOT_Y - s.level * CYL_H;
-        const surfY  = liqTop;
-        /* 4 rings, staggered delays */
-        for (let i = 0; i < 4; i++) {
+        /* 5 rings, staggered delays, clearly visible */
+        for (let i = 0; i < 5; i++) {
           s.ripples.push({
-            cx    : CX + (Math.random() - 0.5) * 18, /* slightly random horizontal */
-            cy    : surfY,
-            rx    : 2 + i * 1.5,   /* start small, each ring a bit bigger */
+            cx    : CX + (Math.random() - 0.5) * 14,
+            cy    : liqTop,
+            rx    : 1.5 + i * 2,
             life  : 1.0,
-            delay : i * 0.12,      /* stagger */
-            speed : 1.1 + i * 0.15,
+            delay : i * 0.09,
+            speed : 1.8 + i * 0.2,
           });
         }
       }
 
       const kg = (fraction * MAX_KG).toFixed(1);
       setDisplayKg(kg);
-      setLevelClass(fraction >= 0.50 ? 'cyl-glow-high' : fraction >= 0.20 ? 'cyl-glow-mid' : 'cyl-glow-low');
+      setLevelClass(fraction >= 0.40 ? 'cyl-glow-high' : fraction >= 0.15 ? 'cyl-glow-mid' : 'cyl-glow-low');
     };
     return () => { window._setCylTarget = null; };
   }, []);
@@ -2273,7 +2293,7 @@ function TankCylinder({ initialFraction }) {
 
       /* ── Liquid ── */
       if (lvl > 0.005) {
-        const wAmp = s.pouring ? 7.5 : 3.8;
+        const wAmp = s.pouring ? 9 : 4.5;
         /* wave points */
         const wPts = [];
         for (let px = CX - RX + 1; px <= CX + RX - 1; px++) {
@@ -2441,32 +2461,32 @@ function TankCylinder({ initialFraction }) {
 
           /* outer glow ring */
           ctx.save();
-          ctx.globalAlpha = a * 0.55;
+          ctx.globalAlpha = a * 0.75;
           ctx.beginPath();
-          ctx.ellipse(rp.cx, rp.cy, rp.rx + 1.5, rry + 0.8, 0, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(255,235,150,${a * 0.6})`;
-          ctx.lineWidth   = 2.8;
+          ctx.ellipse(rp.cx, rp.cy, rp.rx + 2.5, rry + 1.2, 0, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(255,240,160,${a * 0.85})`;
+          ctx.lineWidth   = 4;
           ctx.stroke();
           ctx.restore();
 
-          /* crisp inner ring */
+          /* crisp white ring */
           ctx.save();
-          ctx.globalAlpha = a * 0.85;
+          ctx.globalAlpha = a * 0.95;
           ctx.beginPath();
           ctx.ellipse(rp.cx, rp.cy, rp.rx, rry, 0, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(255,255,255,${a * 0.9})`;
-          ctx.lineWidth   = 1.4;
+          ctx.strokeStyle = `rgba(255,255,255,${a})`;
+          ctx.lineWidth   = 2;
           ctx.stroke();
           ctx.restore();
 
-          /* faint trough ring slightly inside */
-          if (rp.rx > 5) {
+          /* trough (dark) ring slightly inside */
+          if (rp.rx > 6) {
             ctx.save();
-            ctx.globalAlpha = a * 0.28;
+            ctx.globalAlpha = a * 0.45;
             ctx.beginPath();
-            ctx.ellipse(rp.cx, rp.cy, Math.max(1, rp.rx - 3.5), Math.max(0.4, rry - 1.2), 0, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(160,110,40,${a * 0.5})`;
-            ctx.lineWidth   = 1;
+            ctx.ellipse(rp.cx, rp.cy, Math.max(1, rp.rx - 4), Math.max(0.4, rry - 1.5), 0, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(120,80,30,${a * 0.65})`;
+            ctx.lineWidth   = 1.5;
             ctx.stroke();
             ctx.restore();
           }
