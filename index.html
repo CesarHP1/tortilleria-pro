@@ -274,49 +274,51 @@ main{max-width:1340px;margin:0 auto;padding:2rem 1.75rem;position:relative;z-ind
 }
 
 /* ════════════════════════════════════════════════
-   CILINDRO v5.0 — Canvas 3D
+   CILINDRO REACT v6 — Industrial 3D Tank
    ════════════════════════════════════════════════ */
-.cyl-outer{
-  position:relative;width:160px;margin:0 auto;
-  filter:drop-shadow(0 20px 50px rgba(0,0,0,.18));
-  transition:filter .6s;
-}
-.cyl-outer.level-high{filter:drop-shadow(0 20px 50px rgba(0,0,0,.18)) drop-shadow(0 0 28px rgba(180,130,70,.22))}
-.cyl-outer.level-mid{filter:drop-shadow(0 20px 50px rgba(0,0,0,.18)) drop-shadow(0 0 28px rgba(200,100,50,.28))}
-.cyl-outer.level-low{
-  filter:drop-shadow(0 20px 50px rgba(0,0,0,.18)) drop-shadow(0 0 40px rgba(220,38,38,.4));
-  animation:cylLowGlow 1.6s ease-in-out infinite;
-}
-@keyframes cylLowGlow{
-  0%,100%{filter:drop-shadow(0 20px 50px rgba(0,0,0,.18)) drop-shadow(0 0 30px rgba(220,38,38,.35))}
-  50%{filter:drop-shadow(0 20px 50px rgba(0,0,0,.18)) drop-shadow(0 0 55px rgba(220,38,38,.6))}
-}
-#cylCanvas{display:block;margin:0 auto}
+#cyl-react-root{width:100%;display:flex;justify-content:center;align-items:center}
 
-/* Label flotante */
+.cyl-wrap-r{
+  position:relative;width:176px;margin:0 auto;
+}
+.cyl-canvas-r{display:block;margin:0 auto;border-radius:2px}
+
+/* Floating KG label */
 .clbl{
-  position:absolute;top:8px;right:-24px;z-index:65;text-align:center;
+  position:absolute;top:6px;right:-22px;z-index:65;text-align:center;
   background:rgba(255,255,255,.97);backdrop-filter:blur(20px);
   padding:.4rem .9rem .35rem;border-radius:14px;
   border:1.5px solid var(--bor);box-shadow:var(--shm);
-  white-space:nowrap;transition:all .6s;
-  min-width:72px;
+  white-space:nowrap;transition:color .4s;min-width:76px;
 }
 [data-theme="dark"] .clbl{background:rgba(26,23,20,.97)}
-.clbl big{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:.04em;display:block;transition:color .6s;line-height:1}
+.clbl big{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:.04em;display:block;line-height:1;transition:color .4s}
 .clbl small{font-size:.44rem;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:var(--s4)}
 
-/* Marcas escala lateral */
+/* Scale marks */
 .cyl-marks{
-  position:absolute;left:2px;top:0;bottom:0;
+  position:absolute;left:0;top:0;bottom:0;
   display:flex;flex-direction:column;justify-content:space-between;
-  padding:24px 0 14px;align-items:flex-start;pointer-events:none;z-index:40;
+  padding:38px 0 20px;align-items:flex-start;pointer-events:none;z-index:40;
 }
 .cyl-marks span{
   display:flex;align-items:center;gap:4px;
-  font-family:'Space Mono',monospace;font-size:.44rem;font-weight:700;color:var(--s4);
+  font-family:'Space Mono',monospace;font-size:.42rem;font-weight:700;color:var(--s4);
+  line-height:1;
 }
-.cyl-marks .tick{width:10px;height:1.5px;background:var(--s5);border-radius:1px}
+.cyl-marks .tick{width:9px;height:1.5px;background:var(--s5);border-radius:1px;flex-shrink:0}
+
+/* Glow wrappers per level */
+.cyl-glow-high{filter:drop-shadow(0 18px 48px rgba(0,0,0,.18)) drop-shadow(0 0 22px rgba(180,130,60,.18));transition:filter .8s}
+.cyl-glow-mid{filter:drop-shadow(0 18px 48px rgba(0,0,0,.18)) drop-shadow(0 0 22px rgba(200,100,40,.25));transition:filter .8s}
+.cyl-glow-low{filter:drop-shadow(0 18px 48px rgba(0,0,0,.18)) drop-shadow(0 0 40px rgba(220,38,38,.45));animation:cylLowGlow 1.5s ease-in-out infinite}
+@keyframes cylLowGlow{
+  0%,100%{filter:drop-shadow(0 18px 48px rgba(0,0,0,.18)) drop-shadow(0 0 28px rgba(220,38,38,.38))}
+  50%{filter:drop-shadow(0 18px 48px rgba(0,0,0,.18)) drop-shadow(0 0 56px rgba(220,38,38,.65))}
+}
+
+/* Level LED strip pulse */
+@keyframes ledPulse{0%,100%{opacity:.8}50%{opacity:1}}
 
 /* ════════════════
    MASA BAJA BANNER
@@ -803,41 +805,28 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
     <!-- ══ INVENTORY CARD ══ -->
     <section class="ic">
       <h3>⚖️ Nivel de Masa</h3>
-      <p style="font-size:.59rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--s4);align-self:flex-start">Capacidad del tanque: 100 kg</p>
+      <p style="font-size:.59rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--s4);align-self:flex-start">Capacidad del tanque: 300 kg</p>
 
-      <!-- CILINDRO CANVAS v5 -->
-      <div class="cyl-outer" id="cyl-wrapper">
-        <canvas id="cylCanvas" width="170" height="350"></canvas>
-        <div class="clbl">
-          <big id="cpct">50.0</big>
-          <small>kg</small>
-        </div>
-        <div class="cyl-marks">
-          <span><div class="tick"></div>100%</span>
-          <span><div class="tick"></div>75%</span>
-          <span><div class="tick"></div>50%</span>
-          <span><div class="tick"></div>25%</span>
-          <span><div class="tick"></div>0%</span>
-        </div>
-      </div>
+      <!-- CILINDRO REACT v6 -->
+      <div id="cyl-react-root"></div>
 
       <!-- RECARGA -->
       <div class="rar">
         <label class="ilbl">⬆️ Recargar Tolva</label>
         <div class="rrow">
-          <input type="number" id="mi" placeholder="KG" min="0.1" step="0.5"
+          <input type="number" id="mi" placeholder="KG" min="0.1" step="1"
             style="flex:1;padding:.5rem .7rem;font-size:.85rem;height:38px"
             onkeydown="if(event.key==='Enter')addMasa()"/>
           <button class="btn bna" onclick="addMasa()" style="padding:.48rem 1rem;height:38px;font-size:.95rem">＋</button>
         </div>
         <div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.48rem;align-items:center">
           <span style="font-size:.54rem;font-weight:700;color:var(--s4);text-transform:uppercase;letter-spacing:.1em">Rápido:</span>
-          <button onclick="setRecargaRapida(5)"  class="btn-qkg">5 kg</button>
-          <button onclick="setRecargaRapida(10)" class="btn-qkg">10 kg</button>
-          <button onclick="setRecargaRapida(20)" class="btn-qkg">20 kg</button>
-          <button onclick="setRecargaRapida(50)" class="btn-qkg">50 kg</button>
+          <button onclick="setRecargaRapida(25)"  class="btn-qkg">25 kg</button>
+          <button onclick="setRecargaRapida(50)"  class="btn-qkg">50 kg</button>
+          <button onclick="setRecargaRapida(100)" class="btn-qkg">100 kg</button>
+          <button onclick="setRecargaRapida(150)" class="btn-qkg">150 kg</button>
         </div>
-        <div class="warn" id="mw">⚠️ Cantidad inválida o supera los 100 kg</div>
+        <div class="warn" id="mw">⚠️ Cantidad inválida o supera los 300 kg</div>
         <button class="btn-qm" onclick="openM('mqm')">🔴 Quitar Masa del Tanque</button>
       </div>
     </section>
@@ -1093,7 +1082,7 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
 //  STORAGE HELPERS
 // ══════════════════════════════════════════
 const DEF={
-  masa:50,
+  masa:150,
   precios:{'Tortilla blanca':15,'Tortilla integral':18,'Tortilla harina':12,'Taco':8},
   ventas:[],pedidos:[],folio:1,pass:'Cesar2106'
 };
@@ -1103,6 +1092,7 @@ function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 let masa=gs('masa'), precios=gs('precios'), ventas=gs('ventas'),
     pedidos=gs('pedidos'), folio=gs('folio'), pass=gs('pass'),
     contactosWA=gs('contactosWA')||[];
+window.masa = masa; // expose for React cylinder init
 
 // ── BITÁCORA ──
 const HOY=new Date().toISOString().split('T')[0];
@@ -1119,7 +1109,7 @@ if(diaGuardado!==HOY){
   masaInicioHoy=gs('masaInicioHoy')!==null?gs('masaInicioHoy'):masa;
 }
 
-function save(){ss('masa',masa);ss('precios',precios);ss('ventas',ventas);ss('pedidos',pedidos);ss('folio',folio);ss('pass',pass);}
+function save(){ss('masa',masa);ss('precios',precios);ss('ventas',ventas);ss('pedidos',pedidos);ss('folio',folio);ss('pass',pass);window.masa=masa;}
 function saveBit(){ss('bitacora',bitacora);}
 function logOp(tipo,datos){
   const hora=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
@@ -1241,311 +1231,32 @@ function toast(msg,type){
 }
 
 // ══════════════════════════════════════════
-//  CYLINDER v5.0 — Canvas 3D
+//  updateCylinder — talks to React component
 // ══════════════════════════════════════════
-var cylState={
-  level:0,targetLevel:0,t:0,
-  bubbles:[],caustics:[],
-  animFrame:null,
-  pouring:false,pourT:0,
-};
-
-(function initCylinder(){
-  for(var i=0;i<10;i++){
-    cylState.caustics.push({
-      x:22+Math.random()*106,
-      y:Math.random(),
-      r:4+Math.random()*10,
-      phase:Math.random()*Math.PI*2,
-      speed:0.4+Math.random()*0.9,
-      wobbleX:Math.random()*Math.PI*2,
-      wobbleSpeed:0.3+Math.random()*0.5,
-    });
-  }
-})();
-
-function cylAnimate(){
-  cylState.t+=0.018;
-  // Smooth level
-  cylState.level+=(cylState.targetLevel-cylState.level)*0.025;
-  if(cylState.pouring){cylState.pourT+=0.04;if(cylState.pourT>1){cylState.pouring=false;cylState.pourT=0;}}
-  drawCylinder();
-  cylState.animFrame=requestAnimationFrame(cylAnimate);
-}
-
-function drawCylinder(){
-  var canvas=document.getElementById('cylCanvas');
-  if(!canvas)return;
-  var ctx=canvas.getContext('2d');
-  var W=170,H=350;
-  var isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  ctx.clearRect(0,0,W,H);
-
-  var rx=58,ry=16,cx=W/2;
-  var topY=32,botY=H-18,cylH=botY-topY;
-  var lvl=Math.min(Math.max(cylState.level,0),1);
-  var liqTop=botY-lvl*cylH;
-
-  // Color palette by level
-  var c1,c2,c3,cSurf;
-  if(lvl>=0.5){c1='#D4A86A';c2='#B8804A';c3='#A07040';cSurf='rgba(220,170,90,.75)';}
-  else if(lvl>=0.2){c1='#C49060';c2='#9E6438';c3='#8A5028';cSurf='rgba(196,130,80,.75)';}
-  else{c1='#D46860';c2='#B83C30';c3='#A02828';cSurf='rgba(220,80,70,.75)';}
-
-  // ── 1. Bottom cap (dark) ──
-  drawEllipseFilled(ctx,cx,botY,rx-1,ry-1,'rgba(80,60,40,.45)','rgba(160,120,80,.5)',1.5);
-
-  // ── 2. Cylinder body path for clipping ──
-  ctx.save();
-  cylPath(ctx,cx,topY,botY,rx,ry);
-  ctx.clip();
-
-  // Body background — glass tint
-  var bodyGrad=ctx.createLinearGradient(cx-rx,0,cx+rx,0);
-  if(isDark){
-    bodyGrad.addColorStop(0,'rgba(60,50,40,.45)');
-    bodyGrad.addColorStop(0.12,'rgba(255,255,255,.06)');
-    bodyGrad.addColorStop(0.5,'rgba(255,255,255,.02)');
-    bodyGrad.addColorStop(0.88,'rgba(255,255,255,.04)');
-    bodyGrad.addColorStop(1,'rgba(60,50,40,.3)');
-  }else{
-    bodyGrad.addColorStop(0,'rgba(255,251,242,.28)');
-    bodyGrad.addColorStop(0.12,'rgba(255,255,255,.07)');
-    bodyGrad.addColorStop(0.5,'rgba(255,251,242,.03)');
-    bodyGrad.addColorStop(0.88,'rgba(255,255,255,.05)');
-    bodyGrad.addColorStop(1,'rgba(255,251,242,.18)');
-  }
-  ctx.fillStyle=bodyGrad;
-  ctx.fill();
-
-  // ── 3. Liquid fill ──
-  if(lvl>0.005){
-    ctx.save();
-    // Wave amplitude: bigger when pouring, always visible
-    var wAmp = cylState.pouring ? 7 : 3.5;
-    var t = cylState.t;
-
-    // Build wave top edge (left→right)
-    var wavePoints = [];
-    for(var px = cx-rx+1; px <= cx+rx-1; px += 1){
-      var prog = (px-(cx-rx)) / (2*rx);
-      // Three overlapping sine waves for natural water motion
-      var wave = Math.sin(prog*Math.PI*3   + t*2.8) * wAmp * 0.55
-               + Math.sin(prog*Math.PI*6.5 + t*1.9) * wAmp * 0.28
-               + Math.cos(prog*Math.PI*2.0 + t*3.5) * wAmp * 0.22
-               + Math.sin(prog*Math.PI*9   - t*1.4) * wAmp * 0.10;
-      wavePoints.push({x: px, y: liqTop + wave});
-    }
-
-    // Draw liquid body: rectangle-ish from bottom up to wave line
-    ctx.beginPath();
-    ctx.moveTo(cx-rx+1, botY);
-    ctx.lineTo(cx-rx+1, wavePoints[0].y);
-    for(var wi=0; wi<wavePoints.length; wi++){
-      ctx.lineTo(wavePoints[wi].x, wavePoints[wi].y);
-    }
-    ctx.lineTo(cx+rx-1, botY);
-    ctx.closePath();
-
-    var liqGrad=ctx.createLinearGradient(0,liqTop,0,botY);
-    liqGrad.addColorStop(0,c1);
-    liqGrad.addColorStop(0.45,c2);
-    liqGrad.addColorStop(1,c3);
-    ctx.fillStyle=liqGrad;
-    ctx.fill();
-
-    // Caustics
-    cylState.caustics.forEach(function(c){
-      if(c.y>lvl)return;
-      var cy2=botY-c.y*cylH;
-      var wobX=c.x+Math.sin(cylState.t*c.wobbleSpeed+c.wobbleX)*8;
-      var pulse=0.35+0.3*Math.sin(cylState.t*c.speed+c.phase);
-      var rg=ctx.createRadialGradient(wobX,cy2,0,wobX,cy2,c.r*(1.2+pulse));
-      rg.addColorStop(0,'rgba(255,230,130,.22)');
-      rg.addColorStop(0.5,'rgba(255,210,100,.08)');
-      rg.addColorStop(1,'rgba(255,210,100,0)');
-      ctx.fillStyle=rg;
-      ctx.beginPath();
-      ctx.ellipse(wobX,cy2,c.r*(1.2+pulse),c.r*0.55*(1.2+pulse),0,0,Math.PI*2);
-      ctx.fill();
-    });
-
-    // Shine sweep
-    var shineAlpha=0.12+0.1*Math.sin(cylState.t*0.5);
-    var shineGrad=ctx.createLinearGradient(cx-rx,0,cx+rx,0);
-    shineGrad.addColorStop(0,'transparent');
-    shineGrad.addColorStop(0.38,'rgba(255,255,255,'+shineAlpha+')');
-    shineGrad.addColorStop(0.5,'rgba(255,255,255,'+(shineAlpha*1.6)+')');
-    shineGrad.addColorStop(0.62,'rgba(255,255,255,'+shineAlpha+')');
-    shineGrad.addColorStop(1,'transparent');
-    ctx.fillStyle=shineGrad;
-    ctx.fillRect(cx-rx,liqTop,2*rx,botY-liqTop);
-
-    ctx.restore();
-
-    // Bubbles in liquid
-    cylState.bubbles.forEach(function(b,i){
-      b.y-=b.vy*(1+0.3*Math.sin(cylState.t+i));
-      b.x+=Math.sin(cylState.t*b.wobble+i)*0.3;
-      b.life-=0.008;
-      if(b.y<liqTop||b.life<=0)b.dead=true;
-      if(b.dead)return;
-      ctx.save();
-      ctx.globalAlpha=b.life*0.6;
-      ctx.beginPath();
-      ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,.4)';
-      ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,.6)';
-      ctx.lineWidth=0.5;
-      ctx.stroke();
-      ctx.restore();
-    });
-    cylState.bubbles=cylState.bubbles.filter(function(b){return !b.dead;});
-    if(cylState.pouring&&Math.random()<0.3){
-      spawnBubble(cx,botY,liqTop,rx);
-    }else if(Math.random()<0.015){
-      spawnBubble(cx,botY,liqTop,rx);
-    }
-  }
-
-  // ── 4. Glass highlights (over everything) ──
-  // Left specular strip
-  var hl1=ctx.createLinearGradient(cx-rx,0,cx-rx+20,0);
-  hl1.addColorStop(0,isDark?'rgba(255,255,255,.18)':'rgba(255,255,255,.42)');
-  hl1.addColorStop(0.6,isDark?'rgba(255,255,255,.04)':'rgba(255,255,255,.1)');
-  hl1.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=hl1;ctx.fillRect(cx-rx,topY,20,cylH);
-  // Thin bright edge left
-  var hl2=ctx.createLinearGradient(cx-rx,0,cx-rx+5,0);
-  hl2.addColorStop(0,'rgba(255,255,255,.55)');hl2.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=hl2;ctx.fillRect(cx-rx,topY,5,cylH);
-  // Right subtle
-  var hr=ctx.createLinearGradient(cx+rx-12,0,cx+rx,0);
-  hr.addColorStop(0,'rgba(255,255,255,0)');hr.addColorStop(1,isDark?'rgba(255,255,255,.1)':'rgba(255,255,255,.18)');
-  ctx.fillStyle=hr;ctx.fillRect(cx+rx-12,topY,12,cylH);
-
-  ctx.restore(); // end clip
-
-  // ── 5. Cylinder border ──
-  ctx.save();
-  cylPath(ctx,cx,topY,botY,rx,ry);
-  ctx.strokeStyle=isDark?'rgba(80,65,50,.8)':'rgba(200,175,130,.85)';
-  ctx.lineWidth=2.5;
-  ctx.stroke();
-  ctx.restore();
-
-  // ── 6. Neck ──
-  var nw=46,nrx=23,nry=8;
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(cx-nrx,topY);
-  ctx.lineTo(cx-nrx,topY-28);
-  ctx.quadraticCurveTo(cx-nrx,topY-36,cx-nrx+6,topY-36);
-  ctx.lineTo(cx+nrx-6,topY-36);
-  ctx.quadraticCurveTo(cx+nrx,topY-36,cx+nrx,topY-28);
-  ctx.lineTo(cx+nrx,topY);
-  var nkGrad=ctx.createLinearGradient(cx-nrx,0,cx+nrx,0);
-  nkGrad.addColorStop(0,isDark?'rgba(60,50,40,.7)':'rgba(255,255,255,.55)');
-  nkGrad.addColorStop(0.5,isDark?'rgba(30,25,20,.4)':'rgba(255,251,242,.2)');
-  nkGrad.addColorStop(1,isDark?'rgba(60,50,40,.55)':'rgba(255,255,255,.4)');
-  ctx.fillStyle=nkGrad;ctx.fill();
-  ctx.strokeStyle=isDark?'rgba(80,65,50,.8)':'rgba(200,175,130,.85)';
-  ctx.lineWidth=2.5;ctx.stroke();
-  ctx.restore();
-
-  // ── 7. Liquid surface ellipse (animates with wave) ──
-  if(lvl>0.02&&liqTop>topY+ry+2){
-    ctx.save();
-    // Animate surface Y with wave
-    var surfY = liqTop + Math.sin(cylState.t*2.1)*1.8 + Math.cos(cylState.t*1.3)*0.9;
-    // Clip to inside cylinder walls
-    cylPath(ctx, cx, topY, botY, rx, ry);
-    ctx.clip();
-    ctx.beginPath();
-    ctx.ellipse(cx, surfY, rx-3, ry-2, 0, 0, Math.PI*2);
-    var surfGrad=ctx.createRadialGradient(cx-10, surfY-2, 0, cx, surfY, rx-3);
-    surfGrad.addColorStop(0,'rgba(255,240,180,.75)');
-    surfGrad.addColorStop(0.35,cSurf);
-    surfGrad.addColorStop(1,'rgba(100,70,40,.2)');
-    ctx.fillStyle=surfGrad;ctx.fill();
-    // Animated foam ring on surface
-    var foamAlpha = 0.18 + 0.12*Math.sin(cylState.t*2.5);
-    ctx.beginPath();
-    ctx.ellipse(cx-4, surfY-1, 18, 4.5, 0, 0, Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,'+foamAlpha+')';ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(cx+8, surfY+0.5, 10, 3, 0.3, 0, Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,'+(foamAlpha*0.7)+')';ctx.fill();
-    ctx.restore();
-  }
-
-  // ── 8. Top cap ──
-  drawEllipseFilled(ctx,cx,topY,rx+3,ry+2,
-    isDark?'rgba(50,42,34,.75)':'rgba(255,253,248,.85)',
-    isDark?'rgba(90,75,55,.8)':'rgba(200,175,130,.9)',2);
-  // cap shine
-  ctx.save();ctx.beginPath();ctx.ellipse(cx-8,topY-1,12,3.5,0,0,Math.PI*2);
-  ctx.fillStyle='rgba(255,255,255,.45)';ctx.fill();ctx.restore();
-}
-
-function cylPath(ctx,cx,topY,botY,rx,ry){
-  // Correct cylinder path:
-  // - Left wall (vertical, constant x)
-  // - Bottom arc from left→bottom→right (anticlockwise through π/2)
-  // - Right wall (vertical, constant x)
-  // - Top arc from right→top→left (anticlockwise through 3π/2 = -π/2)
-  ctx.beginPath();
-  ctx.moveTo(cx-rx, topY);               // top-left corner
-  ctx.lineTo(cx-rx, botY);               // straight down left wall
-  // From (cx-rx,botY) = angle π, go anticlockwise (decreasing) to 0 = (cx+rx,botY)
-  // Anticlockwise from π→π/2→0 passes through the BOTTOM of the ellipse ✓
-  ctx.ellipse(cx, botY, rx, ry, 0, Math.PI, 0, true);
-  // Now at (cx+rx, botY)
-  ctx.lineTo(cx+rx, topY);               // straight up right wall
-  // From (cx+rx,topY) = angle 0, go anticlockwise (decreasing) to π = (cx-rx,topY)
-  // Anticlockwise from 0→-π/2→-π passes through the TOP of the ellipse ✓
-  ctx.ellipse(cx, topY, rx, ry, 0, 0, Math.PI, true);
-  ctx.closePath();
-}
-
-function drawEllipseFilled(ctx,cx,cy,rx,ry,fill,stroke,lw){
-  ctx.save();ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);
-  if(fill){var g=ctx.createRadialGradient(cx,cy-ry*.3,0,cx,cy,rx);g.addColorStop(0,fill);g.addColorStop(1,'rgba(80,60,40,.15)');ctx.fillStyle=g;ctx.fill();}
-  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||2;ctx.stroke();}
-  ctx.restore();
-}
-
-function spawnBubble(cx,botY,liqTop,rx){
-  var x=cx-rx+10+Math.random()*(2*rx-20);
-  var y=botY-8-Math.random()*((botY-liqTop)*0.7);
-  if(y<liqTop)return;
-  cylState.bubbles.push({x:x,y:y,r:1.2+Math.random()*3.5,vy:0.4+Math.random()*0.9,wobble:0.5+Math.random()*2,life:1});
-}
-
 function updateCylinder(animate){
-  var pct=Math.min(Math.max(masa,0),100);
-  cylState.targetLevel=pct/100;
-  if(animate){cylState.pouring=true;cylState.pourT=0;sndPour();}
-  var lbl=document.getElementById('cpct');
-  var cw=document.getElementById('cyl-wrapper');
-  if(lbl){lbl.textContent=pct.toFixed(1);lbl.style.color=pct<20?'var(--re)':pct<50?'var(--ad)':'var(--gr)';}
-  if(cw){cw.classList.remove('level-high','level-mid','level-low');cw.classList.add(pct>=50?'level-high':pct>=20?'level-mid':'level-low');}
+  var pct = Math.min(Math.max(masa, 0), 300);
+  var fraction = pct / 300;
+  if(window._setCylTarget) window._setCylTarget(fraction, animate);
+  if(animate) sndPour();
+  // Also update badge directly for instant feedback
+  var lbl = document.getElementById('cpct');
+  if(lbl){
+    lbl.textContent = pct.toFixed(1);
+    lbl.style.color = fraction < 0.20 ? 'var(--re)' : fraction < 0.50 ? 'var(--ad)' : 'var(--gr)';
+  }
   checkMasaBaja();
 }
-// Start cylinder loop
-cylState.targetLevel=Math.min(Math.max(masa,0),100)/100;
-cylState.level=cylState.targetLevel;
-cylAnimate();
+
+
 
 // ── MASA BAJA ──
 function checkMasaBaja(){
-  var cw=document.querySelector('.cyl-outer');
   var banner=document.getElementById('masa-warn-banner');
   var txt=document.getElementById('masa-warn-txt');
   if(!banner)return;
-  if(masa<=20){if(cw)cw.classList.add('masa-critica');txt.textContent='⚠️ Masa baja: quedan '+masa.toFixed(1)+' kg — recarga pronto';banner.classList.remove('hidden');}
-  else{if(cw)cw.classList.remove('masa-critica');banner.classList.add('hidden');}
+  var pct=masa/300;
+  if(masa<=60){txt.textContent='⚠️ Masa baja: quedan '+masa.toFixed(1)+' kg — recarga pronto';banner.classList.remove('hidden');}
+  else{banner.classList.add('hidden');}
 }
 
 // ══════════════════════════════════════════
@@ -1638,7 +1349,7 @@ document.querySelectorAll('.mo').forEach(function(o){o.addEventListener('click',
 function addMasa(){
   var v=parseFloat(document.getElementById('mi').value);
   var w=document.getElementById('mw');
-  if(!v||v<=0||masa+v>100){w.classList.add('show');sndError();setTimeout(function(){w.classList.remove('show');},2400);return;}
+  if(!v||v<=0||masa+v>300){w.classList.add('show');sndError();setTimeout(function(){w.classList.remove('show');},2400);return;}
   w.classList.remove('show');
   var masaAntes=masa;
   masa=Math.round((masa+v)*100)/100;
@@ -2334,6 +2045,475 @@ setInterval(function(){
     if(diff===0){var k3=p.id+'_0';if(!pedidosNotificados[k3]){pedidosNotificados[k3]=true;mostrarAlertaPedido(p.nom,p.hora,0,true);toast('🚨 ¡Entregar pedido de '+p.nom+' AHORA!','e');}}
   });
 },30000);
+</script>
+<!-- React + Babel for the cylinder -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script type="text/babel">
+/* ═══════════════════════════════════════════════════════
+   CILINDRO INDUSTRIAL REACT v6
+   300 kg · Canvas 2D · Full physics sim · 60fps
+   ═══════════════════════════════════════════════════════ */
+const { useRef, useEffect, useState, useCallback } = React;
+
+const MAX_KG = 300;
+const W = 176, H = 360;
+const RX = 62, RY = 18;          // cylinder half-widths
+const CX = W / 2;
+const TOP_Y = 42, BOT_Y = H - 22;
+const CYL_H = BOT_Y - TOP_Y;
+
+/* ─ Palette ─ */
+function palette(lvl) {
+  if (lvl >= 0.60) return { top:'#E8C878', mid:'#C8944A', bot:'#A87030', surf:'rgba(230,185,100,.82)', ring:'rgba(255,215,120,.55)' };
+  if (lvl >= 0.30) return { top:'#D4A060', mid:'#B07038', bot:'#8C5020', surf:'rgba(200,140,80,.80)', ring:'rgba(220,160,90,.5)' };
+  return                    { top:'#E07060', mid:'#C04038', bot:'#9A2828', surf:'rgba(220,80,70,.82)', ring:'rgba(255,100,80,.55)' };
+}
+
+/* ─ Cylinder outline path (correct, no cone) ─ */
+function makeCylPath(ctx) {
+  ctx.beginPath();
+  ctx.moveTo(CX - RX, TOP_Y);
+  ctx.lineTo(CX - RX, BOT_Y);
+  ctx.ellipse(CX, BOT_Y, RX, RY, 0, Math.PI, 0, true);
+  ctx.lineTo(CX + RX, TOP_Y);
+  ctx.ellipse(CX, TOP_Y, RX, RY, 0, 0, Math.PI, true);
+  ctx.closePath();
+}
+
+/* ─ Initial bubble pool ─ */
+function mkBubble(liqTop) {
+  return {
+    x: CX - RX + 14 + Math.random() * (2 * RX - 28),
+    y: BOT_Y - 6 - Math.random() * Math.max(1, BOT_Y - liqTop - 12),
+    r: 1.0 + Math.random() * 3.2,
+    vy: 0.35 + Math.random() * 0.75,
+    wx: Math.random() * Math.PI * 2,
+    ws: 0.04 + Math.random() * 0.07,
+    life: 0.7 + Math.random() * 0.3,
+  };
+}
+
+/* ─ Main React component ─ */
+function TankCylinder({ initialFraction }) {
+  const canvasRef   = useRef(null);
+  const stateRef    = useRef({
+    level   : initialFraction,
+    target  : initialFraction,
+    t       : 0,
+    pouring : false,
+    pourT   : 0,
+    bubbles : [],
+    caustics: Array.from({ length: 14 }, () => ({
+      relX  : 0.12 + Math.random() * 0.76,
+      relY  : Math.random(),
+      r     : 5 + Math.random() * 12,
+      phase : Math.random() * Math.PI * 2,
+      speed : 0.3 + Math.random() * 0.8,
+      wobX  : Math.random() * Math.PI * 2,
+      wobS  : 0.25 + Math.random() * 0.45,
+    })),
+    steam   : [],
+    rafId   : null,
+    dark    : false,
+  });
+
+  const [displayKg, setDisplayKg] = useState((initialFraction * MAX_KG).toFixed(1));
+  const [levelClass, setLevelClass] = useState('cyl-glow-high');
+
+  /* Expose setter for vanilla JS */
+  useEffect(() => {
+    window._setCylTarget = (fraction, animate) => {
+      stateRef.current.target  = Math.max(0, Math.min(1, fraction));
+      stateRef.current.pouring = !!animate;
+      stateRef.current.pourT   = 0;
+      const kg = (fraction * MAX_KG).toFixed(1);
+      setDisplayKg(kg);
+      setLevelClass(fraction >= 0.50 ? 'cyl-glow-high' : fraction >= 0.20 ? 'cyl-glow-mid' : 'cyl-glow-low');
+    };
+    return () => { window._setCylTarget = null; };
+  }, []);
+
+  /* Animation loop */
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    function spawnSteam(lvl) {
+      if (lvl < 0.05) return;
+      const s = stateRef.current;
+      s.steam.push({
+        x   : CX - 20 + Math.random() * 40,
+        y   : TOP_Y - 6,
+        vx  : (Math.random() - 0.5) * 0.4,
+        vy  : -(0.4 + Math.random() * 0.7),
+        r   : 3 + Math.random() * 5,
+        life: 1.0,
+      });
+    }
+
+    function frame() {
+      const s = stateRef.current;
+      s.t += 0.016;
+      /* smooth level */
+      s.level += (s.target - s.level) * 0.028;
+      if (s.pouring) { s.pourT += 0.035; if (s.pourT >= 1) { s.pouring = false; s.pourT = 0; } }
+
+      /* dark mode */
+      s.dark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+      const lvl     = Math.min(Math.max(s.level, 0), 1);
+      const liqTop  = BOT_Y - lvl * CYL_H;
+      const pal     = palette(lvl);
+      const isDark  = s.dark;
+
+      /* ── occasional bubbles ── */
+      const bRate = s.pouring ? 0.28 : 0.018;
+      if (lvl > 0.02 && Math.random() < bRate && s.bubbles.length < 38) {
+        s.bubbles.push(mkBubble(liqTop));
+      }
+
+      /* ── occasional steam ── */
+      if (lvl > 0.04 && Math.random() < (s.pouring ? 0.12 : 0.018)) spawnSteam(lvl);
+
+      ctx.clearRect(0, 0, W, H);
+
+      /* ══ 1. Shadow beneath cylinder ══ */
+      const shG = ctx.createRadialGradient(CX, BOT_Y + 12, 4, CX, BOT_Y + 14, 55);
+      shG.addColorStop(0, 'rgba(0,0,0,.22)');
+      shG.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = shG;
+      ctx.beginPath();
+      ctx.ellipse(CX, BOT_Y + 14, 55, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      /* ══ 2. Bottom cap ══ */
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(CX, BOT_Y, RX, RY, 0, 0, Math.PI * 2);
+      const bcG = ctx.createRadialGradient(CX - 10, BOT_Y - 4, 0, CX, BOT_Y, RX);
+      bcG.addColorStop(0, isDark ? 'rgba(70,55,40,.7)'  : 'rgba(130,100,60,.6)');
+      bcG.addColorStop(1, isDark ? 'rgba(30,22,14,.85)' : 'rgba(60,40,20,.75)');
+      ctx.fillStyle = bcG;
+      ctx.fill();
+      ctx.strokeStyle = isDark ? 'rgba(90,70,45,.9)' : 'rgba(160,125,75,.9)';
+      ctx.lineWidth   = 2.2;
+      ctx.stroke();
+      ctx.restore();
+
+      /* ══ 3. Clip to cylinder body ══ */
+      ctx.save();
+      makeCylPath(ctx);
+      ctx.clip();
+
+      /* Body tint — glass look */
+      const bG = ctx.createLinearGradient(CX - RX, 0, CX + RX, 0);
+      if (isDark) {
+        bG.addColorStop(0,    'rgba(55,44,30,.55)');
+        bG.addColorStop(0.10, 'rgba(255,255,255,.07)');
+        bG.addColorStop(0.50, 'rgba(255,255,255,.01)');
+        bG.addColorStop(0.90, 'rgba(255,255,255,.04)');
+        bG.addColorStop(1,    'rgba(55,44,30,.4)');
+      } else {
+        bG.addColorStop(0,    'rgba(255,252,245,.32)');
+        bG.addColorStop(0.10, 'rgba(255,255,255,.09)');
+        bG.addColorStop(0.50, 'rgba(255,252,245,.02)');
+        bG.addColorStop(0.90, 'rgba(255,255,255,.06)');
+        bG.addColorStop(1,    'rgba(255,252,245,.22)');
+      }
+      ctx.fillStyle = bG; ctx.fill();
+
+      /* ── Liquid ── */
+      if (lvl > 0.005) {
+        const wAmp = s.pouring ? 7.5 : 3.8;
+        /* wave points */
+        const wPts = [];
+        for (let px = CX - RX + 1; px <= CX + RX - 1; px++) {
+          const p  = (px - (CX - RX)) / (2 * RX);
+          const w  = Math.sin(p * Math.PI * 3.2 + s.t * 2.6) * wAmp * 0.52
+                   + Math.sin(p * Math.PI * 6.8 + s.t * 1.8) * wAmp * 0.26
+                   + Math.cos(p * Math.PI * 2.1 + s.t * 3.6) * wAmp * 0.20
+                   + Math.sin(p * Math.PI * 9.5 - s.t * 1.3) * wAmp * 0.09
+                   + Math.cos(p * Math.PI * 1.0 + s.t * 0.7) * wAmp * 0.06;
+          wPts.push({ x: px, y: liqTop + w });
+        }
+
+        /* liquid body */
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(CX - RX + 1, BOT_Y + 1);
+        ctx.lineTo(wPts[0].x, wPts[0].y);
+        for (let i = 1; i < wPts.length; i++) ctx.lineTo(wPts[i].x, wPts[i].y);
+        ctx.lineTo(CX + RX - 1, BOT_Y + 1);
+        ctx.closePath();
+
+        const lG = ctx.createLinearGradient(0, liqTop, 0, BOT_Y);
+        lG.addColorStop(0,    pal.top);
+        lG.addColorStop(0.40, pal.mid);
+        lG.addColorStop(1,    pal.bot);
+        ctx.fillStyle = lG;
+        ctx.fill();
+
+        /* caustics */
+        s.caustics.forEach(c => {
+          if (c.relY > lvl) return;
+          const cx2  = (CX - RX) + c.relX * 2 * RX;
+          const cy2  = BOT_Y - c.relY * CYL_H;
+          const wx   = cx2 + Math.sin(s.t * c.wobS + c.wobX) * 9;
+          const pls  = 0.4 + 0.28 * Math.sin(s.t * c.speed + c.phase);
+          const rg   = ctx.createRadialGradient(wx, cy2, 0, wx, cy2, c.r * (1.1 + pls));
+          rg.addColorStop(0,   'rgba(255,228,120,.26)');
+          rg.addColorStop(0.5, 'rgba(255,205,90,.09)');
+          rg.addColorStop(1,   'rgba(255,200,80,0)');
+          ctx.fillStyle = rg;
+          ctx.beginPath();
+          ctx.ellipse(wx, cy2, c.r*(1.1+pls), c.r*0.52*(1.1+pls), 0, 0, Math.PI*2);
+          ctx.fill();
+        });
+
+        /* horizontal volumetric sheen */
+        const shAlpha = 0.10 + 0.09 * Math.sin(s.t * 0.45);
+        const shG2 = ctx.createLinearGradient(CX - RX, 0, CX + RX, 0);
+        shG2.addColorStop(0,    'rgba(255,255,255,0)');
+        shG2.addColorStop(0.35, `rgba(255,255,255,${shAlpha})`);
+        shG2.addColorStop(0.50, `rgba(255,255,255,${shAlpha*1.7})`);
+        shG2.addColorStop(0.65, `rgba(255,255,255,${shAlpha})`);
+        shG2.addColorStop(1,    'rgba(255,255,255,0)');
+        ctx.fillStyle = shG2;
+        ctx.fillRect(CX - RX, liqTop, 2 * RX, BOT_Y - liqTop);
+
+        ctx.restore();
+
+        /* bubbles */
+        s.bubbles.forEach((b, i) => {
+          b.y   -= b.vy * (1 + 0.35 * Math.sin(s.t * 1.4 + i));
+          b.x   += Math.sin(s.t * b.ws * 40 + b.wx) * 0.25;
+          b.life -= 0.007;
+          if (b.y < liqTop || b.life <= 0) { b.dead = true; return; }
+          ctx.save();
+          ctx.globalAlpha = b.life * 0.65;
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+          const bG2 = ctx.createRadialGradient(b.x - b.r*0.3, b.y - b.r*0.3, 0, b.x, b.y, b.r);
+          bG2.addColorStop(0, 'rgba(255,255,255,.75)');
+          bG2.addColorStop(0.5,'rgba(255,255,255,.25)');
+          bG2.addColorStop(1, 'rgba(255,255,255,.04)');
+          ctx.fillStyle = bG2; ctx.fill();
+          ctx.strokeStyle = 'rgba(255,255,255,.5)';
+          ctx.lineWidth = 0.5; ctx.stroke();
+          ctx.restore();
+        });
+        s.bubbles = s.bubbles.filter(b => !b.dead);
+      }
+
+      /* glass specular strips (left & right) */
+      const hl1 = ctx.createLinearGradient(CX - RX, 0, CX - RX + 22, 0);
+      hl1.addColorStop(0, isDark ? 'rgba(255,255,255,.20)' : 'rgba(255,255,255,.48)');
+      hl1.addColorStop(0.6,'rgba(255,255,255,.06)');
+      hl1.addColorStop(1,  'rgba(255,255,255,0)');
+      ctx.fillStyle = hl1; ctx.fillRect(CX - RX, TOP_Y, 22, CYL_H);
+
+      const hl2 = ctx.createLinearGradient(CX - RX, 0, CX - RX + 5, 0);
+      hl2.addColorStop(0, 'rgba(255,255,255,.62)');
+      hl2.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = hl2; ctx.fillRect(CX - RX, TOP_Y, 5, CYL_H);
+
+      const hr = ctx.createLinearGradient(CX + RX - 14, 0, CX + RX, 0);
+      hr.addColorStop(0, 'rgba(255,255,255,0)');
+      hr.addColorStop(1, isDark ? 'rgba(255,255,255,.12)' : 'rgba(255,255,255,.22)');
+      ctx.fillStyle = hr; ctx.fillRect(CX + RX - 14, TOP_Y, 14, CYL_H);
+
+      /* horizontal weld rings (industrial detail) */
+      [0.25, 0.50, 0.75].forEach(pos => {
+        const wy = TOP_Y + pos * CYL_H;
+        const rG = ctx.createLinearGradient(CX - RX, wy - 2, CX - RX, wy + 3);
+        rG.addColorStop(0, 'rgba(0,0,0,.12)');
+        rG.addColorStop(0.5,isDark ? 'rgba(255,255,255,.08)' : 'rgba(255,255,255,.18)');
+        rG.addColorStop(1, 'rgba(0,0,0,.08)');
+        ctx.fillStyle = rG;
+        ctx.fillRect(CX - RX + 1, wy - 2, 2 * RX - 2, 4);
+      });
+
+      ctx.restore(); /* end clip */
+
+      /* ══ 4. Cylinder border stroke ══ */
+      ctx.save();
+      makeCylPath(ctx);
+      ctx.strokeStyle = isDark ? 'rgba(100,80,50,.85)' : 'rgba(190,155,95,.9)';
+      ctx.lineWidth   = 2.8;
+      ctx.stroke();
+      /* metallic edge highlight */
+      makeCylPath(ctx);
+      ctx.strokeStyle = isDark ? 'rgba(255,255,255,.07)' : 'rgba(255,255,255,.22)';
+      ctx.lineWidth   = 1;
+      ctx.stroke();
+      ctx.restore();
+
+      /* ══ 5. Liquid surface ellipse ══ */
+      if (lvl > 0.02 && liqTop > TOP_Y + RY + 2) {
+        ctx.save();
+        makeCylPath(ctx);
+        ctx.clip();
+        const surfOsc = Math.sin(s.t * 2.0) * 1.6 + Math.cos(s.t * 1.4) * 0.8;
+        const surfY   = liqTop + surfOsc;
+        ctx.beginPath();
+        ctx.ellipse(CX, surfY, RX - 4, RY - 2, 0, 0, Math.PI * 2);
+        const sfG = ctx.createRadialGradient(CX - 12, surfY - 3, 0, CX, surfY, RX - 4);
+        sfG.addColorStop(0,   'rgba(255,240,170,.82)');
+        sfG.addColorStop(0.35, pal.surf);
+        sfG.addColorStop(1,   'rgba(100,70,40,.15)');
+        ctx.fillStyle = sfG; ctx.fill();
+        /* foam specks */
+        const fa = 0.20 + 0.13 * Math.sin(s.t * 2.4);
+        ctx.beginPath();
+        ctx.ellipse(CX - 6, surfY - 2, 20, 5, 0, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${fa})`; ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(CX + 12, surfY + 1, 11, 3.2, 0.25, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${fa * 0.6})`; ctx.fill();
+        /* surface ring */
+        ctx.beginPath();
+        ctx.ellipse(CX, surfY, RX - 4, RY - 2, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = pal.ring;
+        ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.restore();
+      }
+
+      /* ══ 6. Neck + funnel ══ */
+      const nRx = 24, nRy = 7;
+      ctx.save();
+      /* funnel connecting body-top to neck */
+      ctx.beginPath();
+      ctx.moveTo(CX - nRx, TOP_Y);
+      ctx.bezierCurveTo(CX - nRx, TOP_Y - 8, CX - nRx + 2, TOP_Y - 14, CX - nRx + 4, TOP_Y - 18);
+      ctx.lineTo(CX + nRx - 4, TOP_Y - 18);
+      ctx.bezierCurveTo(CX + nRx - 2, TOP_Y - 14, CX + nRx, TOP_Y - 8, CX + nRx, TOP_Y);
+      const nkG = ctx.createLinearGradient(CX - nRx, 0, CX + nRx, 0);
+      nkG.addColorStop(0,   isDark ? 'rgba(55,44,30,.75)' : 'rgba(255,255,255,.60)');
+      nkG.addColorStop(0.5, isDark ? 'rgba(28,22,14,.45)' : 'rgba(255,252,245,.22)');
+      nkG.addColorStop(1,   isDark ? 'rgba(55,44,30,.60)' : 'rgba(255,255,255,.45)');
+      ctx.fillStyle = nkG; ctx.fill();
+      ctx.strokeStyle = isDark ? 'rgba(100,80,50,.85)' : 'rgba(190,155,95,.9)';
+      ctx.lineWidth   = 2.2; ctx.stroke();
+      /* neck tube */
+      ctx.beginPath();
+      ctx.roundRect(CX - nRx + 4, TOP_Y - 18, (nRx - 4) * 2, 14, 4);
+      ctx.fillStyle = nkG; ctx.fill();
+      ctx.strokeStyle = isDark ? 'rgba(100,80,50,.85)' : 'rgba(190,155,95,.9)';
+      ctx.lineWidth   = 2.2; ctx.stroke();
+      /* neck cap ellipse */
+      ctx.beginPath();
+      ctx.ellipse(CX, TOP_Y - 18, nRx - 4, nRy - 1, 0, 0, Math.PI * 2);
+      const ncG = ctx.createRadialGradient(CX - 6, TOP_Y - 21, 0, CX, TOP_Y - 18, nRx - 4);
+      ncG.addColorStop(0, isDark ? 'rgba(80,65,45,.8)' : 'rgba(255,252,245,.9)');
+      ncG.addColorStop(1, isDark ? 'rgba(40,32,22,.6)' : 'rgba(210,185,140,.7)');
+      ctx.fillStyle = ncG; ctx.fill();
+      ctx.strokeStyle = isDark ? 'rgba(100,80,50,.85)' : 'rgba(190,155,95,.9)';
+      ctx.lineWidth   = 2; ctx.stroke();
+      /* neck specular */
+      ctx.beginPath();
+      ctx.ellipse(CX - 5, TOP_Y - 19, 9, 2.5, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,.50)'; ctx.fill();
+      ctx.restore();
+
+      /* ══ 7. Top cap ellipse ══ */
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(CX, TOP_Y, RX + 3, RY + 2, 0, 0, Math.PI * 2);
+      const tcG = ctx.createRadialGradient(CX - 14, TOP_Y - 5, 0, CX, TOP_Y, RX + 3);
+      tcG.addColorStop(0, isDark ? 'rgba(80,65,45,.82)' : 'rgba(255,252,248,.9)');
+      tcG.addColorStop(0.6, isDark ? 'rgba(55,44,30,.7)' : 'rgba(225,195,145,.75)');
+      tcG.addColorStop(1, isDark ? 'rgba(30,22,14,.6)' : 'rgba(170,135,85,.55)');
+      ctx.fillStyle = tcG; ctx.fill();
+      ctx.strokeStyle = isDark ? 'rgba(100,80,50,.88)' : 'rgba(175,140,80,.92)';
+      ctx.lineWidth   = 2.5; ctx.stroke();
+      /* highlight strip on cap */
+      ctx.beginPath();
+      ctx.ellipse(CX - 10, TOP_Y - 3, 16, 4.5, -0.1, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,.48)'; ctx.fill();
+      ctx.restore();
+
+      /* ══ 8. Steam particles ══ */
+      s.steam.forEach(p => {
+        p.x    += p.vx;
+        p.y    += p.vy;
+        p.r    += 0.06;
+        p.life -= 0.022;
+        if (p.life <= 0) { p.dead = true; return; }
+        ctx.save();
+        ctx.globalAlpha = p.life * 0.28;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = isDark ? 'rgba(200,180,140,.7)' : 'rgba(255,255,255,.8)';
+        ctx.fill();
+        ctx.restore();
+      });
+      s.steam = s.steam.filter(p => !p.dead);
+
+      /* ══ 9. LED level indicator strip (right side) ══ */
+      const ledX   = CX + RX + 6;
+      const ledH   = CYL_H;
+      const ledTop = TOP_Y;
+      const nLed   = 16;
+      for (let i = 0; i < nLed; i++) {
+        const segFrac = (nLed - 1 - i) / (nLed - 1);
+        const lit     = segFrac <= lvl;
+        const segY    = ledTop + (i / (nLed - 1)) * ledH;
+        const col     = lvl >= 0.50 ? (lit ? 'rgba(34,197,94,.95)'  : 'rgba(34,197,94,.12)')
+                      : lvl >= 0.20 ? (lit ? 'rgba(245,158,11,.95)' : 'rgba(245,158,11,.12)')
+                      :               (lit ? 'rgba(239,68,68,.95)'  : 'rgba(239,68,68,.12)');
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(ledX, segY, 5, (ledH / nLed) * 0.72, 1.5);
+        ctx.fillStyle = col;
+        ctx.fill();
+        if (lit) {
+          ctx.shadowColor  = col.replace('.95)', '.6)');
+          ctx.shadowBlur   = 4;
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      s.rafId = requestAnimationFrame(frame);
+    }
+
+    stateRef.current.rafId = requestAnimationFrame(frame);
+    return () => { cancelAnimationFrame(stateRef.current.rafId); };
+  }, []);
+
+  const lvl = Math.min(Math.max(stateRef.current.level, 0), 1);
+  const kgVal = (stateRef.current.target * MAX_KG);
+  const colKg = kgVal / MAX_KG >= 0.50 ? 'var(--gr)' : kgVal / MAX_KG >= 0.20 ? 'var(--ad)' : 'var(--re)';
+
+  return (
+    <div className="cyl-wrap-r">
+      <div className={levelClass} style={{ display:'inline-block' }}>
+        <canvas ref={canvasRef} className="cyl-canvas-r" width={W} height={H} />
+      </div>
+      {/* floating KG badge */}
+      <div className="clbl" id="cyl-badge">
+        <big id="cpct" style={{ color: colKg }}>{displayKg}</big>
+        <small>kg / {MAX_KG}</small>
+      </div>
+      {/* scale marks */}
+      <div className="cyl-marks">
+        {[300,225,150,75,0].map(v => (
+          <span key={v}><div className="tick"></div>{v}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* Mount */
+const _initFraction = Math.min(Math.max(
+  (window.masa !== undefined ? window.masa : 150) / 300, 0), 1);
+
+const root = ReactDOM.createRoot(document.getElementById('cyl-react-root'));
+root.render(<TankCylinder initialFraction={_initFraction} />);
 </script>
 </body>
 </html>
