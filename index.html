@@ -807,7 +807,7 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
 
       <!-- CILINDRO CANVAS v5 -->
       <div class="cyl-outer" id="cyl-wrapper">
-        <canvas id="cylCanvas" width="160" height="340"></canvas>
+        <canvas id="cylCanvas" width="170" height="350"></canvas>
         <div class="clbl">
           <big id="cpct">50.0</big>
           <small>kg</small>
@@ -1165,20 +1165,52 @@ function sndHover(){if(!checkSnd())return;try{const ac=getAC(),out=getMaster(),t
 function startAmbient(){if(ambInt)return;ambInt=setInterval(()=>{try{const ac=getAC(),out=getMaster(),t=ac.currentTime;const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=2400+Math.random()*300;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.013,t+.008);g.gain.exponentialRampToValueAtTime(.001,t+.055);o.connect(g);g.connect(out);o.start(t);o.stop(t+.06);}catch{}},4200);}
 document.addEventListener('click',()=>{getAC();startAmbient();},{once:true});
 
-// ── TTS ──
-if(window.speechSynthesis){window.speechSynthesis.onvoiceschanged=()=>{};}
+// ── TTS — Natural, anti-stutter ──
+var _speakTimer = null;
+if(window.speechSynthesis){ window.speechSynthesis.onvoiceschanged = function(){}; }
+
 function speak(txt){
-  if(!soundEnabled||!window.speechSynthesis)return;
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(txt);
-  u.lang='es-MX';u.rate=0.92;u.pitch=1.18;u.volume=0.88;
-  const vv=speechSynthesis.getVoices();
-  const femKws=['female','mujer','woman','sabina','paulina','mónica','monica','lucia','lucía'];
-  const isF=v=>femKws.some(k=>v.name.toLowerCase().includes(k));
-  const v=vv.find(v=>v.lang==='es-MX'&&isF(v))||vv.find(v=>v.lang==='es-MX')||vv.find(v=>v.lang.startsWith('es')&&isF(v))||vv.find(v=>v.lang.startsWith('es'))||null;
-  if(v)u.voice=v;
-  speechSynthesis.speak(u);
+  if(!soundEnabled || !window.speechSynthesis) return;
+  // Clear any pending speak
+  if(_speakTimer){ clearTimeout(_speakTimer); _speakTimer=null; }
+  try{ speechSynthesis.cancel(); }catch(e){}
+  // Small delay after cancel to avoid chrome stutter bug
+  _speakTimer = setTimeout(function(){
+    try{
+      var u = new SpeechSynthesisUtterance(txt);
+      u.lang    = 'es-MX';
+      u.rate    = 0.86;    // slightly slower = more natural
+      u.pitch   = 1.02;    // close to 1 = less robotic
+      u.volume  = 0.82;
+      // Pick best available Spanish voice
+      var vv = speechSynthesis.getVoices();
+      var v = null;
+      // Preferred voices (natural-sounding)
+      var prefer = ['Paulina','Luciana','Monica','Mónica','Sabina','Jorge',
+                    'Marisol','Juan','Google español','Microsoft'];
+      for(var i=0; i<prefer.length && !v; i++){
+        v = vv.find(function(x){ return x.name.indexOf(prefer[i]) >= 0; });
+      }
+      // Fallback: any es-MX, then any es
+      if(!v) v = vv.find(function(x){ return x.lang==='es-MX'; });
+      if(!v) v = vv.find(function(x){ return x.lang==='es-MX' || x.lang.startsWith('es'); });
+      if(v) u.voice = v;
+      u.onerror   = function(){}; // suppress errors silently
+      u.onend     = function(){};
+      speechSynthesis.speak(u);
+    }catch(e){}
+  }, 180);
 }
+
+// Chrome workaround: speechSynthesis pauses after ~15s — keep it alive
+setInterval(function(){
+  try{
+    if(window.speechSynthesis && speechSynthesis.speaking){
+      speechSynthesis.pause();
+      speechSynthesis.resume();
+    }
+  }catch(e){}
+}, 9000);
 
 // ── LOADER ──
 (function(){
@@ -1245,12 +1277,12 @@ function drawCylinder(){
   var canvas=document.getElementById('cylCanvas');
   if(!canvas)return;
   var ctx=canvas.getContext('2d');
-  var W=160,H=340;
+  var W=170,H=350;
   var isDark=document.documentElement.getAttribute('data-theme')==='dark';
   ctx.clearRect(0,0,W,H);
 
-  var rx=52,ry=14,cx=W/2;
-  var topY=28,botY=H-16,cylH=botY-topY;
+  var rx=58,ry=16,cx=W/2;
+  var topY=32,botY=H-18,cylH=botY-topY;
   var lvl=Math.min(Math.max(cylState.level,0),1);
   var liqTop=botY-lvl*cylH;
 
@@ -1289,20 +1321,30 @@ function drawCylinder(){
   // ── 3. Liquid fill ──
   if(lvl>0.005){
     ctx.save();
-    // Wave path
-    ctx.beginPath();
-    var wAmp=cylState.pouring?5:2.5;
-    ctx.moveTo(cx-rx,botY);
-    ctx.lineTo(cx-rx,liqTop+wAmp+1);
-    // Top wave (left→right)
-    for(var px=cx-rx;px<=cx+rx;px+=1.5){
-      var prog=(px-(cx-rx))/(2*rx);
-      var wave=Math.sin(prog*Math.PI*4+cylState.t*2.2)*wAmp*0.7
-              +Math.sin(prog*Math.PI*7+cylState.t*1.5)*wAmp*0.3
-              +Math.cos(prog*Math.PI*2.5+cylState.t*3)*wAmp*0.25;
-      ctx.lineTo(px,liqTop+wave);
+    // Wave amplitude: bigger when pouring, always visible
+    var wAmp = cylState.pouring ? 7 : 3.5;
+    var t = cylState.t;
+
+    // Build wave top edge (left→right)
+    var wavePoints = [];
+    for(var px = cx-rx+1; px <= cx+rx-1; px += 1){
+      var prog = (px-(cx-rx)) / (2*rx);
+      // Three overlapping sine waves for natural water motion
+      var wave = Math.sin(prog*Math.PI*3   + t*2.8) * wAmp * 0.55
+               + Math.sin(prog*Math.PI*6.5 + t*1.9) * wAmp * 0.28
+               + Math.cos(prog*Math.PI*2.0 + t*3.5) * wAmp * 0.22
+               + Math.sin(prog*Math.PI*9   - t*1.4) * wAmp * 0.10;
+      wavePoints.push({x: px, y: liqTop + wave});
     }
-    ctx.lineTo(cx+rx,botY);
+
+    // Draw liquid body: rectangle-ish from bottom up to wave line
+    ctx.beginPath();
+    ctx.moveTo(cx-rx+1, botY);
+    ctx.lineTo(cx-rx+1, wavePoints[0].y);
+    for(var wi=0; wi<wavePoints.length; wi++){
+      ctx.lineTo(wavePoints[wi].x, wavePoints[wi].y);
+    }
+    ctx.lineTo(cx+rx-1, botY);
     ctx.closePath();
 
     var liqGrad=ctx.createLinearGradient(0,liqTop,0,botY);
@@ -1412,22 +1454,29 @@ function drawCylinder(){
   ctx.lineWidth=2.5;ctx.stroke();
   ctx.restore();
 
-  // ── 7. Liquid surface ellipse ──
+  // ── 7. Liquid surface ellipse (animates with wave) ──
   if(lvl>0.02&&liqTop>topY+ry+2){
     ctx.save();
+    // Animate surface Y with wave
+    var surfY = liqTop + Math.sin(cylState.t*2.1)*1.8 + Math.cos(cylState.t*1.3)*0.9;
+    // Clip to inside cylinder walls
+    cylPath(ctx, cx, topY, botY, rx, ry);
+    ctx.clip();
     ctx.beginPath();
-    ctx.ellipse(cx,liqTop,rx-5,ry-3,0,0,Math.PI*2);
-    var surfGrad=ctx.createRadialGradient(cx-8,liqTop-2,0,cx,liqTop,rx-5);
-    surfGrad.addColorStop(0,'rgba(255,235,160,.6)');
-    surfGrad.addColorStop(0.4,cSurf);
-    surfGrad.addColorStop(1,'rgba(100,70,40,.25)');
-    ctx.fillStyle=surfGrad;
-    ctx.fill();
-    // Shimmer on surface
+    ctx.ellipse(cx, surfY, rx-3, ry-2, 0, 0, Math.PI*2);
+    var surfGrad=ctx.createRadialGradient(cx-10, surfY-2, 0, cx, surfY, rx-3);
+    surfGrad.addColorStop(0,'rgba(255,240,180,.75)');
+    surfGrad.addColorStop(0.35,cSurf);
+    surfGrad.addColorStop(1,'rgba(100,70,40,.2)');
+    ctx.fillStyle=surfGrad;ctx.fill();
+    // Animated foam ring on surface
+    var foamAlpha = 0.18 + 0.12*Math.sin(cylState.t*2.5);
     ctx.beginPath();
-    ctx.ellipse(cx-5,liqTop-1,16,4,0,0,Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,'+(0.15+0.1*Math.sin(cylState.t*2))+')';
-    ctx.fill();
+    ctx.ellipse(cx-4, surfY-1, 18, 4.5, 0, 0, Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,'+foamAlpha+')';ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx+8, surfY+0.5, 10, 3, 0.3, 0, Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,'+(foamAlpha*0.7)+')';ctx.fill();
     ctx.restore();
   }
 
@@ -1441,12 +1490,22 @@ function drawCylinder(){
 }
 
 function cylPath(ctx,cx,topY,botY,rx,ry){
+  // Correct cylinder path:
+  // - Left wall (vertical, constant x)
+  // - Bottom arc from left→bottom→right (anticlockwise through π/2)
+  // - Right wall (vertical, constant x)
+  // - Top arc from right→top→left (anticlockwise through 3π/2 = -π/2)
   ctx.beginPath();
-  ctx.moveTo(cx-rx,topY);
-  ctx.lineTo(cx-rx,botY);
-  ctx.ellipse(cx,botY,rx,ry,0,0,Math.PI);
-  ctx.lineTo(cx+rx,topY);
-  ctx.ellipse(cx,topY,rx,ry,0,Math.PI,0);
+  ctx.moveTo(cx-rx, topY);               // top-left corner
+  ctx.lineTo(cx-rx, botY);               // straight down left wall
+  // From (cx-rx,botY) = angle π, go anticlockwise (decreasing) to 0 = (cx+rx,botY)
+  // Anticlockwise from π→π/2→0 passes through the BOTTOM of the ellipse ✓
+  ctx.ellipse(cx, botY, rx, ry, 0, Math.PI, 0, true);
+  // Now at (cx+rx, botY)
+  ctx.lineTo(cx+rx, topY);               // straight up right wall
+  // From (cx+rx,topY) = angle 0, go anticlockwise (decreasing) to π = (cx-rx,topY)
+  // Anticlockwise from 0→-π/2→-π passes through the TOP of the ellipse ✓
+  ctx.ellipse(cx, topY, rx, ry, 0, 0, Math.PI, true);
   ctx.closePath();
 }
 
