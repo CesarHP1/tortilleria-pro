@@ -706,7 +706,85 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
   nav{padding:0 1rem}
   .nr .ntm{display:none}
 }
-</style>
+
+/* ════════════════════════════════════════════
+   PERFORMANCE — CSS containment
+   ════════════════════════════════════════════ */
+.sc,.panel,.ic,.oc,.sr,.prow{ contain:layout style; }
+#cylCanvas{ will-change:transform; }
+.sg{ contain:layout; }
+
+/* ════════════════════════════════════════════
+   LOGIN / USER SYSTEM
+   ════════════════════════════════════════════ */
+#login-screen{
+  position:fixed;inset:0;z-index:99000;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;padding:1.5rem;
+}
+#login-screen.hidden{display:none}
+.ls-card{
+  background:var(--sur);border:1.5px solid var(--bor);
+  border-radius:28px;padding:2.5rem 2.25rem 2rem;
+  width:100%;max-width:400px;
+  box-shadow:0 32px 80px rgba(0,0,0,.14);
+  display:flex;flex-direction:column;gap:1.1rem;
+  animation:lsIn .45s cubic-bezier(.34,1.4,.64,1) both;
+}
+@keyframes lsIn{from{opacity:0;transform:translateY(28px) scale(.96)}to{opacity:1;transform:none}}
+.ls-logo{
+  width:64px;height:64px;border-radius:18px;
+  background:linear-gradient(135deg,var(--a),var(--ad));
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;margin:0 auto .5rem;
+  box-shadow:0 8px 24px rgba(245,158,11,.4);
+}
+.ls-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.1em;text-align:center;color:var(--s1)}
+.ls-sub{font-size:.72rem;font-weight:700;text-align:center;color:var(--s4);text-transform:uppercase;letter-spacing:.15em;margin-top:-.5rem}
+.ls-err{background:var(--rl);color:var(--re);border:1.5px solid rgba(220,38,38,.2);border-radius:10px;padding:.55rem .85rem;font-size:.82rem;font-weight:700;text-align:center;display:none}
+.ls-err.show{display:block}
+.ls-input-wrap{display:flex;flex-direction:column;gap:.35rem}
+.ls-tab-row{display:flex;gap:.3rem;background:var(--bg);border-radius:11px;padding:.28rem;border:1.5px solid var(--bor);margin-bottom:.25rem}
+.ls-tab{flex:1;border:none;background:transparent;border-radius:8px;padding:.42rem;font-weight:700;font-size:.82rem;cursor:pointer;transition:.18s;color:var(--s4);font-family:'DM Sans',sans-serif}
+.ls-tab.on{background:var(--sur);color:var(--s1);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.ls-hint{font-size:.65rem;color:var(--s4);text-align:center;font-weight:600}
+.ls-user-chip{
+  display:inline-flex;align-items:center;gap:.45rem;
+  background:var(--al);border:1.5px solid var(--corn);
+  border-radius:10px;padding:.38rem .75rem;
+  font-weight:700;font-size:.8rem;cursor:pointer;transition:.18s;
+  margin:.1rem;
+}
+.ls-user-chip:hover{background:var(--a);color:#fff;border-color:var(--a)}
+.ls-user-chip.selected{background:var(--a);color:#fff;border-color:var(--ad)}
+.ls-users-grid{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.2rem}
+
+/* User badge in nav */
+.nav-user-badge{
+  display:flex;align-items:center;gap:.4rem;
+  background:var(--al);border:1.5px solid var(--corn);
+  border-radius:10px;padding:.3rem .65rem;cursor:pointer;transition:.18s;
+}
+.nav-user-badge:hover{background:var(--a);color:#fff;border-color:var(--a)}
+.nav-user-badge .uname{font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.05em;color:var(--ad)}
+.nav-user-badge:hover .uname{color:#fff}
+.nav-user-badge .uavatar{width:22px;height:22px;border-radius:50%;background:var(--a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900}
+
+/* Admin user panel */
+.urow{
+  display:flex;align-items:center;gap:.55rem;padding:.6rem .75rem;
+  border-radius:11px;border:1.5px solid var(--bor);background:var(--bg);
+  margin-bottom:.4rem;transition:.15s;
+}
+.urow:hover{border-color:var(--bor2)}
+.uav2{width:34px;height:34px;border-radius:50%;background:var(--pul);color:var(--pu);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:.95rem;font-weight:900;flex-shrink:0}
+.uav2.admin{background:var(--al);color:var(--ad)}
+.uinfo{flex:1;min-width:0}
+.uinfo strong{display:block;font-weight:700;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uinfo small{font-size:.62rem;color:var(--s4);font-family:'Space Mono',monospace}</style>
 </head>
 <body>
 
@@ -744,6 +822,10 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
       <div class="tm" id="nt2"></div>
     </div>
     <button class="btn-rpt" onclick="abrirReporte()" title="Reporte del Día (R)">📊 REPORTE</button>
+    <div class="nav-user-badge" onclick="openM('m-users')" title="Gestión de usuarios" id="nav-user-badge">
+      <div class="uavatar" id="nav-uavatar">?</div>
+      <span class="uname" id="nav-uname">—</span>
+    </div>
     <button class="dark-toggle" onclick="toggleDark()" title="Modo claro/oscuro">
       <span class="icon-sun">☀️</span>
       <span class="icon-moon">🌙</span>
@@ -1015,7 +1097,13 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
         <input type="password" id="apc" placeholder="••••••••" style="width:100%"/>
       </div>
     </div>
-    <div class="mf"><button class="btn bna btn-block btn-lg" onclick="savePrecios()">💾 Guardar Cambios</button></div>
+    <div class="mf" style="display:flex;flex-direction:column;gap:.5rem">
+      <button class="btn bna btn-block btn-lg" onclick="savePrecios()">💾 Guardar Cambios</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+        <button class="btn" style="background:var(--pul);color:var(--pu);border:1.5px solid var(--pu)" onclick="closeM('mp');openM('m-users')">👥 Usuarios</button>
+        <button class="btn bnr" onclick="if(confirm('¿Cerrar sesión de '+activeUser+'?')){doLogout()}">🚪 Cerrar Sesión</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1112,47 +1200,260 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
 'use strict';
 
 // ══════════════════════════════════════════
-//  STORAGE HELPERS
+//  USER SYSTEM
+// ══════════════════════════════════════════
+const APP_PFX   = 'tp_';          // app namespace
+const USERS_KEY = APP_PFX + 'users';
+const SESS_KEY  = APP_PFX + 'session';
+const SESS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+/* Simple deterministic hash (obfuscation, not crypto) */
+function hashPass(p){
+  let h = 5381;
+  for(let i=0;i<p.length;i++) h = ((h<<5)+h) ^ p.charCodeAt(i);
+  return (h>>>0).toString(36);
+}
+/* Raw storage (not user-namespaced) */
+function rawGet(k){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):null}catch{return null}}
+function rawSet(k,v){try{if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v))}catch{}}
+
+function getUsers(){ return rawGet(USERS_KEY) || {}; }
+function saveUsers(u){ rawSet(USERS_KEY, u); }
+
+/* Active user (set after login) */
+let activeUser = null;
+
+/* Check if valid session exists */
+function checkSession(){
+  const sess = rawGet(SESS_KEY);
+  if(!sess || !sess.user || sess.expires < Date.now()) return false;
+  const users = getUsers();
+  if(!users[sess.user]) return false;
+  activeUser = sess.user;
+  return true;
+}
+
+/* Login */
+function authLogin(username, password){
+  const users = getUsers();
+  const key = username.toLowerCase().trim();
+  if(!users[key]) return 'Usuario no encontrado';
+  if(users[key].hash !== hashPass(password)) return 'Contraseña incorrecta';
+  rawSet(SESS_KEY, { user: key, expires: Date.now() + SESS_DURATION });
+  activeUser = key;
+  return null;
+}
+
+/* Create new user (anyone can create, no admin needed) */
+function createUser(username, password){
+  const key = username.toLowerCase().trim().replace(/[^a-z0-9_\-]/g,'');
+  if(!key || key.length < 2) return 'Nombre de usuario inválido (mín 2 chars, solo letras/números/guiones)';
+  if(password.length < 4) return 'Contraseña muy corta (mín 4 caracteres)';
+  const users = getUsers();
+  if(users[key]) return 'Ese usuario ya existe';
+  users[key] = { hash: hashPass(password), created: Date.now(), isAdmin: Object.keys(users).length === 0 };
+  saveUsers(users);
+  rawSet(SESS_KEY, { user: key, expires: Date.now() + SESS_DURATION });
+  activeUser = key;
+  return null;
+}
+
+/* Admin reset password */
+function adminResetPassword(adminPass, targetUser, newPass){
+  const users = getUsers();
+  // Admin = user marked isAdmin OR the user that knows master admin pass stored globally
+  const callerIsAdmin = Object.values(users).some(u => u.hash === hashPass(adminPass) && u.isAdmin);
+  if(!callerIsAdmin) return 'Contraseña de administrador incorrecta';
+  const key = targetUser.toLowerCase().trim();
+  if(!users[key]) return 'Usuario no encontrado';
+  users[key].hash = hashPass(newPass);
+  saveUsers(users);
+  return null;
+}
+
+/* Admin delete user */
+function adminDeleteUserFn(adminPass, targetUser){
+  const users = getUsers();
+  const callerIsAdmin = Object.values(users).some(u => u.hash === hashPass(adminPass) && u.isAdmin);
+  if(!callerIsAdmin) return 'Contraseña de administrador incorrecta';
+  const key = targetUser.toLowerCase().trim();
+  if(!users[key]) return 'Usuario no encontrado';
+  if(users[key].isAdmin && Object.values(users).filter(u=>u.isAdmin).length<=1)
+    return 'No puedes eliminar al único administrador';
+  delete users[key];
+  saveUsers(users);
+  // Delete all user data
+  const prefix = APP_PFX + 'u_' + key + '_';
+  Object.keys(localStorage).filter(k=>k.startsWith(prefix)).forEach(k=>localStorage.removeItem(k));
+  return null;
+}
+
+/* Logout */
+function doLogout(){
+  rawSet(SESS_KEY, null);
+  activeUser = null;
+  location.reload();
+}
+
+// ══════════════════════════════════════════
+//  STORAGE HELPERS (user-namespaced)
 // ══════════════════════════════════════════
 const DEF={
   masa:150,
   precios:{'Tortilla blanca':15,'Tortilla integral':18,'Tortilla harina':12,'Taco':8},
-  ventas:[],pedidos:[],folio:1,pass:'Cesar2106'
+  ventas:[],pedidos:[],folio:1,pass:'admin'
 };
-function gs(k){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):DEF[k]}catch{return DEF[k]}}
-function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
-
-let masa=gs('masa'), precios=gs('precios'), ventas=gs('ventas'),
-    pedidos=gs('pedidos'), folio=gs('folio'), pass=gs('pass'),
-    contactosWA=gs('contactosWA')||[];
-window.masa = masa; // expose for React cylinder init
-
-// ── BITÁCORA ──
-const HOY=new Date().toISOString().split('T')[0];
-const diaGuardado=gs('diaActual')||'';
-let bitacora=[], masaInicioHoy=0;
-
-if(diaGuardado!==HOY){
-  const prev=gs('bitacora')||[];
-  if(diaGuardado&&prev.length){const arch=gs('archDias')||[];arch.push({fecha:diaGuardado,ops:prev,masaFin:masa});ss('archDias',arch.slice(-30));}
-  bitacora=[];masaInicioHoy=masa;
-  ss('diaActual',HOY);ss('masaInicioHoy',masa);ss('bitacora',[]);
-}else{
-  bitacora=gs('bitacora')||[];
-  masaInicioHoy=gs('masaInicioHoy')!==null?gs('masaInicioHoy'):masa;
+function userPfx(){ return APP_PFX + 'u_' + (activeUser||'guest') + '_'; }
+function gs(k){
+  try{const v=localStorage.getItem(userPfx()+k);return v!==null?JSON.parse(v):DEF[k]}
+  catch{return DEF[k]}
+}
+function ss(k,v){
+  try{localStorage.setItem(userPfx()+k,JSON.stringify(v))}catch{}
 }
 
-function save(){ss('masa',masa);ss('precios',precios);ss('ventas',ventas);ss('pedidos',pedidos);ss('folio',folio);ss('pass',pass);window.masa=masa;}
-function saveBit(){ss('bitacora',bitacora);}
-function logOp(tipo,datos){
-  const hora=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
-  bitacora.push({id:Date.now(),hora,tipo,...datos});saveBit();
+// ── INIT: check session or show login ──
+(function initUserSystem(){
+  if(checkSession()){
+    // Valid session — hide login, show app
+    document.getElementById('login-screen').classList.add('hidden');
+    bootApp();
+  } else {
+    // Show login
+    renderLoginUsers();
+  }
+})();
+
+// ══════════════════════════════════════════
+//  LOGIN UI LOGIC
+// ══════════════════════════════════════════
+var lsSelectedUser = null;
+
+function lsTab(t){
+  document.getElementById('ls-tab-login').classList.toggle('on',t==='login');
+  document.getElementById('ls-tab-nuevo').classList.toggle('on',t==='nuevo');
+  document.getElementById('ls-login-form').style.display = t==='login'?'flex':'none';
+  document.getElementById('ls-nuevo-form').style.display = t==='nuevo'?'flex':'none';
+  document.getElementById('ls-nuevo-form').style.flexDirection = 'column';
+  lsErr('');
 }
 
-let vProd='', pedProds=[], pedAct=null, venElim=null, waSel=null;
-var carrito=[];
+function lsErr(msg){
+  const el = document.getElementById('ls-err');
+  el.textContent = msg;
+  el.classList.toggle('show', !!msg);
+}
+
+function renderLoginUsers(){
+  const users = getUsers();
+  const grid = document.getElementById('ls-users-grid');
+  if(!grid) return;
+  const keys = Object.keys(users);
+  if(keys.length === 0){
+    grid.innerHTML = '<p style="font-size:.75rem;color:var(--s4);font-weight:600">No hay usuarios. Crea uno en la pestaña "Nueva Cuenta".</p>';
+    lsSelectedUser = null;
+    return;
+  }
+  grid.innerHTML = keys.map(k =>
+    `<div class="ls-user-chip ${lsSelectedUser===k?'selected':''}" onclick="selectLsUser('${k}')">
+      <span style="font-size:1rem">${users[k].isAdmin?'👑':'👤'}</span>
+      <span>${k}</span>
+    </div>`
+  ).join('');
+  if(!lsSelectedUser && keys.length) selectLsUser(keys[0]);
+}
+
+function selectLsUser(k){
+  lsSelectedUser = k;
+  renderLoginUsers();
+  document.getElementById('ls-pass').focus();
+}
+
+function doLoginUI(){
+  if(!lsSelectedUser){ lsErr('Selecciona un usuario'); return; }
+  const pass = document.getElementById('ls-pass').value;
+  if(!pass){ lsErr('Ingresa tu contraseña'); return; }
+  const err = authLogin(lsSelectedUser, pass);
+  if(err){ lsErr('❌ '+err); return; }
+  document.getElementById('ls-pass').value = '';
+  document.getElementById('login-screen').classList.add('hidden');
+  bootApp();
+}
+
+function doCrearCuenta(){
+  const user  = (document.getElementById('ls-new-user').value||'').trim();
+  const pass  = document.getElementById('ls-new-pass').value;
+  const pass2 = document.getElementById('ls-new-pass2').value;
+  if(pass !== pass2){ lsErr('❌ Las contraseñas no coinciden'); return; }
+  const err = createUser(user, pass);
+  if(err){ lsErr('❌ '+err); return; }
+  document.getElementById('ls-new-user').value = '';
+  document.getElementById('ls-new-pass').value = '';
+  document.getElementById('ls-new-pass2').value = '';
+  document.getElementById('login-screen').classList.add('hidden');
+  bootApp();
+}
+
+// ── Admin user management UI ──
+function renderUsersList(){
+  const users = getUsers();
+  const el = document.getElementById('users-list');
+  if(!el) return;
+  const keys = Object.keys(users);
+  if(!keys.length){ el.innerHTML = '<p style="text-align:center;color:var(--s4);font-size:.82rem;padding:.5rem">Sin usuarios registrados</p>'; return; }
+  el.innerHTML = keys.map(k => {
+    const u = users[k];
+    const d = new Date(u.created||Date.now()).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
+    return `<div class="urow">
+      <div class="uav2 ${u.isAdmin?'admin':''}">${k.charAt(0).toUpperCase()}</div>
+      <div class="uinfo">
+        <strong>${k} ${u.isAdmin?'👑':''}</strong>
+        <small>Creado: ${d}</small>
+      </div>
+      <span style="font-size:.65rem;font-weight:700;color:var(--s4);font-family:'Space Mono',monospace">${k===activeUser?'🟢 TÚ':''}</span>
+    </div>`;
+  }).join('');
+}
+
+function adminResetPass(){
+  const ap   = (document.getElementById('adm-pass-users').value||'').trim();
+  const user = (document.getElementById('rst-user').value||'').trim();
+  const np   = (document.getElementById('rst-pass').value||'').trim();
+  if(!ap||!user||!np){ toast('Completa todos los campos','e'); return; }
+  const err = adminResetPassword(ap, user, np);
+  if(err){ toast('❌ '+err,'e'); return; }
+  document.getElementById('rst-user').value='';
+  document.getElementById('rst-pass').value='';
+  toast('✅ Contraseña restablecida para '+user);
+}
+
+function adminDeleteUser(){
+  const ap   = (document.getElementById('adm-pass-users').value||'').trim();
+  const user = (document.getElementById('del-user').value||'').trim();
+  if(!ap||!user){ toast('Completa usuario y contraseña admin','e'); return; }
+  if(!confirm('¿Eliminar usuario "'+user+'" y TODOS sus datos permanentemente?')) return;
+  const err = adminDeleteUserFn(ap, user);
+  if(err){ toast('❌ '+err,'e'); return; }
+  document.getElementById('del-user').value='';
+  toast('🗑️ Usuario '+user+' eliminado');
+  renderUsersList();
+}
+
+
+
+// ── APP STATE (populated by bootApp after login) ──
+var masa = 150, precios = {}, ventas = [], pedidos = [],
+    folio = 1, pass = 'admin', contactosWA = [],
+    bitacora = [], masaInicioHoy = 0,
+    vProd = '', pedProds = [], pedAct = null, venElim = null,
+    waSel = null, carrito = [],
+    modoVenta = 'kg', modoPedido = 'kg',
+    preciosList = [];
+
+const HOY = new Date().toISOString().split('T')[0]; // fallback, overridden in bootApp
 
 // ── DARK MODE ──
+// (Applied per-user inside bootApp, but global toggle works always)
 function toggleDark(){
   const d = document.documentElement;
   const isDark = d.getAttribute('data-theme') === 'dark';
@@ -1169,17 +1470,17 @@ function toggleDark(){
     });
   });
 }
-if(gs('darkMode'))document.documentElement.setAttribute('data-theme','dark');
+// (dark mode and sound initialized inside bootApp per-user)
 
 // ── SOUND ──
-var soundEnabled=gs('soundEnabled')!==false;
+var soundEnabled = true; // default; overridden by bootApp
 function toggleSonido(){
   soundEnabled=!soundEnabled;
   ss('soundEnabled',soundEnabled);
   const btn=document.getElementById('sndBtn');
   if(btn){btn.classList.toggle('muted',!soundEnabled);btn.title=soundEnabled?'Silenciar':'Activar sonido';}
 }
-setTimeout(function(){const btn=document.getElementById('sndBtn');if(btn)btn.classList.toggle('muted',!soundEnabled);},100);
+// sound badge updated inside bootApp
 
 // ══════════════════════════════════════════
 //  AUDIO ENGINE
@@ -1249,7 +1550,7 @@ setInterval(function(){
   const ldf=document.getElementById('ldf');
   let p=0;const iv=setInterval(function(){p+=Math.random()*18;if(p>100){p=100;clearInterval(iv);const ld=document.getElementById('loader');if(ld){ld.classList.add('fade-out');setTimeout(function(){ld.style.display='none';},520);}}if(ldf)ldf.style.width=p+'%';},80);
 })();
-setTimeout(function(){speak('Sistema Tortillería Pro cinco punto cero activado. Listo para operar.');},900);
+// welcome speak is inside bootApp
 
 // ── CLOCK ──
 function tick(){
@@ -1383,7 +1684,7 @@ function renderP(){
 }
 
 // ── MODALS ──
-function openM(id){sndClick();document.getElementById(id).classList.add('open');if(id==='mv')buildVProd();if(id==='mpe'){buildPSel();pedProds=[];renderPP();}if(id==='mp')buildPList();}
+function openM(id){sndClick();document.getElementById(id).classList.add('open');if(id==='mv')buildVProd();if(id==='mpe'){buildPSel();pedProds=[];renderPP();}if(id==='mp')buildPList();if(id==='m-users')renderUsersList();}
 function closeM(id){sndClick();document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.mo').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o){sndClick();o.classList.remove('open');}});});
 
@@ -1618,7 +1919,7 @@ function doPedido(){
   if(!hora){toast('Selecciona hora de entrega','e');return;}
   if(!pedProds.length){toast('Agrega al menos un producto','e');return;}
   var prods=[...pedProds];var tot=prods.reduce(function(a,p){return a+(p.c*p.pr);},0);
-  pedidos.push({id:Date.now(),nom:nom,prods:prods,hora:hora,fecha:HOY});
+  pedidos.push({id:Date.now(),nom:nom,prods:prods,hora:hora,fecha:new Date().toISOString().split('T')[0]});
   logOp('PEDIDO_NUEVO',{nom:nom,hora:hora,total:tot,prods:prods});
   pedProds=[];document.getElementById('pc2').value='';document.getElementById('ph2').value='';
   save();renderP();closeM('mpe');toast('Pedido agendado 📋');speak('Pedido para '+nom+' registrado.');
@@ -1923,22 +2224,91 @@ function imprimirPDF(){
   else{toast('Activa ventanas emergentes para el PDF','e');}
 }
 
+
+// ══════════════════════════════════════════
+//  BOOT APP — called after successful login
+// ══════════════════════════════════════════
+function bootApp(){
+  // Load all user data
+  masa        = gs('masa');
+  precios     = gs('precios');
+  ventas      = gs('ventas');
+  pedidos     = gs('pedidos');
+  folio       = gs('folio');
+  pass        = gs('pass');
+  contactosWA = gs('contactosWA') || [];
+  window.masa    = masa;
+  window._appBooted = true;
+  // Mount or update cylinder
+  if(window._mountCylinder) window._mountCylinder();
+  else if(window._setCylTarget) window._setCylTarget(masa/300, false);
+
+  // Bitácora daily reset
+  const HOY_BOOT = new Date().toISOString().split('T')[0];
+  const diaG     = gs('diaActual') || '';
+  if(diaG !== HOY_BOOT){
+    const prev = gs('bitacora') || [];
+    if(diaG && prev.length){
+      const arch = gs('archDias') || [];
+      arch.push({fecha:diaG, ops:prev, masaFin:masa});
+      ss('archDias', arch.slice(-30));
+    }
+    bitacora = []; masaInicioHoy = masa;
+    ss('diaActual', HOY_BOOT); ss('masaInicioHoy', masa); ss('bitacora', []);
+  } else {
+    bitacora     = gs('bitacora') || [];
+    masaInicioHoy = gs('masaInicioHoy') !== null ? gs('masaInicioHoy') : masa;
+  }
+
+  // Dark mode & sound per-user
+  if(gs('darkMode')) document.documentElement.setAttribute('data-theme','dark');
+  soundEnabled = gs('soundEnabled') !== false;
+  var sBtn = document.getElementById('sndBtn');
+  if(sBtn) sBtn.classList.toggle('muted', !soundEnabled);
+
+  // Meta del día
+  metaDia = parseFloat(gs('metaDia')) || 500;
+  if(isNaN(metaDia) || metaDia <= 0) metaDia = 500;
+
+  // Update nav badge
+  var badge = document.getElementById('nav-uavatar');
+  var name  = document.getElementById('nav-uname');
+  const users = getUsers();
+  if(badge) badge.textContent = activeUser ? activeUser.charAt(0).toUpperCase() : '?';
+  if(name)  name.textContent  = activeUser || '—';
+
+  // Render app
+  updateCylinder(false);
+  updStats(); renderV(); renderP();
+
+  // Stat card hover ASMR
+  var cardCfg=[{id:'sv',label:'Ventas de hoy'},{id:'sm',label:'Masa consumida'},{id:'stx',label:'Transacciones del día'}];
+  ['sc0','sc1','sc2'].forEach(function(cid,i){
+    var card=document.getElementById(cid);if(!card)return;
+    var lastSpoke=0;
+    card.addEventListener('mouseenter',function(){
+      sndHover();var now=Date.now();if(now-lastSpoke<4000)return;lastSpoke=now;
+      var val=(document.getElementById(cardCfg[i].id)||{}).textContent||'';speak(cardCfg[i].label+': '+val);
+    });
+  });
+
+  // Weekly reset check
+  checkSemanalReset(); setInterval(checkSemanalReset, 3600000);
+
+  // Shortcuts hint
+  setTimeout(function(){
+    var sh=document.getElementById('shortcuts-hint');
+    if(sh){sh.classList.remove('hidden');setTimeout(function(){sh.classList.add('hidden');},5500);}
+  },2200);
+
+  // Loader hide
+  setTimeout(function(){speak('Bienvenido '+activeUser+'. Sistema listo.');},900);
+  renderUsersList();
+}
+
 // ══════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════
-updateCylinder(false);
-updStats();renderV();renderP();
-
-// Stat card hover ASMR
-var cardCfg=[{id:'sv',label:'Ventas de hoy'},{id:'sm',label:'Masa consumida'},{id:'stx',label:'Transacciones del día'}];
-['sc0','sc1','sc2'].forEach(function(cid,i){
-  var card=document.getElementById(cid);if(!card)return;
-  var lastSpoke=0;
-  card.addEventListener('mouseenter',function(){
-    sndHover();var now=Date.now();if(now-lastSpoke<4000)return;lastSpoke=now;
-    var val=(document.getElementById(cardCfg[i].id)||{}).textContent||'';speak(cardCfg[i].label+': '+val);
-  });
-});
 
 // ══════════════════════════════════════════
 //  LEDGER PERMANENTE
@@ -1977,7 +2347,7 @@ function checkSemanalReset(){
     speak('Reset semanal realizado. La masa conservada es de '+masa.toFixed(0)+' kilogramos.');
   }
 }
-checkSemanalReset();setInterval(checkSemanalReset,3600000);
+// checkSemanalReset is called inside bootApp with setInterval
 
 // ══════════════════════════════════════════
 //  ATAJOS DE TECLADO
@@ -1992,18 +2362,17 @@ document.addEventListener('keydown',function(e){
   if(e.key==='d'||e.key==='D'){e.preventDefault();toggleDark();}
   if(e.key==='?'){var sh=document.getElementById('shortcuts-hint');if(sh)sh.classList.toggle('hidden');}
   if(e.key==='Escape'){
-    ['mv','mpe','mp','mdp','mel','mqm','mrpt'].forEach(function(id){
+    ['mv','mpe','mp','mdp','mel','mqm','mrpt','m-users'].forEach(function(id){
       var el=document.getElementById(id);if(el&&el.classList.contains('open'))closeM(id);
     });
   }
 });
-setTimeout(function(){var sh=document.getElementById('shortcuts-hint');if(sh){sh.classList.remove('hidden');setTimeout(function(){sh.classList.add('hidden');},5500);}},2200);
+// ── meta / confeti / pedidos handled in bootApp ──
 
 // ══════════════════════════════════════════
 //  META DEL DÍA
 // ══════════════════════════════════════════
-var metaDia = parseFloat(gs('metaDia')) || 500;
-if (isNaN(metaDia) || metaDia <= 0) metaDia = 500;
+var metaDia = 500;           // set by bootApp per-user
 var metaAlcanzadaNotif = false;
 function updMeta(){
   var meta = (typeof metaDia === 'number' && !isNaN(metaDia) && metaDia > 0) ? metaDia : 500;
@@ -2091,6 +2460,90 @@ setInterval(function(){
   });
 },30000);
 </script>
+<!-- ══════════════════════════════════════
+     LOGIN SCREEN
+     ══════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="ls-card">
+    <div class="ls-logo">🫓</div>
+    <div class="ls-title">Tortillería Pro</div>
+    <div class="ls-sub">Acceso al sistema</div>
+
+    <!-- Tab: Iniciar sesión / Crear cuenta -->
+    <div class="ls-tab-row">
+      <button class="ls-tab on" id="ls-tab-login" onclick="lsTab('login')">Iniciar Sesión</button>
+      <button class="ls-tab" id="ls-tab-nuevo" onclick="lsTab('nuevo')">Nueva Cuenta</button>
+    </div>
+
+    <div id="ls-err" class="ls-err"></div>
+
+    <!-- Login form -->
+    <div id="ls-login-form" class="ls-input-wrap">
+      <div>
+        <label class="ilbl">Selecciona usuario</label>
+        <div class="ls-users-grid" id="ls-users-grid"></div>
+      </div>
+      <div>
+        <label class="ilbl">Contraseña</label>
+        <input type="password" id="ls-pass" placeholder="••••••••" style="width:100%;letter-spacing:.2em" onkeydown="if(event.key==='Enter')doLoginUI()"/>
+      </div>
+      <button class="btn bna btn-block btn-lg" onclick="doLoginUI()" style="margin-top:.2rem">🔑 Entrar</button>
+      <p class="ls-hint">¿Olvidaste tu contraseña? Pide al administrador que la restablezca.</p>
+    </div>
+
+    <!-- Nuevo usuario form -->
+    <div id="ls-nuevo-form" class="ls-input-wrap" style="display:none">
+      <div>
+        <label class="ilbl">Nombre de usuario</label>
+        <input type="text" id="ls-new-user" placeholder="ej: tortilleria_norte" style="width:100%" maxlength="24" onkeydown="if(event.key==='Enter')document.getElementById('ls-new-pass').focus()"/>
+        <span style="font-size:.6rem;color:var(--s4);margin-top:.3rem;display:block">Solo letras, números y guiones. Sin espacios.</span>
+      </div>
+      <div>
+        <label class="ilbl">Contraseña (mín. 4 caracteres)</label>
+        <input type="password" id="ls-new-pass" placeholder="••••••••" style="width:100%;letter-spacing:.2em" onkeydown="if(event.key==='Enter')document.getElementById('ls-new-pass2').focus()"/>
+      </div>
+      <div>
+        <label class="ilbl">Confirmar contraseña</label>
+        <input type="password" id="ls-new-pass2" placeholder="••••••••" style="width:100%;letter-spacing:.2em" onkeydown="if(event.key==='Enter')doCrearCuenta()"/>
+      </div>
+      <button class="btn bnp btn-block btn-lg" onclick="doCrearCuenta()" style="margin-top:.2rem">✅ Crear Cuenta</button>
+      <p class="ls-hint">Al crear la cuenta, cada usuario tiene su propio inventario y registros independientes.</p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GESTIÓN DE USUARIOS (admin) -->
+<div class="mo" id="m-users">
+  <div class="md sm">
+    <div class="mh"><h2>👥 Gestión de Usuarios</h2><button class="mc" onclick="closeM('m-users')">✕</button></div>
+    <div class="mb2">
+      <div class="adds" style="margin-bottom:.875rem">
+        <span class="slbl">🔒 Requiere contraseña admin para cambios</span>
+        <input type="password" id="adm-pass-users" placeholder="Contraseña admin ••••••••" style="width:100%;margin-bottom:.5rem;letter-spacing:.2em"/>
+      </div>
+      <div id="users-list" style="max-height:280px;overflow-y:auto;margin-bottom:.875rem"></div>
+      <div class="rpt-box">
+        <h4>🔄 Restablecer contraseña</h4>
+        <div class="grid2" style="gap:.5rem">
+          <div><label class="ilbl">Usuario</label><input type="text" id="rst-user" placeholder="nombre usuario" style="width:100%"/></div>
+          <div><label class="ilbl">Nueva contraseña</label><input type="password" id="rst-pass" placeholder="••••" style="width:100%;letter-spacing:.15em"/></div>
+        </div>
+        <button class="btn bna btn-block" onclick="adminResetPass()" style="margin-top:.6rem;padding:.6rem">🔑 Restablecer</button>
+      </div>
+      <div class="rpt-box" style="margin-top:.65rem">
+        <h4>🗑️ Eliminar usuario</h4>
+        <div style="display:flex;gap:.5rem">
+          <input type="text" id="del-user" placeholder="nombre usuario a eliminar" style="flex:1"/>
+          <button class="btn bnr" onclick="adminDeleteUser()" style="padding:.6rem .9rem">🗑️</button>
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bno btn-block btn-lg" onclick="closeM('m-users')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <!-- React + Babel for the cylinder -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -2623,12 +3076,16 @@ function TankCylinder({ initialFraction }) {
   );
 }
 
-/* Mount */
-const _initFraction = Math.min(Math.max(
-  (window.masa !== undefined ? window.masa : 150) / 300, 0), 1);
-
-const root = ReactDOM.createRoot(document.getElementById('cyl-react-root'));
-root.render(<TankCylinder initialFraction={_initFraction} />);
+/* Mount — deferred until bootApp runs (sets window.cylReady) */
+function mountCylinder(){
+  const frac = Math.min(Math.max(
+    ((window.masa !== undefined && window.masa !== null) ? window.masa : 150) / 300, 0), 1);
+  const root = ReactDOM.createRoot(document.getElementById('cyl-react-root'));
+  root.render(React.createElement(TankCylinder, { initialFraction: frac }));
+}
+window._mountCylinder = mountCylinder;
+// If bootApp already ran, mount now; otherwise bootApp will call it
+if(window._appBooted) mountCylinder();
 </script>
 </body>
 </html>
