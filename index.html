@@ -1313,14 +1313,27 @@ function ss(k,v){
 }
 
 // ── INIT: check session or show login ──
+// Run after DOM ready
 (function initUserSystem(){
-  if(checkSession()){
-    // Valid session — hide login, show app
-    document.getElementById('login-screen').classList.add('hidden');
-    bootApp();
+  function run(){
+    if(checkSession()){
+      document.getElementById('login-screen').classList.add('hidden');
+      bootApp();
+    } else {
+      // Show login and populate user list
+      renderLoginUsers();
+      // Focus username input
+      setTimeout(function(){
+        var u = document.getElementById('ls-username-input');
+        if(u && !u.value) u.focus();
+        else { var p = document.getElementById('ls-pass'); if(p) p.focus(); }
+      }, 120);
+    }
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', run);
   } else {
-    // Show login
-    renderLoginUsers();
+    run();
   }
 })();
 
@@ -1330,69 +1343,116 @@ function ss(k,v){
 var lsSelectedUser = null;
 
 function lsTab(t){
-  document.getElementById('ls-tab-login').classList.toggle('on',t==='login');
-  document.getElementById('ls-tab-nuevo').classList.toggle('on',t==='nuevo');
-  document.getElementById('ls-login-form').style.display = t==='login'?'flex':'none';
-  document.getElementById('ls-nuevo-form').style.display = t==='nuevo'?'flex':'none';
-  document.getElementById('ls-nuevo-form').style.flexDirection = 'column';
+  var isLogin = (t === 'login');
+  document.getElementById('ls-tab-login').classList.toggle('on', isLogin);
+  document.getElementById('ls-tab-nuevo').classList.toggle('on', !isLogin);
+  var lf = document.getElementById('ls-login-form');
+  var nf = document.getElementById('ls-nuevo-form');
+  if(lf){ lf.style.display = isLogin ? 'flex' : 'none'; lf.style.flexDirection='column'; }
+  if(nf){ nf.style.display = isLogin ? 'none' : 'flex'; nf.style.flexDirection='column'; }
   lsErr('');
+  if(isLogin){ var u=document.getElementById('ls-username-input'); if(u) setTimeout(function(){u.focus();},60); }
+  else       { var n=document.getElementById('ls-new-user');       if(n) setTimeout(function(){n.focus();},60); }
 }
 
 function lsErr(msg){
-  const el = document.getElementById('ls-err');
+  var el = document.getElementById('ls-err');
+  if(!el) return;
   el.textContent = msg;
   el.classList.toggle('show', !!msg);
 }
 
+/* Render user chips AND pre-fill the text input */
 function renderLoginUsers(){
-  const users = getUsers();
-  const grid = document.getElementById('ls-users-grid');
-  if(!grid) return;
-  const keys = Object.keys(users);
+  var users = getUsers();
+  var grid  = document.getElementById('ls-users-grid');
+  var inp   = document.getElementById('ls-username-input');
+  var keys  = Object.keys(users);
+
+  // If no users at all → switch to create-account tab automatically
   if(keys.length === 0){
-    grid.innerHTML = '<p style="font-size:.75rem;color:var(--s4);font-weight:600">No hay usuarios. Crea uno en la pestaña "Nueva Cuenta".</p>';
-    lsSelectedUser = null;
+    if(grid) grid.innerHTML = '';
+    lsTab('nuevo');
+    lsErr('No hay usuarios aún. ¡Crea el primero!');
     return;
   }
-  grid.innerHTML = keys.map(k =>
-    `<div class="ls-user-chip ${lsSelectedUser===k?'selected':''}" onclick="selectLsUser('${k}')">
-      <span style="font-size:1rem">${users[k].isAdmin?'👑':'👤'}</span>
-      <span>${k}</span>
-    </div>`
-  ).join('');
-  if(!lsSelectedUser && keys.length) selectLsUser(keys[0]);
+
+  // Build chips
+  if(grid){
+    grid.innerHTML = keys.map(function(k){
+      var sel = lsSelectedUser === k ? 'selected' : '';
+      var icon = users[k].isAdmin ? '👑' : '👤';
+      return '<div class="ls-user-chip '+sel+'" onclick="selectLsUser(\''+k+'\')">'
+           + '<span>'+icon+'</span><span>'+k+'</span></div>';
+    }).join('');
+  }
+
+  // Auto-select first user if none selected
+  if(!lsSelectedUser && keys.length > 0){
+    lsSelectedUser = keys[0];
+    if(inp) inp.value = keys[0];
+    // Re-render chips with selection
+    if(grid){
+      grid.innerHTML = keys.map(function(k){
+        var sel = (k === lsSelectedUser) ? 'selected' : '';
+        var icon = users[k].isAdmin ? '👑' : '👤';
+        return '<div class="ls-user-chip '+sel+'" onclick="selectLsUser(\''+k+'\')">'
+             + '<span>'+icon+'</span><span>'+k+'</span></div>';
+      }).join('');
+    }
+    setTimeout(function(){ var p=document.getElementById('ls-pass'); if(p) p.focus(); }, 80);
+  }
 }
 
 function selectLsUser(k){
-  lsSelectedUser = k;
+  lsSelectedUser = k.toLowerCase().trim();
+  var inp = document.getElementById('ls-username-input');
+  if(inp) inp.value = lsSelectedUser;
   renderLoginUsers();
-  document.getElementById('ls-pass').focus();
+  setTimeout(function(){ var p=document.getElementById('ls-pass'); if(p) p.focus(); }, 60);
 }
 
 function doLoginUI(){
-  if(!lsSelectedUser){ lsErr('Selecciona un usuario'); return; }
-  const pass = document.getElementById('ls-pass').value;
-  if(!pass){ lsErr('Ingresa tu contraseña'); return; }
-  const err = authLogin(lsSelectedUser, pass);
-  if(err){ lsErr('❌ '+err); return; }
-  document.getElementById('ls-pass').value = '';
+  // Read from input field first (most reliable), then fall back to chip selection
+  var uInput = document.getElementById('ls-username-input');
+  var uVal   = (uInput ? uInput.value.trim().toLowerCase() : '') || lsSelectedUser || '';
+  if(!uVal){ lsErr('✏️ Escribe tu nombre de usuario'); if(uInput) uInput.focus(); return; }
+
+  var passEl = document.getElementById('ls-pass');
+  var pwd    = passEl ? passEl.value : '';
+  if(!pwd){ lsErr('🔒 Ingresa tu contraseña'); if(passEl) passEl.focus(); return; }
+
+  var err = authLogin(uVal, pwd);
+  if(err){ lsErr('❌ ' + err); if(passEl){ passEl.value=''; passEl.focus(); } return; }
+
+  if(passEl) passEl.value = '';
+  lsErr('');
   document.getElementById('login-screen').classList.add('hidden');
   bootApp();
 }
 
 function doCrearCuenta(){
-  const user  = (document.getElementById('ls-new-user').value||'').trim();
-  const pass  = document.getElementById('ls-new-pass').value;
-  const pass2 = document.getElementById('ls-new-pass2').value;
-  if(pass !== pass2){ lsErr('❌ Las contraseñas no coinciden'); return; }
-  const err = createUser(user, pass);
-  if(err){ lsErr('❌ '+err); return; }
-  document.getElementById('ls-new-user').value = '';
-  document.getElementById('ls-new-pass').value = '';
-  document.getElementById('ls-new-pass2').value = '';
+  var userEl  = document.getElementById('ls-new-user');
+  var passEl  = document.getElementById('ls-new-pass');
+  var pass2El = document.getElementById('ls-new-pass2');
+  var user    = userEl  ? userEl.value.trim()  : '';
+  var pwd     = passEl  ? passEl.value         : '';
+  var pwd2    = pass2El ? pass2El.value        : '';
+
+  if(!user){ lsErr('✏️ Escribe un nombre de usuario'); if(userEl) userEl.focus(); return; }
+  if(pwd !== pwd2){ lsErr('❌ Las contraseñas no coinciden'); if(pass2El) pass2El.focus(); return; }
+
+  var err = createUser(user, pwd);
+  if(err){ lsErr('❌ ' + err); return; }
+
+  if(userEl)  userEl.value  = '';
+  if(passEl)  passEl.value  = '';
+  if(pass2El) pass2El.value = '';
+  lsErr('');
   document.getElementById('login-screen').classList.add('hidden');
   bootApp();
 }
+
 
 // ── Admin user management UI ──
 function renderUsersList(){
@@ -2469,46 +2529,82 @@ setInterval(function(){
     <div class="ls-title">Tortillería Pro</div>
     <div class="ls-sub">Acceso al sistema</div>
 
-    <!-- Tab: Iniciar sesión / Crear cuenta -->
     <div class="ls-tab-row">
       <button class="ls-tab on" id="ls-tab-login" onclick="lsTab('login')">Iniciar Sesión</button>
-      <button class="ls-tab" id="ls-tab-nuevo" onclick="lsTab('nuevo')">Nueva Cuenta</button>
+      <button class="ls-tab"    id="ls-tab-nuevo" onclick="lsTab('nuevo')">Nueva Cuenta</button>
     </div>
 
     <div id="ls-err" class="ls-err"></div>
 
-    <!-- Login form -->
+    <!-- ── Login form ── -->
     <div id="ls-login-form" class="ls-input-wrap">
+
+      <!-- Chips de usuarios existentes -->
       <div>
-        <label class="ilbl">Selecciona usuario</label>
+        <label class="ilbl">Usuario</label>
+        <!-- Chips (opcional) -->
         <div class="ls-users-grid" id="ls-users-grid"></div>
+        <!-- Input de texto siempre visible como fallback -->
+        <input type="text" id="ls-username-input"
+          placeholder="Escribe tu nombre de usuario"
+          style="width:100%;margin-top:.45rem"
+          autocomplete="username"
+          onkeydown="if(event.key==='Enter')document.getElementById('ls-pass').focus()"
+          oninput="lsSelectedUser=this.value.trim().toLowerCase()"/>
       </div>
+
       <div>
         <label class="ilbl">Contraseña</label>
-        <input type="password" id="ls-pass" placeholder="••••••••" style="width:100%;letter-spacing:.2em" onkeydown="if(event.key==='Enter')doLoginUI()"/>
+        <input type="password" id="ls-pass"
+          placeholder="••••••••"
+          style="width:100%;letter-spacing:.2em"
+          autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')doLoginUI()"/>
       </div>
-      <button class="btn bna btn-block btn-lg" onclick="doLoginUI()" style="margin-top:.2rem">🔑 Entrar</button>
+
+      <button class="btn bna btn-block btn-lg" onclick="doLoginUI()" style="margin-top:.2rem">
+        🔑 Entrar
+      </button>
       <p class="ls-hint">¿Olvidaste tu contraseña? Pide al administrador que la restablezca.</p>
     </div>
 
-    <!-- Nuevo usuario form -->
-    <div id="ls-nuevo-form" class="ls-input-wrap" style="display:none">
+    <!-- ── Nueva cuenta form ── -->
+    <div id="ls-nuevo-form" class="ls-input-wrap" style="display:none;flex-direction:column">
       <div>
         <label class="ilbl">Nombre de usuario</label>
-        <input type="text" id="ls-new-user" placeholder="ej: tortilleria_norte" style="width:100%" maxlength="24" onkeydown="if(event.key==='Enter')document.getElementById('ls-new-pass').focus()"/>
-        <span style="font-size:.6rem;color:var(--s4);margin-top:.3rem;display:block">Solo letras, números y guiones. Sin espacios.</span>
+        <input type="text" id="ls-new-user"
+          placeholder="ej: tortilleria_norte"
+          style="width:100%" maxlength="24"
+          autocomplete="username"
+          onkeydown="if(event.key==='Enter')document.getElementById('ls-new-pass').focus()"/>
+        <span style="font-size:.6rem;color:var(--s4);margin-top:.3rem;display:block">
+          Solo letras, números y guiones_. Sin espacios.
+        </span>
       </div>
       <div>
         <label class="ilbl">Contraseña (mín. 4 caracteres)</label>
-        <input type="password" id="ls-new-pass" placeholder="••••••••" style="width:100%;letter-spacing:.2em" onkeydown="if(event.key==='Enter')document.getElementById('ls-new-pass2').focus()"/>
+        <input type="password" id="ls-new-pass"
+          placeholder="••••••••"
+          style="width:100%;letter-spacing:.2em"
+          autocomplete="new-password"
+          onkeydown="if(event.key==='Enter')document.getElementById('ls-new-pass2').focus()"/>
       </div>
       <div>
         <label class="ilbl">Confirmar contraseña</label>
-        <input type="password" id="ls-new-pass2" placeholder="••••••••" style="width:100%;letter-spacing:.2em" onkeydown="if(event.key==='Enter')doCrearCuenta()"/>
+        <input type="password" id="ls-new-pass2"
+          placeholder="••••••••"
+          style="width:100%;letter-spacing:.2em"
+          autocomplete="new-password"
+          onkeydown="if(event.key==='Enter')doCrearCuenta()"/>
       </div>
-      <button class="btn bnp btn-block btn-lg" onclick="doCrearCuenta()" style="margin-top:.2rem">✅ Crear Cuenta</button>
-      <p class="ls-hint">Al crear la cuenta, cada usuario tiene su propio inventario y registros independientes.</p>
+      <button class="btn bnp btn-block btn-lg" onclick="doCrearCuenta()" style="margin-top:.2rem">
+        ✅ Crear Cuenta
+      </button>
+      <p class="ls-hint">
+        Cada usuario tiene su propio inventario y registros independientes.
+      </p>
     </div>
+
   </div>
 </div>
 
