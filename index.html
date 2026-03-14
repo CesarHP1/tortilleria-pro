@@ -920,7 +920,7 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
     <!-- ══ INVENTORY CARD ══ -->
     <section class="ic">
       <h3>⚖️ Nivel de Masa</h3>
-      <p style="font-size:.59rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--s4);align-self:flex-start">Capacidad del tanque: 300 kg</p>
+      <p style="font-size:.59rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--s4);align-self:flex-start">Capacidad del tanque: 500 kg</p>
 
       <!-- CILINDRO REACT v6 -->
       <div id="cyl-react-root"></div>
@@ -939,9 +939,9 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
           <button onclick="setRecargaRapida(25)"  class="btn-qkg">25 kg</button>
           <button onclick="setRecargaRapida(50)"  class="btn-qkg">50 kg</button>
           <button onclick="setRecargaRapida(100)" class="btn-qkg">100 kg</button>
-          <button onclick="setRecargaRapida(150)" class="btn-qkg">150 kg</button>
+          <button onclick="setRecargaRapida(200)" class="btn-qkg">200 kg</button>
         </div>
-        <div class="warn" id="mw">⚠️ Cantidad inválida o supera los 300 kg</div>
+        <div class="warn" id="mw">⚠️ Cantidad inválida o supera los 500 kg</div>
         <button class="btn-qm" onclick="openM('mqm')">🔴 Quitar Masa del Tanque</button>
       </div>
     </section>
@@ -1299,7 +1299,7 @@ function doLogout(){
 //  STORAGE HELPERS (user-namespaced)
 // ══════════════════════════════════════════
 const DEF={
-  masa:150,
+  masa:250,
   precios:{'Tortilla blanca':15,'Tortilla integral':18,'Tortilla harina':12,'Taco':8},
   ventas:[],pedidos:[],folio:1,pass:'admin'
 };
@@ -1502,6 +1502,7 @@ function adminDeleteUser(){
 
 
 // ── APP STATE (populated by bootApp after login) ──
+var MASA_MAX = 500;          // ← single source of truth for capacity
 var masa = 150, precios = {}, ventas = [], pedidos = [],
     folio = 1, pass = 'admin', contactosWA = [],
     bitacora = [], masaInicioHoy = 0,
@@ -1637,8 +1638,9 @@ function toast(msg,type){
 //  updateCylinder — talks to React component
 // ══════════════════════════════════════════
 function updateCylinder(animate){
-  var pct = Math.min(Math.max(masa, 0), 300);
-  var fraction = pct / 300;
+  var masaNum = parseFloat(masa) || 0;
+  var pct = Math.min(Math.max(masaNum, 0), MASA_MAX);
+  var fraction = pct / MASA_MAX;
   if(window._setCylTarget) window._setCylTarget(fraction, animate);
   if(animate) sndPour();
   // Also update badge directly for instant feedback
@@ -1654,12 +1656,17 @@ function updateCylinder(animate){
 
 // ── MASA BAJA ──
 function checkMasaBaja(){
+  var masaNum = parseFloat(masa) || 0;
+  var threshold = MASA_MAX * 0.15;   // 15% = 75 kg alert for 500kg tank
   var banner=document.getElementById('masa-warn-banner');
   var txt=document.getElementById('masa-warn-txt');
   if(!banner)return;
-  var pct=masa/300;
-  if(masa<=60){txt.textContent='⚠️ Masa baja: quedan '+masa.toFixed(1)+' kg — recarga pronto';banner.classList.remove('hidden');}
-  else{banner.classList.add('hidden');}
+  if(masaNum <= threshold){
+    txt.textContent='⚠️ Masa baja: quedan '+masaNum.toFixed(1)+' kg — recarga pronto';
+    banner.classList.remove('hidden');
+  } else {
+    banner.classList.add('hidden');
+  }
 }
 
 // ══════════════════════════════════════════
@@ -1748,29 +1755,49 @@ function openM(id){sndClick();document.getElementById(id).classList.add('open');
 function closeM(id){sndClick();document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.mo').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o){sndClick();o.classList.remove('open');}});});
 
+// ── SAVE / BITÁCORA ──
+function save(){
+  masa = Math.round((parseFloat(masa)||0)*100)/100; // always numeric
+  ss('masa',masa);ss('precios',precios);ss('ventas',ventas);
+  ss('pedidos',pedidos);ss('folio',folio);ss('pass',pass);
+  window.masa = masa;
+}
+function saveBit(){ ss('bitacora', bitacora); }
+function logOp(tipo, datos){
+  var hora = new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  bitacora.push(Object.assign({id:Date.now(), hora:hora, tipo:tipo}, datos));
+  saveBit();
+}
+
 // ── MASA ──
 function addMasa(){
-  var v=parseFloat(document.getElementById('mi').value);
-  var w=document.getElementById('mw');
-  if(!v||v<=0||masa+v>300){w.classList.add('show');sndError();setTimeout(function(){w.classList.remove('show');},2400);return;}
+  var v = parseFloat(document.getElementById('mi').value);
+  var w = document.getElementById('mw');
+  var masaNum = parseFloat(masa) || 0;   // defensive cast — prevents string concat bug
+  if(!v || v <= 0 || masaNum + v > MASA_MAX){
+    w.classList.add('show'); sndError();
+    setTimeout(function(){w.classList.remove('show');}, 2400);
+    return;
+  }
   w.classList.remove('show');
-  var masaAntes=masa;
-  masa=Math.round((masa+v)*100)/100;
-  document.getElementById('mi').value='';
-  save();updateCylinder(true);
-  logOp('CARGA_MASA',{kg:v,masaAntes:masaAntes,masaDespues:masa});
-  toast('Se agregaron '+v+' kg de masa ✅');
+  var masaAntes = masaNum;
+  masa = Math.round((masaNum + v) * 100) / 100;
+  document.getElementById('mi').value = '';
+  save(); updateCylinder(true);
+  logOp('CARGA_MASA', {kg:v, masaAntes:masaAntes, masaDespues:masa});
+  toast('Se agregaron ' + v + ' kg de masa ✅');
 }
 
 function confirmarQuitarMasa(){
   var kg=parseFloat(document.getElementById('qm-kg').value);
   var pw=document.getElementById('qm-pass').value;
   var motivo=(document.getElementById('qm-motivo').value||'').trim()||'Sin motivo';
+  var masaNum = parseFloat(masa) || 0;
   if(!kg||kg<=0){toast('Ingresa una cantidad válida','e');return;}
   if(pw!==pass){toast('Contraseña incorrecta','e');sndError();return;}
-  if(kg>masa){toast('No hay suficiente masa en el tanque','e');sndError();return;}
-  var masaAntes=masa;
-  masa=Math.round((masa-kg)*100)/100;
+  if(kg>masaNum){toast('No hay suficiente masa en el tanque','e');sndError();return;}
+  var masaAntes=masaNum;
+  masa=Math.round((masaNum-kg)*100)/100;
   logOp('QUITA_MASA',{kg:kg,masaAntes:masaAntes,masaDespues:masa,motivo:motivo});
   save();updateCylinder(true);
   document.getElementById('qm-kg').value='';
@@ -1889,14 +1916,16 @@ function doVenta(){
   if(!carrito.length){toast('El carrito está vacío','e');return;}
   var totalMasa=carrito.reduce(function(a,x){return a+x.qty;},0);
   var totalDinero=carrito.reduce(function(a,x){return a+Math.round(x.qty*x.precio*100)/100;},0);
-  if(totalMasa>masa){toast('Masa insuficiente en el tanque 😟','e');return;}
+  var masaNum = parseFloat(masa)||0;
+  if(totalMasa > masaNum){toast('Masa insuficiente en el tanque 😟','e');return;}
   carrito.forEach(function(item){
     var f='A-'+String(folio).padStart(4,'0');
     var tot=Math.round(item.qty*item.precio*100)/100;
+    var masaAntes=parseFloat(masa)||0;
     ventas.push({id:Date.now()+Math.random(),prod:item.prod,cantidad:item.qty,precio:item.precio,total:tot,masaUsada:item.qty,folio:f,fecha:new Date().toLocaleString('es-MX',{hour12:false})});
     logOp('VENTA',{folio:f,prod:item.prod,cantidad:item.qty,total:tot});
-    logLedger('VENTA',item.qty,masa,masa-item.qty,f+' '+item.prod+' x'+item.qty.toFixed(3)+'kg');
-    masa=Math.round((masa-item.qty)*1000)/1000;folio++;
+    logLedger('VENTA',item.qty,masaAntes,masaAntes-item.qty,f+' '+item.prod+' x'+item.qty.toFixed(3)+'kg');
+    masa=Math.round((masaAntes-item.qty)*1000)/1000;folio++;
   });
   carrito=[];
   save();updateCylinder(false);updStats();renderV();closeM('mv');
@@ -1911,7 +1940,8 @@ function confirmDel(){
   if(document.getElementById('dp2').value!==pass){toast('Contraseña incorrecta','e');return;}
   if(!venElim)return;
   var v=venElim;
-  masa=Math.round((masa+v.masaUsada)*100)/100;
+  var masaNum=parseFloat(masa)||0;
+  masa=Math.round((masaNum+v.masaUsada)*100)/100;
   ventas=ventas.filter(function(x){return x.id!==v.id;});
   venElim=null;
   logOp('VENTA_CANCEL',{folio:v.folio,prod:v.prod,total:v.total,masaDevuelta:v.masaUsada});
@@ -2013,10 +2043,11 @@ function finPed(){
   if(!pedAct)return;
   var tm=pedAct.prods.reduce(function(a,p){return a+p.c;},0);
   var tot=pedAct.prods.reduce(function(a,p){return a+(p.c*p.pr);},0);
-  if(tm>masa){toast('Sin masa suficiente','e');return;}
+  var masaNum = parseFloat(masa)||0;
+  if(tm > masaNum){toast('Sin masa suficiente','e');return;}
   var f='P-'+String(folio).padStart(4,'0');
   ventas.push({id:Date.now(),prod:'Pedido: '+pedAct.nom,cantidad:tm,precio:0,total:tot,masaUsada:tm,folio:f,fecha:new Date().toLocaleString('es-MX')});
-  masa=Math.round((masa-tm)*100)/100;folio++;
+  masa=Math.round((masaNum-tm)*100)/100;folio++;
   logOp('PEDIDO_LISTO',{nom:pedAct.nom,folio:f,total:tot});
   pedidos=pedidos.filter(function(p){return p.id!==pedAct.id;});pedAct=null;
   save();updateCylinder(true);updStats();renderV();renderP();closeM('mdp');
@@ -2289,19 +2320,20 @@ function imprimirPDF(){
 //  BOOT APP — called after successful login
 // ══════════════════════════════════════════
 function bootApp(){
-  // Load all user data
-  masa        = gs('masa');
-  precios     = gs('precios');
-  ventas      = gs('ventas');
-  pedidos     = gs('pedidos');
-  folio       = gs('folio');
-  pass        = gs('pass');
+  // Load all user data — always cast masa to number
+  masa        = parseFloat(gs('masa')) || 0;
+  precios     = gs('precios') || {};
+  ventas      = gs('ventas')  || [];
+  pedidos     = gs('pedidos') || [];
+  folio       = parseInt(gs('folio'))  || 1;
+  pass        = gs('pass')    || 'admin';
   contactosWA = gs('contactosWA') || [];
   window.masa    = masa;
+  window.MASA_MAX = MASA_MAX;
   window._appBooted = true;
   // Mount or update cylinder
   if(window._mountCylinder) window._mountCylinder();
-  else if(window._setCylTarget) window._setCylTarget(masa/300, false);
+  else if(window._setCylTarget) window._setCylTarget(masa/MASA_MAX, false);
 
   // Bitácora daily reset
   const HOY_BOOT = new Date().toISOString().split('T')[0];
@@ -2386,9 +2418,19 @@ function logLedger(tipo,kg,masaAntes,masaDespues,nota){
 }
 
 var _origAddMasa=addMasa;
-addMasa=function(){var masaAntes=masa;_origAddMasa();if(masa!==masaAntes)logLedger('CARGA',masa-masaAntes,masaAntes,masa,'Recarga manual');};
+addMasa=function(){
+  var masaAntes=parseFloat(masa)||0;
+  _origAddMasa();
+  var masaDespues=parseFloat(masa)||0;
+  if(masaDespues!==masaAntes) logLedger('CARGA',masaDespues-masaAntes,masaAntes,masaDespues,'Recarga manual');
+};
 var _origConfirmDel=confirmDel;
-confirmDel=function(){var masaAntes=masa;_origConfirmDel();if(masa!==masaAntes)logLedger('CANCEL',masa-masaAntes,masaAntes,masa,'Cancelación venta');};
+confirmDel=function(){
+  var masaAntes=parseFloat(masa)||0;
+  _origConfirmDel();
+  var masaDespues=parseFloat(masa)||0;
+  if(masaDespues!==masaAntes) logLedger('CANCEL',masaDespues-masaAntes,masaAntes,masaDespues,'Cancelación venta');
+};
 
 // ══════════════════════════════════════════
 //  RESET SEMANAL
@@ -2400,11 +2442,12 @@ function checkSemanalReset(){
   if(esDomingo&&despues18&&!yaHizo){
     var totalV=ventas.reduce(function(a,v){return a+v.total;},0);
     var masaConsumida=ventas.reduce(function(a,v){return a+v.masaUsada;},0);
-    logLedger('RESET_SEMANAL',0,masa,masa,'Reset semana. Ventas: $'+totalV.toFixed(2)+' ('+ventas.length+' tx). Masa consumida: '+masaConsumida.toFixed(1)+' kg. Conservada: '+masa.toFixed(1)+' kg');
-    ventas=[];bitacora=[];folio=1;save();saveBit();ss('masaInicioHoy',masa);updStats();renderV();
+    var masaNum=parseFloat(masa)||0;
+    logLedger('RESET_SEMANAL',0,masaNum,masaNum,'Reset semana. Ventas: $'+totalV.toFixed(2)+' ('+ventas.length+' tx). Masa consumida: '+masaConsumida.toFixed(1)+' kg. Conservada: '+masaNum.toFixed(1)+' kg');
+    ventas=[];bitacora=[];folio=1;save();saveBit();ss('masaInicioHoy',masaNum);updStats();renderV();
     localStorage.setItem(claveReset,'1');
-    toast('🔄 Reset semanal. Masa: '+masa.toFixed(1)+' kg conservada.');
-    speak('Reset semanal realizado. La masa conservada es de '+masa.toFixed(0)+' kilogramos.');
+    toast('🔄 Reset semanal. Masa: '+(parseFloat(masa)||0).toFixed(1)+' kg conservada.');
+    speak('Reset semanal realizado. La masa conservada es de '+(parseFloat(masa)||0).toFixed(0)+' kilogramos.');
   }
 }
 // checkSemanalReset is called inside bootApp with setInterval
@@ -2651,7 +2694,7 @@ setInterval(function(){
    ═══════════════════════════════════════════════════════ */
 const { useRef, useEffect, useState, useCallback } = React;
 
-const MAX_KG = 300;
+const MAX_KG = 500;
 const W = 176, H = 360;
 const RX = 62, RY = 18;          // cylinder half-widths
 const CX = W / 2;
@@ -3164,7 +3207,7 @@ function TankCylinder({ initialFraction }) {
       </div>
       {/* scale marks */}
       <div className="cyl-marks">
-        {[300,225,150,75,0].map(v => (
+        {[500,375,250,125,0].map(v => (
           <span key={v}><div className="tick"></div>{v}</span>
         ))}
       </div>
@@ -3175,7 +3218,7 @@ function TankCylinder({ initialFraction }) {
 /* Mount — deferred until bootApp runs (sets window.cylReady) */
 function mountCylinder(){
   const frac = Math.min(Math.max(
-    ((window.masa !== undefined && window.masa !== null) ? window.masa : 150) / 300, 0), 1);
+    ((window.masa !== undefined && window.masa !== null) ? parseFloat(window.masa)||0 : 150) / (window.MASA_MAX||500), 0), 1);
   const root = ReactDOM.createRoot(document.getElementById('cyl-react-root'));
   root.render(React.createElement(TankCylinder, { initialFraction: frac }));
 }
