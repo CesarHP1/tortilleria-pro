@@ -1125,8 +1125,8 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
     <div class="mh"><h2>🔒 Autorizar Cancelación</h2><button class="mc" onclick="closeM('mel')">✕</button></div>
     <div class="mb2 dc">
       <div class="dic">⚠️</div>
-      <p style="font-weight:600;color:var(--s2);margin-bottom:1rem;font-size:.88rem">Requiere contraseña de administrador. La masa regresará al inventario.</p>
-      <label class="ilbl">Contraseña</label>
+      <p style="font-weight:600;color:var(--s2);margin-bottom:1rem;font-size:.88rem">Usa tu contraseña de login para confirmar. La masa regresará al inventario.</p>
+      <label class="ilbl">Tu Contraseña de Login</label>
       <input type="password" id="dp2" placeholder="••••••••" style="width:100%;font-size:1.1rem;text-align:center;letter-spacing:.2em;margin-bottom:.5rem"/>
     </div>
     <div class="mf"><button class="btn bnr btn-block btn-lg" onclick="confirmDel()">🗑️ Confirmar Eliminación</button></div>
@@ -1139,14 +1139,14 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
     <div class="mh"><h2>🔴 Quitar Masa del Tanque</h2><button class="mc" onclick="closeM('mqm')">✕</button></div>
     <div class="mb2 dc">
       <div class="dic" style="background:var(--rl)">⚠️</div>
-      <p style="font-weight:600;color:var(--s2);margin-bottom:1rem;font-size:.86rem">Requiere contraseña de administrador. Se registra en bitácora.</p>
+      <p style="font-weight:600;color:var(--s2);margin-bottom:1rem;font-size:.86rem">Usa tu contraseña de login. Se registra en bitácora.</p>
       <div class="grid2" style="margin-bottom:.75rem;text-align:left">
         <div>
           <label class="ilbl">Cantidad a quitar (KG)</label>
           <input type="number" id="qm-kg" placeholder="0.0" min="0.1" step="0.1" style="width:100%"/>
         </div>
         <div>
-          <label class="ilbl">Contraseña Admin</label>
+          <label class="ilbl">Tu Contraseña de Login</label>
           <input type="password" id="qm-pass" placeholder="••••••••" style="width:100%;letter-spacing:.2em"/>
         </div>
       </div>
@@ -1769,6 +1769,21 @@ function logOp(tipo, datos){
   saveBit();
 }
 
+// ── ADMIN PASS CHECK ──
+// Validates against the user's login password (same password, no confusion)
+// Also accepts the legacy plaintext 'pass' field as fallback
+function checkAdminPass(entered){
+  if(!entered) return false;
+  var users = getUsers();
+  // Primary: check against login password hash
+  if(activeUser && users[activeUser]){
+    if(hashPass(entered) === users[activeUser].hash) return true;
+  }
+  // Fallback: plaintext pass field (for legacy data)
+  if(entered === pass) return true;
+  return false;
+}
+
 // ── MASA ──
 function addMasa(){
   var v = parseFloat(document.getElementById('mi').value);
@@ -1794,7 +1809,7 @@ function confirmarQuitarMasa(){
   var motivo=(document.getElementById('qm-motivo').value||'').trim()||'Sin motivo';
   var masaNum = parseFloat(masa) || 0;
   if(!kg||kg<=0){toast('Ingresa una cantidad válida','e');return;}
-  if(pw!==pass){toast('Contraseña incorrecta','e');sndError();return;}
+  if(!checkAdminPass(pw)){toast('Contraseña incorrecta','e');sndError();return;}
   if(kg>masaNum){toast('No hay suficiente masa en el tanque','e');sndError();return;}
   var masaAntes=masaNum;
   masa=Math.round((masaNum-kg)*100)/100;
@@ -1937,7 +1952,7 @@ function doVenta(){
 // ── ELIMINAR ──
 function askDel(id){venElim=ventas.find(function(v){return v.id===id;});if(!venElim)return;document.getElementById('dp2').value='';openM('mel');}
 function confirmDel(){
-  if(document.getElementById('dp2').value!==pass){toast('Contraseña incorrecta','e');return;}
+  if(!checkAdminPass(document.getElementById('dp2').value)){toast('Contraseña incorrecta','e');return;}
   if(!venElim)return;
   var v=venElim;
   var masaNum=parseFloat(masa)||0;
