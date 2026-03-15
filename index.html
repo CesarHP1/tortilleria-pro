@@ -1200,89 +1200,141 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
 'use strict';
 
 // ══════════════════════════════════════════
-//  USER SYSTEM
+//  USER SYSTEM v2
+//  - Superadmin: works on ANY device, always
+//  - Regular users: local to device (each tortillería)
+//  - Sensitive ops: use YOUR OWN login password
 // ══════════════════════════════════════════
-const APP_PFX   = 'tp_';          // app namespace
+const APP_PFX   = 'tp_';
 const USERS_KEY = APP_PFX + 'users';
 const SESS_KEY  = APP_PFX + 'session';
 const SESS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-/* Simple deterministic hash (obfuscation, not crypto) */
+// ── SUPERADMIN ──
+// Exists on EVERY device automatically. Change these credentials here.
+const SA_USER = 'admin';
+const SA_HASH = hashPass('Cesar2106');   // ← cambia sólo la contraseña aquí
+
+/* Simple hash */
 function hashPass(p){
-  let h = 5381;
-  for(let i=0;i<p.length;i++) h = ((h<<5)+h) ^ p.charCodeAt(i);
+  let h=5381;
+  for(let i=0;i<p.length;i++) h=((h<<5)+h)^p.charCodeAt(i);
   return (h>>>0).toString(36);
 }
-/* Raw storage (not user-namespaced) */
+
+/* Raw (non-namespaced) storage */
 function rawGet(k){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):null}catch{return null}}
 function rawSet(k,v){try{if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v))}catch{}}
 
-function getUsers(){ return rawGet(USERS_KEY) || {}; }
-function saveUsers(u){ rawSet(USERS_KEY, u); }
+/* User registry (localStorage of THIS device) */
+function getUsers(){
+  const u = rawGet(USERS_KEY) || {};
+  // Always inject virtual superadmin entry (not stored, just returned)
+  u[SA_USER] = { hash: SA_HASH, isAdmin: true, isSuperadmin: true, created: 0 };
+  return u;
+}
+function saveUsers(u){
+  // Never persist the virtual superadmin entry
+  const toSave = Object.assign({}, u);
+  delete toSave[SA_USER];
+  rawSet(USERS_KEY, toSave);
+}
 
-/* Active user (set after login) */
+/* Active user */
 let activeUser = null;
+let activeUserIsSuper = false;
 
-/* Check if valid session exists */
+/* Session check */
 function checkSession(){
   const sess = rawGet(SESS_KEY);
   if(!sess || !sess.user || sess.expires < Date.now()) return false;
-  const users = getUsers();
+  // Superadmin session
+  if(sess.user === SA_USER){ activeUser = SA_USER; activeUserIsSuper = true; return true; }
+  // Regular user
+  const users = rawGet(USERS_KEY) || {};
   if(!users[sess.user]) return false;
-  activeUser = sess.user;
+  activeUser = sess.user; activeUserIsSuper = false;
   return true;
 }
 
-/* Login */
+/* Login — superadmin works on any device */
 function authLogin(username, password){
-  const users = getUsers();
   const key = username.toLowerCase().trim();
-  if(!users[key]) return 'Usuario no encontrado';
+  // Try superadmin first
+  if(key === SA_USER){
+    if(hashPass(password) !== SA_HASH) return 'Contraseña incorrecta';
+    rawSet(SESS_KEY, { user: SA_USER, expires: Date.now() + SESS_DURATION });
+    activeUser = SA_USER; activeUserIsSuper = true;
+    return null;
+  }
+  // Regular user (local to this device)
+  const users = rawGet(USERS_KEY) || {};
+  if(!users[key]) return 'Usuario no encontrado en este dispositivo';
   if(users[key].hash !== hashPass(password)) return 'Contraseña incorrecta';
   rawSet(SESS_KEY, { user: key, expires: Date.now() + SESS_DURATION });
-  activeUser = key;
+  activeUser = key; activeUserIsSuper = false;
   return null;
 }
 
-/* Create new user (anyone can create, no admin needed) */
+/* Create user */
 function createUser(username, password){
   const key = username.toLowerCase().trim().replace(/[^a-z0-9_\-]/g,'');
-  if(!key || key.length < 2) return 'Nombre de usuario inválido (mín 2 chars, solo letras/números/guiones)';
+  if(!key || key.length < 2) return 'Nombre inválido (mín 2 chars, letras/números/guiones)';
+  if(key === SA_USER) return 'Ese nombre está reservado';
   if(password.length < 4) return 'Contraseña muy corta (mín 4 caracteres)';
-  const users = getUsers();
+  const users = rawGet(USERS_KEY) || {};
   if(users[key]) return 'Ese usuario ya existe';
-  users[key] = { hash: hashPass(password), created: Date.now(), isAdmin: Object.keys(users).length === 0 };
-  saveUsers(users);
+  users[key] = { hash: hashPass(password), created: Date.now(), isAdmin: false };
+  rawSet(USERS_KEY, users);
   rawSet(SESS_KEY, { user: key, expires: Date.now() + SESS_DURATION });
-  activeUser = key;
+  activeUser = key; activeUserIsSuper = false;
   return null;
 }
 
-/* Admin reset password */
+/* Check if entered password is valid for sensitive operations:
+   - Accepts the current user's own login password
+   - Accepts the superadmin password
+   - NO need to be admin — each user manages their own account */
+function checkAdminPass(entered){
+  if(!entered) return false;
+  if(hashPass(entered) === SA_HASH) return true;          // superadmin pass always works
+  if(activeUser && activeUser !== SA_USER){               // own login pass works
+    const users = rawGet(USERS_KEY) || {};
+    if(users[activeUser] && users[activeUser].hash === hashPass(entered)) return true;
+  }
+  return false;
+}
+
+/* Is current user an admin (superadmin or first-created)? */
+function isAdminUser(){
+  if(activeUserIsSuper) return true;
+  const users = rawGet(USERS_KEY) || {};
+  return !!(activeUser && users[activeUser] && users[activeUser].isAdmin);
+}
+
+/* Admin reset password — only superadmin or local admin can do this */
 function adminResetPassword(adminPass, targetUser, newPass){
-  const users = getUsers();
-  // Admin = user marked isAdmin OR the user that knows master admin pass stored globally
-  const callerIsAdmin = Object.values(users).some(u => u.hash === hashPass(adminPass) && u.isAdmin);
-  if(!callerIsAdmin) return 'Contraseña de administrador incorrecta';
+  if(!checkAdminPass(adminPass)) return 'Contraseña incorrecta';
+  if(!isAdminUser()) return 'No tienes permisos de administrador';
+  const users = rawGet(USERS_KEY) || {};
   const key = targetUser.toLowerCase().trim();
+  if(key === SA_USER) return 'No se puede modificar el superadmin desde aquí';
   if(!users[key]) return 'Usuario no encontrado';
   users[key].hash = hashPass(newPass);
-  saveUsers(users);
+  rawSet(USERS_KEY, users);
   return null;
 }
 
 /* Admin delete user */
 function adminDeleteUserFn(adminPass, targetUser){
-  const users = getUsers();
-  const callerIsAdmin = Object.values(users).some(u => u.hash === hashPass(adminPass) && u.isAdmin);
-  if(!callerIsAdmin) return 'Contraseña de administrador incorrecta';
+  if(!checkAdminPass(adminPass)) return 'Contraseña incorrecta';
+  if(!isAdminUser()) return 'No tienes permisos de administrador';
+  const users = rawGet(USERS_KEY) || {};
   const key = targetUser.toLowerCase().trim();
+  if(key === SA_USER) return 'No se puede eliminar el superadmin';
   if(!users[key]) return 'Usuario no encontrado';
-  if(users[key].isAdmin && Object.values(users).filter(u=>u.isAdmin).length<=1)
-    return 'No puedes eliminar al único administrador';
   delete users[key];
-  saveUsers(users);
-  // Delete all user data
+  rawSet(USERS_KEY, users);
   const prefix = APP_PFX + 'u_' + key + '_';
   Object.keys(localStorage).filter(k=>k.startsWith(prefix)).forEach(k=>localStorage.removeItem(k));
   return null;
@@ -1291,7 +1343,7 @@ function adminDeleteUserFn(adminPass, targetUser){
 /* Logout */
 function doLogout(){
   rawSet(SESS_KEY, null);
-  activeUser = null;
+  activeUser = null; activeUserIsSuper = false;
   location.reload();
 }
 
@@ -1320,21 +1372,19 @@ function ss(k,v){
       document.getElementById('login-screen').classList.add('hidden');
       bootApp();
     } else {
-      // Show login and populate user list
+      // Always show login — superadmin 🔑 is always available even on new devices
       renderLoginUsers();
-      // Focus username input
       setTimeout(function(){
-        var u = document.getElementById('ls-username-input');
-        if(u && !u.value) u.focus();
-        else { var p = document.getElementById('ls-pass'); if(p) p.focus(); }
-      }, 120);
+        var inp = document.getElementById('ls-username-input');
+        var pass = document.getElementById('ls-pass');
+        // If superadmin is pre-selected, focus password
+        if(inp && inp.value) { if(pass) pass.focus(); }
+        else if(inp) inp.focus();
+      }, 130);
     }
   }
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', run);
-  } else {
-    run();
-  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+  else run();
 })();
 
 // ══════════════════════════════════════════
@@ -1364,43 +1414,28 @@ function lsErr(msg){
 
 /* Render user chips AND pre-fill the text input */
 function renderLoginUsers(){
-  var users = getUsers();
-  var grid  = document.getElementById('ls-users-grid');
-  var inp   = document.getElementById('ls-username-input');
-  var keys  = Object.keys(users);
+  const localUsers = rawGet(USERS_KEY) || {};
+  const allKeys = [SA_USER, ...Object.keys(localUsers).filter(k => k !== SA_USER)];
+  const grid  = document.getElementById('ls-users-grid');
+  const inp   = document.getElementById('ls-username-input');
 
-  // If no users at all → switch to create-account tab automatically
-  if(keys.length === 0){
-    if(grid) grid.innerHTML = '';
-    lsTab('nuevo');
-    lsErr('No hay usuarios aún. ¡Crea el primero!');
-    return;
-  }
-
-  // Build chips
   if(grid){
-    grid.innerHTML = keys.map(function(k){
-      var sel = lsSelectedUser === k ? 'selected' : '';
-      var icon = users[k].isAdmin ? '👑' : '👤';
-      return '<div class="ls-user-chip '+sel+'" onclick="selectLsUser(\''+k+'\')">'
-           + '<span>'+icon+'</span><span>'+k+'</span></div>';
+    grid.innerHTML = allKeys.map(function(k){
+      const isSA  = (k === SA_USER);
+      const isAdm = isSA || (localUsers[k] && localUsers[k].isAdmin);
+      const icon  = isSA ? '🔑' : isAdm ? '👑' : '👤';
+      const label = isSA ? k + ' (global)' : k;
+      const sel   = lsSelectedUser === k ? 'selected' : '';
+      return '<div class="ls-user-chip '+sel+'" onclick="selectLsUser(\''+k+'\')"><span>'+icon+'</span><span>'+label+'</span></div>';
     }).join('');
   }
 
-  // Auto-select first user if none selected
-  if(!lsSelectedUser && keys.length > 0){
-    lsSelectedUser = keys[0];
-    if(inp) inp.value = keys[0];
-    // Re-render chips with selection
-    if(grid){
-      grid.innerHTML = keys.map(function(k){
-        var sel = (k === lsSelectedUser) ? 'selected' : '';
-        var icon = users[k].isAdmin ? '👑' : '👤';
-        return '<div class="ls-user-chip '+sel+'" onclick="selectLsUser(\''+k+'\')">'
-             + '<span>'+icon+'</span><span>'+k+'</span></div>';
-      }).join('');
-    }
-    setTimeout(function(){ var p=document.getElementById('ls-pass'); if(p) p.focus(); }, 80);
+  // Auto-select first
+  if(!lsSelectedUser && allKeys.length > 0){
+    lsSelectedUser = allKeys[0];
+    if(inp) inp.value = allKeys[0];
+    renderLoginUsers();   // re-render with selection
+    setTimeout(function(){ const p=document.getElementById('ls-pass'); if(p) p.focus(); }, 80);
   }
 }
 
@@ -1456,23 +1491,24 @@ function doCrearCuenta(){
 
 // ── Admin user management UI ──
 function renderUsersList(){
-  const users = getUsers();
+  const localUsers = rawGet(USERS_KEY) || {};
+  const allKeys = [SA_USER, ...Object.keys(localUsers).filter(k=>k!==SA_USER)];
   const el = document.getElementById('users-list');
   if(!el) return;
-  const keys = Object.keys(users);
-  if(!keys.length){ el.innerHTML = '<p style="text-align:center;color:var(--s4);font-size:.82rem;padding:.5rem">Sin usuarios registrados</p>'; return; }
-  el.innerHTML = keys.map(k => {
-    const u = users[k];
-    const d = new Date(u.created||Date.now()).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
+  el.innerHTML = allKeys.map(k => {
+    const isSA = (k === SA_USER);
+    const u    = isSA ? { isAdmin:true, created:0 } : localUsers[k];
+    const d    = isSA ? 'Global (todos los dispositivos)' : new Date(u.created||Date.now()).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
+    const icon = isSA ? '🔑' : u.isAdmin ? '👑' : '👤';
     return `<div class="urow">
       <div class="uav2 ${u.isAdmin?'admin':''}">${k.charAt(0).toUpperCase()}</div>
       <div class="uinfo">
-        <strong>${k} ${u.isAdmin?'👑':''}</strong>
-        <small>Creado: ${d}</small>
+        <strong>${k} ${icon} ${isSA?'<span style="font-size:.6rem;background:var(--al);color:var(--ad);padding:.1rem .4rem;border-radius:5px">SUPERADMIN</span>':''}</strong>
+        <small>${d}</small>
       </div>
       <span style="font-size:.65rem;font-weight:700;color:var(--s4);font-family:'Space Mono',monospace">${k===activeUser?'🟢 TÚ':''}</span>
     </div>`;
-  }).join('');
+  }).join('') || '<p style="text-align:center;color:var(--s4);font-size:.82rem;padding:.5rem">Sin usuarios locales</p>';
 }
 
 function adminResetPass(){
@@ -2623,7 +2659,7 @@ setInterval(function(){
       <button class="btn bna btn-block btn-lg" onclick="doLoginUI()" style="margin-top:.2rem">
         🔑 Entrar
       </button>
-      <p class="ls-hint">¿Olvidaste tu contraseña? Pide al administrador que la restablezca.</p>
+      <p class="ls-hint">🔑 El usuario <strong>admin</strong> funciona en cualquier dispositivo con la contraseña maestra.</p>
     </div>
 
     <!-- ── Nueva cuenta form ── -->
