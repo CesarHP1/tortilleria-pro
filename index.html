@@ -423,7 +423,7 @@ main{max-width:1340px;margin:0 auto;padding:2rem 1.75rem;position:relative;z-ind
    DUAL PANELS
    ════════════════ */
 .dp{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;height:520px}
-@media(max-width:680px){.dp{grid-template-columns:1fr;height:auto}}
+/* dp grid handled in responsive block above */
 .panel{
   background:var(--sur);border:1.5px solid var(--bor);border-radius:var(--rl2);
   display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--sh);
@@ -698,13 +698,84 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
 /* ── v5 special: confetti canvas ── */
 #confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:9998}
 
-/* ── Responsive ── */
+/* ════════════════════════════════════
+   RESPONSIVE — iPhone-first
+   ════════════════════════════════════ */
+
+/* Tablet 880px */
+@media(max-width:880px){
+  .mg{grid-template-columns:1fr}
+}
+
+/* ── 600px: small tablets ── */
 @media(max-width:600px){
   main{padding:1rem .875rem}
   .sg{grid-template-columns:1fr 1fr;gap:.6rem}
   .ab{grid-template-columns:1fr}
-  nav{padding:0 1rem}
+  nav{padding:0 .875rem}
   .nr .ntm{display:none}
+  .btn-rpt{font-size:.62rem;padding:.34rem .6rem}
+}
+
+/* ── 480px: large iPhones (Pro Max / Plus) ── */
+@media(max-width:480px){
+  nav{
+    height:auto;min-height:56px;
+    flex-wrap:nowrap;padding:.45rem .875rem;gap:.3rem;
+    align-items:center;
+  }
+  .nb{gap:.5rem;min-width:0;flex-shrink:1;overflow:hidden}
+  .nl{width:36px;height:36px;border-radius:10px;font-size:16px;flex-shrink:0}
+  .nt h1{font-size:1.15rem;letter-spacing:.04em}
+  .nt p{display:none}                   /* hide subtitle */
+  .nr{gap:.28rem;flex-shrink:0}
+  .ntm{display:none}                    /* hide date/time */
+  .btn-rpt{
+    padding:.3rem .52rem;font-size:.6rem;
+    border-radius:9px;letter-spacing:.03em;
+  }
+  .btn-rpt span{display:none}           /* icon only if needed */
+  /* User badge: show avatar only */
+  .nav-user-badge{padding:.28rem .45rem;gap:.3rem}
+  .nav-user-badge .uname{
+    max-width:52px;overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;font-size:.72rem;
+  }
+  /* Icon buttons smaller */
+  .ibtn,.dark-toggle,.snd-toggle{
+    width:34px;height:34px;border-radius:9px;font-size:15px;
+  }
+  /* Stats: single column on really small */
+  .sg{grid-template-columns:1fr 1fr;gap:.5rem}
+  .sv2{font-size:1.55rem}
+  .sc{padding:.875rem 1rem}
+  /* Action buttons */
+  .abtn{padding:.9rem 1rem}
+  .btxt strong{font-size:.95rem}
+  /* Panels */
+  .dp{grid-template-columns:1fr;height:auto;gap:.875rem}
+  /* Cylinder wrapper */
+  .cyl-wrap-r{transform:scale(.9);transform-origin:center top;margin-bottom:-2rem}
+  /* Modals full-width */
+  .md.sm,.md.lg{max-width:100%;margin:0;border-radius:24px 24px 0 0;max-height:96vh}
+  .mo{align-items:flex-end;padding:0}
+  /* Login card full width */
+  .ls-card{border-radius:24px 24px 0 0;max-height:96vh;overflow-y:auto}
+  /* Hide shortcuts hint on mobile */
+  #shortcuts-hint{display:none!important}
+}
+
+/* ── 390px: iPhone 14/15 base ── */
+@media(max-width:390px){
+  nav{padding:.4rem .75rem}
+  .nt h1{font-size:1rem}
+  .nl{width:32px;height:32px;font-size:14px}
+  .btn-rpt{padding:.28rem .45rem;font-size:.58rem}
+  .nav-user-badge .uname{max-width:40px}
+  .sg{grid-template-columns:1fr 1fr;gap:.4rem}
+  .sv2{font-size:1.35rem}
+  .sc{padding:.75rem .875rem;gap:.6rem}
+  .si{width:38px;height:38px;font-size:17px}
 }
 
 /* ════════════════════════════════════════════
@@ -1596,51 +1667,79 @@ function startAmbient(){if(ambInt)return;ambInt=setInterval(()=>{try{const ac=ge
 document.addEventListener('click',()=>{getAC();startAmbient();},{once:true});
 
 // ── TTS — Natural, anti-stutter ──
+// ── TTS — iOS Safari + Chrome compatible ──
 var _speakTimer = null;
-if(window.speechSynthesis){ window.speechSynthesis.onvoiceschanged = function(){}; }
+var _voicesReady = false;
+var _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+// Load voices — iOS fires onvoiceschanged late or not at all
+function _loadVoices(){
+  if(window.speechSynthesis){
+    var vv = speechSynthesis.getVoices();
+    if(vv.length > 0){ _voicesReady = true; return; }
+    speechSynthesis.onvoiceschanged = function(){
+      if(speechSynthesis.getVoices().length > 0) _voicesReady = true;
+    };
+  }
+}
+_loadVoices();
+// Retry after user first touches screen (iOS lazy-loads voices)
+document.addEventListener('touchstart', _loadVoices, { once: true });
+document.addEventListener('click',      _loadVoices, { once: true });
+
+function _pickVoice(){
+  var vv = (window.speechSynthesis && speechSynthesis.getVoices()) || [];
+  if(!vv.length) return null;
+  var prefer = ['Paulina','Luciana','Monica','Mónica','Sabina',
+                'Jorge','Marisol','Juan','Google español','Microsoft'];
+  for(var i=0; i<prefer.length; i++){
+    var found = vv.find(function(x){ return x.name.indexOf(prefer[i]) >= 0; });
+    if(found) return found;
+  }
+  return vv.find(function(x){ return x.lang==='es-MX'; })
+      || vv.find(function(x){ return x.lang.startsWith('es'); })
+      || null;
+}
 
 function speak(txt){
   if(!soundEnabled || !window.speechSynthesis) return;
-  // Clear any pending speak
   if(_speakTimer){ clearTimeout(_speakTimer); _speakTimer=null; }
-  try{ speechSynthesis.cancel(); }catch(e){}
-  // Small delay after cancel to avoid chrome stutter bug
+
+  // On iOS: DON'T call cancel() — it prevents the next utterance from playing.
+  // On Chrome desktop: cancel() is fine.
+  if(!_isIOS){
+    try{ speechSynthesis.cancel(); }catch(e){}
+  }
+
+  var delay = _isIOS ? 50 : 180;   // iOS doesn't need the cancel-delay gap
   _speakTimer = setTimeout(function(){
     try{
       var u = new SpeechSynthesisUtterance(txt);
-      u.lang    = 'es-MX';
-      u.rate    = 0.86;    // slightly slower = more natural
-      u.pitch   = 1.02;    // close to 1 = less robotic
-      u.volume  = 0.82;
-      // Pick best available Spanish voice
-      var vv = speechSynthesis.getVoices();
-      var v = null;
-      // Preferred voices (natural-sounding)
-      var prefer = ['Paulina','Luciana','Monica','Mónica','Sabina','Jorge',
-                    'Marisol','Juan','Google español','Microsoft'];
-      for(var i=0; i<prefer.length && !v; i++){
-        v = vv.find(function(x){ return x.name.indexOf(prefer[i]) >= 0; });
-      }
-      // Fallback: any es-MX, then any es
-      if(!v) v = vv.find(function(x){ return x.lang==='es-MX'; });
-      if(!v) v = vv.find(function(x){ return x.lang==='es-MX' || x.lang.startsWith('es'); });
+      u.lang   = 'es-MX';
+      u.rate   = _isIOS ? 0.90 : 0.86;
+      u.pitch  = 1.02;
+      u.volume = 0.82;
+      var v = _pickVoice();
       if(v) u.voice = v;
-      u.onerror   = function(){}; // suppress errors silently
-      u.onend     = function(){};
+      u.onerror = function(){};
+      u.onend   = function(){};
       speechSynthesis.speak(u);
     }catch(e){}
-  }, 180);
+  }, delay);
 }
 
-// Chrome workaround: speechSynthesis pauses after ~15s — keep it alive
-setInterval(function(){
-  try{
-    if(window.speechSynthesis && speechSynthesis.speaking){
-      speechSynthesis.pause();
-      speechSynthesis.resume();
-    }
-  }catch(e){}
-}, 9000);
+// Chrome desktop: keep alive after ~15s (do NOT do this on iOS — it breaks things)
+if(!_isIOS){
+  setInterval(function(){
+    try{
+      if(window.speechSynthesis && speechSynthesis.speaking){
+        speechSynthesis.pause();
+        speechSynthesis.resume();
+      }
+    }catch(e){}
+  }, 9000);
+}
+
 
 // ── LOADER ──
 (function(){
@@ -2445,7 +2544,10 @@ function bootApp(){
   },2200);
 
   // Loader hide
-  setTimeout(function(){speak('Bienvenido '+activeUser+'. Sistema listo.');},900);
+  // Welcome — iOS needs user gesture first, so only on desktop
+  if(!_isIOS){
+    setTimeout(function(){speak('Bienvenido '+activeUser+'. Sistema listo.');},900);
+  }
   renderUsersList();
 }
 
