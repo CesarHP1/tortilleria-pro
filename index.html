@@ -2225,6 +2225,34 @@ function renderPList(){
 
 function delPR(i){sndDelete();preciosList[i]._del=!preciosList[i]._del;renderPList();}
 
+const SB_URL = 'https://beapqpwlrsqktkiyzsiw.supabase.co';
+const SB_KEY = 'sb_publishable_oxnS7x997JZgD_1aEjqWkg_MJhV9wbA';
+
+async function publicarMenuEnNube(preciosActualizados){
+  if(!navigator.onLine){ toast('Guardado local (sin internet para subir al menú QR)','i'); return; }
+  var pin = sessionStorage.getItem('tp_pub_pin') || prompt('🔑 Ingresa tu PIN secreto para actualizar el menú QR:');
+  if(!pin) return;
+  try{
+    var res = await fetch(SB_URL + '/rest/v1/rpc/actualizar_menu', {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pin_ingresado: pin,
+        nuevos_datos: { precios: preciosActualizados, actualizado: new Date().toLocaleDateString('es-MX') }
+      })
+    });
+    if(!res.ok){ toast('Error al subir al menú QR ('+res.status+')','e'); return; }
+    var ok = await res.json();
+    if(ok === true){
+      sessionStorage.setItem('tp_pub_pin', pin);
+      toast('☁️ Menú QR actualizado en vivo ✅');
+    } else {
+      sessionStorage.removeItem('tp_pub_pin');
+      toast('❌ PIN incorrecto — el menú QR no cambió','e');
+    }
+  }catch(e){ toast('No se pudo conectar con Supabase','e'); }
+}
+
 function savePrecios(){
   var np2=document.getElementById('apc').value.trim();
   var nn=document.getElementById('nn').value.trim();
@@ -2234,6 +2262,7 @@ function savePrecios(){
   preciosList.forEach(function(item){if(!item._del)up[item.n]=item.p;else logOp('PROD_ELIMINA',{nombre:item.n,precioAntes:item.p});});
   Object.keys(precios).forEach(function(k){if(k in up&&precios[k]!==up[k])logOp('PROD_PRECIO',{nombre:k,antes:precios[k],despues:up[k]});});
   precios=up;if(np2)pass=np2;save();closeM('mp');toast('Catálogo guardado — '+Object.keys(precios).length+' productos 💾');
+  publicarMenuEnNube(up);
 }
 
 // ══════════════════════════════════════════
