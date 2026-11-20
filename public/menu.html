@@ -64,6 +64,7 @@
     @media (min-width:780px){.highlights{grid-template-columns:1.1fr .9fr}}
     .promo-banner{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #f59e0b;border-radius:var(--radius);padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(--shadow);color:#451a03}
     @media (prefers-color-scheme: dark){.promo-banner{background:linear-gradient(135deg,#38250b,#241707);color:#fef3c7;border-color:#b45309}}
+    .promo-img{width:64px;height:64px;border-radius:12px;object-fit:cover;flex-shrink:0;border:1px solid rgba(245,158,11,.35)}
     .promo-info{min-width:0;flex:1}
     .promo-tag{display:inline-block;background:#dc2626;color:#fff;font-size:.66rem;font-weight:900;padding:2px 8px;border-radius:99px;text-transform:uppercase;margin-bottom:4px}
     .promo-title{font-weight:900;font-size:1rem;line-height:1.25}
@@ -107,10 +108,14 @@
     .item-img{width:100%;height:100%;min-height:112px;object-fit:cover;display:block;background:var(--chip);transition:transform .35s}
     .tag{position:absolute;top:7px;left:7px;font-size:.64rem;font-weight:800;background:rgba(255,251,235,.94);color:#92400e;padding:2px 7px;border-radius:7px}
     .tag.promo{background:#dc2626;color:#fff}
-    .item-body{padding:11px 12px;flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:8px;min-width:0}
+    .item-body{padding:11px 12px;flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:7px;min-width:0}
     .item-name{font-weight:800;font-size:.96rem;line-height:1.25}
     .item-desc{font-size:.8rem;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px}
     .item-meta{font-size:.72rem;color:var(--ok);font-weight:800;margin-top:3px}
+    .quick-kg-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+    .qchip{border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.7rem;font-weight:800;padding:3px 8px;border-radius:99px;cursor:pointer;transition:.15s}
+    .qchip:hover{background:var(--chip);border-color:var(--primary);color:var(--chip-text)}
+    .qchip.pesos{background:var(--chip);color:var(--chip-text);border-color:rgba(217,119,6,.35)}
     .item-footer{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
     .price-wrap{display:flex;align-items:baseline;gap:5px;flex-wrap:wrap}
     .price{font-weight:900;color:var(--primary);font-size:1.1rem}
@@ -120,9 +125,9 @@
     .add-btn:active{transform:scale(.94)}
     .stepper{display:inline-flex;align-items:center;gap:2px;background:var(--chip);border-radius:99px;padding:3px}
     .stepper button{width:28px;height:28px;border:none;border-radius:99px;background:var(--card);color:var(--primary);font-size:1rem;font-weight:900;cursor:pointer;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.12)}
-    .stepper b{min-width:24px;text-align:center;font-size:.9rem;color:var(--chip-text)}
+    .stepper b{min-width:34px;text-align:center;font-size:.84rem;color:var(--chip-text);padding:0 3px}
     .stepper.sm button{width:26px;height:26px;font-size:.92rem}
-    .stepper.sm b{min-width:20px;font-size:.85rem}
+    .stepper.sm b{min-width:28px;font-size:.8rem}
 
     .cart-bar{position:fixed;left:14px;right:14px;bottom:calc(12px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:13px 16px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;font-weight:800;font-size:.96rem;cursor:pointer;box-shadow:0 10px 30px rgba(146,64,14,.4);z-index:40;transform:translateY(150%);transition:transform .3s cubic-bezier(.2,.9,.3,1.2)}
     .cart-bar.show{transform:translateY(0)}
@@ -198,6 +203,10 @@
     .clabe-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--muted)}
     .clabe-box b{font-family:ui-monospace,monospace;font-size:.95rem;color:var(--text)}
 
+    .pesos-chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+    .pesos-chips button{border:1.5px solid var(--border);background:var(--card);color:var(--text);font-weight:900;padding:7px 12px;border-radius:10px;cursor:pointer}
+    .pesos-chips button:hover{border-color:var(--primary);background:var(--chip);color:var(--chip-text)}
+
     .hist-row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:11px;margin-bottom:9px}
     .hist-info{flex:1;min-width:0}
     .hist-info b{font-family:ui-monospace,monospace;font-size:.88rem;display:block}
@@ -241,7 +250,7 @@
     <p id="bizTag">Tortillas frescas todos los días</p>
     <div class="status-row">
       <span class="status-badge" id="openBadge">Abierto</span>
-      <span class="update-badge" id="updBadge">Menú actualizado</span>
+      <span class="update-badge" id="updBadge">Menú en vivo</span>
       <button class="install-badge" id="btnInstall" type="button" hidden>📲 Instalar app</button>
     </div>
   </header>
@@ -249,6 +258,7 @@
   <div class="container">
     <section class="highlights" aria-label="Promociones y lealtad">
       <div class="promo-banner" id="promoBanner" hidden>
+        <img class="promo-img" id="promoImg" alt="Promo" hidden>
         <div class="promo-info">
           <span class="promo-tag" id="promoTag">🔥 Promo de hoy</span>
           <div class="promo-title" id="promoTitle"></div>
@@ -278,7 +288,7 @@
 
   <main class="container" id="menuContainer"></main>
   <div class="empty" id="noResults" hidden><div class="empty-emoji">🌽</div>No encontramos nada con esa búsqueda.</div>
-  <p class="nota">Precios sincronizados · Mayoreo automático desde 5 kg en el carrito</p>
+  <p class="nota" id="notaMayoreo">Precios sincronizados en vivo · Se actualiza automáticamente</p>
 
   <section class="share-card">
     <h2 class="section-title center">📲 Comparte el menú</h2>
@@ -300,6 +310,7 @@
     <span class="cart-total" id="cartTotal">$0</span>
   </button>
 
+  <!-- MODAL CARRITO -->
   <div class="overlay" id="cartOverlay" hidden>
     <div class="sheet" role="dialog" aria-modal="true" aria-label="Tu pedido">
       <div class="sheet-handle"></div>
@@ -346,6 +357,29 @@
     </div>
   </div>
 
+  <!-- MODAL PEDIR POR PESOS -->
+  <div class="overlay center" id="pesosOverlay" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Pedir por pesos">
+      <h2 id="pesosTitle">💵 Pedir por pesos</h2>
+      <p class="ok-sub" id="pesosSub"></p>
+      <div class="pesos-chips">
+        <button type="button" data-p="10">$10</button>
+        <button type="button" data-p="15">$15</button>
+        <button type="button" data-p="20">$20</button>
+        <button type="button" data-p="30">$30</button>
+        <button type="button" data-p="50">$50</button>
+      </div>
+      <div class="field" style="text-align:left;margin-top:4px">
+        <label for="pesosInput">¿Cuántos pesos quieres? ($)</label>
+        <input id="pesosInput" type="number" min="1" step="1" value="20">
+        <p class="hint center" id="pesosPreview"></p>
+      </div>
+      <button type="button" class="btn-primary" id="btnPesosConfirm">➕ Agregar al pedido</button>
+      <button type="button" class="link-btn" data-close="pesosOverlay">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL ÉXITO -->
   <div class="overlay center" id="successOverlay" hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-label="Pedido registrado">
       <svg class="check" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24" fill="none"/><path fill="none" d="M14 27l8 8 16-16"/></svg>
@@ -362,6 +396,7 @@
     </div>
   </div>
 
+  <!-- MODAL HISTORIAL -->
   <div class="overlay" id="historyOverlay" hidden>
     <div class="sheet" role="dialog" aria-modal="true" aria-label="Mis pedidos">
       <div class="sheet-handle"></div>
@@ -374,6 +409,7 @@
     </div>
   </div>
 
+  <!-- MODAL SELLAR EN MOSTRADOR -->
   <div class="overlay center" id="stampOverlay" hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-label="Sellar lealtad">
       <h2>🔐 Sellar compra en mostrador</h2>
@@ -406,23 +442,32 @@
         anonKey: "sb_publishable_oxnS7x997JZgD_1aEjqWkg_MJhV9wbA"
       },
       lealtad: { activo: true, metaKg: 10, premio: "1 kg de Tortilla GRATIS", pinVendedor: "Cesar2106" },
-      mayoreo: { activo: true, rangos: [{ minKg: 5, nombre: "Mayoreo (5+ kg)" }, { minKg: 10, nombre: "Super Mayoreo (10+ kg)" }] },
+      mayoreo: { activo: true, minKg: 5, descuentoKg: 2 },
       promoDia: { activo: true, etiqueta: "🔥 Promo de hoy", itemId: "combos-0" },
       analitica: { tipo: "ninguno", goatcounterCodigo: "", umamiId: "", umamiSrc: "https://cloud.umami.is/script.js" }
     };
 
-    const menuData = {
+    const DEFAULT_COMBO = {
+      nombre: "Combo: 1 kg Tortilla + Salsa 250ml",
+      descripcion: "Tortilla recién hecha + salsa casera",
+      precio: 38,
+      precioOriginal: 42,
+      kg: 1,
+      foto: "",
+      tag: "Ahorra $4",
+      esPromo: true
+    };
+
+    let menuData = {
       categorias: [
-        { id: "combos", nombre: "Combos", emoji: "🔥", items: [
-          { nombre: "Combo: 1 kg Tortilla + Salsa 250ml", descripcion: "Tortilla recién hecha + salsa casera", precio: 38, precioOriginal: 42, kg: 1, foto: "https://images.unsplash.com/photo-1615870216519-2f9fa25e4b5a?w=300&h=300&fit=crop", tag: "Ahorra $4", esPromo: true }
-        ]},
+        { id: "combos", nombre: "Combos", emoji: "🔥", items: [ { ...DEFAULT_COMBO } ] },
         { id: "tortillas", nombre: "Tortillas", emoji: "🫓", items: [
-          { nombre: "Tortilla blanca", descripcion: "Hechas al día, nixtamal propio", precio: 15, kg: 1, descuentoKg: { 5: 2, 10: 3 }, foto: "https://images.unsplash.com/photo-1615870216519-2f9fa25e4b5a?w=300&h=300&fit=crop", tag: "Fresco" },
-          { nombre: "Tortilla integral", descripcion: "Maíz integral recién hecho", precio: 18, kg: 1, descuentoKg: { 5: 2, 10: 3 }, foto: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=300&h=300&fit=crop", tag: "Especial" },
-          { nombre: "Tortilla harina", descripcion: "Suaves y calientitas (paquete)", precio: 12, foto: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=300&h=300&fit=crop" }
+          { nombre: "Tortilla blanca", descripcion: "Hechas al día, nixtamal propio", precio: 15, kg: 1, foto: "", tag: "Fresco" },
+          { nombre: "Tortilla integral", descripcion: "Maíz integral recién hecho", precio: 18, kg: 1, foto: "", tag: "Especial" },
+          { nombre: "Tortilla harina", descripcion: "Suaves y calientitas", precio: 12, kg: 0, foto: "" }
         ]},
         { id: "tacos", nombre: "Tacos y Otros", emoji: "🌮", items: [
-          { nombre: "Taco", descripcion: "De canasta o guisado", precio: 8, foto: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=300&h=300&fit=crop", tag: "Popular" }
+          { nombre: "Taco", descripcion: "De canasta o guisado", precio: 8, kg: 0, foto: "", tag: "Popular" }
         ]}
       ]
     };
@@ -435,6 +480,7 @@
     const toMin = s => { const [a, b] = s.split(':').map(Number); return a * 60 + b; };
     const fmt12 = m => { const h = Math.floor(m / 60), mm = m % 60, h12 = h % 12 || 12; return `${pad(h12)}:${pad(mm)} ${h < 12 ? 'AM' : 'PM'}`; };
     const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const fmtQty = (q, it) => (Math.round(q * 100) / 100) + (it?.kg && !it?.esPromo ? ' kg' : '');
     const store = { get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
     const FALLBACK_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="300" height="300" fill="#fef3c7"/><text x="150" y="190" font-size="110" text-anchor="middle">🫓</text></svg>');
 
@@ -464,40 +510,91 @@
     document.addEventListener('pointerdown', unlockAudio, { once: true });
 
     let cart = store.get('te_cart', {}), orders = store.get('te_orders', []), loyalty = store.get('te_loyalty', { sellos: 0, canjes: 0 });
-    const ITEMS = {}; let lastOrder = null, prevWholesaleKg = 0;
+    const ITEMS = {}; let lastOrder = null, prevWholesaleKg = 0, lastSnapshot = '', pesosTargetId = null;
 
-    function aplicarPreciosPOS(preciosPOS) {
-      if (!preciosPOS || typeof preciosPOS !== 'object') return;
-      const nombresPOS = Object.keys(preciosPOS), existentes = new Set();
-      menuData.categorias.forEach(cat => {
-        if (cat.id === 'combos') return;
-        cat.items = cat.items.filter(it => {
-          const match = nombresPOS.find(n => norm(n) === norm(it.nombre));
-          if (match) { it.nombre = match; it.precio = Number(preciosPOS[match]); existentes.add(norm(match)); return true; }
-          return false;
-        });
+    function aplicarDatosPOS(datos) {
+      if (!datos || typeof datos !== 'object') return;
+      const preciosPOS = datos.precios || {};
+      const meta = datos.meta || {};
+      const prodMeta = meta.productos || {};
+
+      // Mayoreo desde POS
+      if (meta.mayoreo) {
+        CONFIG.mayoreo.activo = !!meta.mayoreo.activo;
+        CONFIG.mayoreo.minKg = Math.max(1, Number(meta.mayoreo.minKg) || 5);
+        CONFIG.mayoreo.descuentoKg = Math.max(0, Number(meta.mayoreo.descuentoKg) || 0);
+      }
+
+      // Promo / Combo desde POS
+      const combosCat = [];
+      if (meta.promo) {
+        CONFIG.promoDia.activo = !!meta.promo.activo;
+        if (meta.promo.activo) {
+          const orig = Number(meta.promo.precioOriginal) || 0;
+          const prec = Number(meta.promo.precio) || 0;
+          const ahorro = orig > prec ? `Ahorra ${money(orig - prec)}` : 'Promo';
+          combosCat.push({
+            nombre: meta.promo.nombre || DEFAULT_COMBO.nombre,
+            descripcion: meta.promo.desc || DEFAULT_COMBO.descripcion,
+            precio: prec,
+            precioOriginal: orig > prec ? orig : 0,
+            kg: 1,
+            foto: meta.promo.foto || '',
+            tag: ahorro,
+            esPromo: true
+          });
+        }
+      } else if (CONFIG.promoDia.activo) {
+        combosCat.push({ ...DEFAULT_COMBO });
+      }
+
+      // Productos desde POS
+      const tortItems = [], otroItems = [];
+      Object.entries(preciosPOS).forEach(([nombre, precio]) => {
+        const info = prodMeta[nombre] || {};
+        const esTortilla = /tortilla|masa/i.test(nombre) && !/harina/i.test(nombre);
+        const obj = {
+          nombre,
+          descripcion: info.desc || (esTortilla ? 'Hechas al día, recién salidas' : 'Disponible hoy'),
+          precio: Number(precio),
+          kg: esTortilla ? 1 : 0,
+          foto: info.foto || '',
+          tag: esTortilla ? 'Fresco' : ''
+        };
+        if (/tortilla|masa/i.test(nombre)) tortItems.push(obj);
+        else otroItems.push(obj);
       });
-      nombresPOS.forEach(nombre => {
-        if (existentes.has(norm(nombre))) return;
-        const esTortilla = /tortilla|masa/i.test(nombre), catId = esTortilla ? 'tortillas' : 'tacos';
-        let cat = menuData.categorias.find(c => c.id === catId);
-        if (!cat) { cat = { id: catId, nombre: esTortilla ? 'Tortillas' : 'Productos', emoji: esTortilla ? '🫓' : '🛒', items: [] }; menuData.categorias.push(cat); }
-        cat.items.push({ nombre, descripcion: 'Disponible hoy · Recién hecho', precio: Number(preciosPOS[nombre]), kg: esTortilla ? 1 : 0, descuentoKg: esTortilla ? { 5: 2, 10: 3 } : undefined, foto: FALLBACK_IMG, tag: 'Nuevo' });
-      });
-      menuData.categorias = menuData.categorias.filter(c => c.items.length > 0);
+
+      const cats = [];
+      if (combosCat.length) cats.push({ id: 'combos', nombre: 'Combos', emoji: '🔥', items: combosCat });
+      if (tortItems.length) cats.push({ id: 'tortillas', nombre: 'Tortillas', emoji: '🫓', items: tortItems });
+      if (otroItems.length) cats.push({ id: 'tacos', nombre: 'Tacos y Otros', emoji: '🌮', items: otroItems });
+      if (cats.length) menuData = { categorias: cats };
     }
 
-    async function syncConPOS() {
-      const cached = store.get('te_pos_precios', null);
-      if (cached) { aplicarPreciosPOS(cached); renderMenu(); refreshCartUI(); }
+    async function syncConPOS(silencioso = false) {
+      if (!silencioso) {
+        const cached = store.get('te_pos_datos', null);
+        if (cached) { lastSnapshot = JSON.stringify(cached); aplicarDatosPOS(cached); renderMenu(); refreshCartUI(); }
+      }
       if (!CONFIG.supabase.url || !CONFIG.supabase.anonKey || !navigator.onLine) return;
       try {
-        const res = await fetch(`${CONFIG.supabase.url}/rest/v1/menu_publico?id=eq.principal&select=datos`, { headers: { 'apikey': CONFIG.supabase.anonKey } });
+        const res = await fetch(`${CONFIG.supabase.url}/rest/v1/menu_publico?id=eq.principal&select=datos`, {
+          headers: { 'apikey': CONFIG.supabase.anonKey },
+          cache: 'no-store'
+        });
         const rows = await res.json();
-        if (rows?.[0]?.datos?.precios) {
-          store.set('te_pos_precios', rows[0].datos.precios);
-          aplicarPreciosPOS(rows[0].datos.precios); renderMenu(); refreshCartUI();
-          $('#updBadge').textContent = 'Precios al día · En vivo';
+        const datos = rows?.[0]?.datos;
+        if (!datos?.precios) return;
+        const snap = JSON.stringify(datos);
+        if (snap !== lastSnapshot) {
+          const huboCambioPrevio = !!lastSnapshot;
+          lastSnapshot = snap;
+          store.set('te_pos_datos', datos);
+          aplicarDatosPOS(datos);
+          renderMenu(); refreshCartUI();
+          $('#updBadge').textContent = datos.actualizado ? `En vivo · ${datos.actualizado}` : 'Precios al día · En vivo';
+          if (huboCambioPrevio) { sfx.promo(); toast('🔄 Menú actualizado automáticamente'); }
         }
       } catch {}
     }
@@ -511,18 +608,28 @@
           <div class="items">
             ${c.items.map((it, i) => {
               const id = `${c.id}-${i}`; ITEMS[id] = { ...it, id };
-              const desc5 = it.descuentoKg?.[5] ? Math.max(1, it.precio - it.descuentoKg[5]) : null;
+              const tieneMay = it.kg && !it.esPromo && CONFIG.mayoreo.activo && CONFIG.mayoreo.descuentoKg > 0;
+              const precMay = tieneMay ? Math.max(1, it.precio - CONFIG.mayoreo.descuentoKg) : null;
+              const esKilo = it.kg > 0 && !it.esPromo;
               return `<article class="item" data-q="${norm(it.nombre + ' ' + it.descripcion)}">
-                <div class="item-media"><img class="item-img" src="${it.foto}" alt="${esc(it.nombre)}" loading="lazy" onerror="this.onerror=null;this.src=FALLBACK_IMG">${it.tag ? `<span class="tag${it.esPromo ? ' promo' : ''}">${esc(it.tag)}</span>` : ''}</div>
+                <div class="item-media"><img class="item-img" src="${it.foto || FALLBACK_IMG}" alt="${esc(it.nombre)}" loading="lazy" onerror="this.onerror=null;this.src=FALLBACK_IMG">${it.tag ? `<span class="tag${it.esPromo ? ' promo' : ''}">${esc(it.tag)}</span>` : ''}</div>
                 <div class="item-body">
-                  <div><div class="item-name">${esc(it.nombre)}</div><div class="item-desc">${esc(it.descripcion)}</div>${desc5 ? `<div class="item-meta">Mayoreo 5+ kg: ${money(desc5)}/kg</div>` : ''}</div>
+                  <div>
+                    <div class="item-name">${esc(it.nombre)}</div>
+                    <div class="item-desc">${esc(it.descripcion)}</div>
+                    ${precMay ? `<div class="item-meta">Mayoreo ${CONFIG.mayoreo.minKg}+ kg: ${money(precMay)}/kg</div>` : ''}
+                    ${esKilo ? `<div class="quick-kg-row"><button type="button" class="qchip" data-qadd="${id}:0.5">+½ kg</button><button type="button" class="qchip" data-qadd="${id}:1">+1 kg</button><button type="button" class="qchip pesos" data-pesos="${id}">💵 Por $</button></div>` : ''}
+                  </div>
                   <div class="item-footer"><div class="price-wrap">${it.precioOriginal ? `<span class="price-strike">${money(it.precioOriginal)}</span>` : ''}<span class="price">${money(it.precio)}</span></div><div data-stepper="${id}"></div></div>
                 </div>
               </article>`; }).join('')}
           </div>
         </section>`).join('');
-      Object.keys(cart).forEach(id => { if (!ITEMS[id] || cart[id] < 1) delete cart[id]; });
+      Object.keys(cart).forEach(id => { if (!ITEMS[id] || cart[id] <= 0) delete cart[id]; });
       updateSteppers(); renderPromoBanner(); initSpy();
+      const notaMay = CONFIG.mayoreo.activo && CONFIG.mayoreo.descuentoKg > 0
+        ? ` · Mayoreo desde ${CONFIG.mayoreo.minKg} kg (-${money(CONFIG.mayoreo.descuentoKg)}/kg)` : '';
+      $('#notaMayoreo').textContent = `Precios sincronizados en vivo${notaMay}`;
     }
 
     function renderPromoBanner() {
@@ -531,6 +638,8 @@
       const it = ITEMS[p.itemId];
       $('#promoTag').textContent = p.etiqueta; $('#promoTitle').textContent = it.nombre; $('#promoDesc').textContent = it.descripcion;
       $('#promoOld').textContent = it.precioOriginal ? money(it.precioOriginal) : ''; $('#promoNew').textContent = money(it.precio);
+      const pImg = $('#promoImg');
+      if (it.foto) { pImg.src = it.foto; pImg.hidden = false; } else pImg.hidden = true;
       box.hidden = false;
     }
     $('#btnPromoAdd').addEventListener('click', () => { const id = CONFIG.promoDia.itemId; if (ITEMS[id]) { changeQty(id, 1, true); sfx.promo(); toast('🔥 ¡Promo agregada!'); } });
@@ -538,51 +647,64 @@
     function renderLoyalty() {
       const card = $('#loyaltyCard'); if (!CONFIG.lealtad.activo) { card.hidden = true; return; }
       card.hidden = false;
-      const meta = CONFIG.lealtad.metaKg, sellos = Math.max(0, loyalty.sellos || 0), vis = Math.min(sellos, meta);
+      const meta = CONFIG.lealtad.metaKg, sellos = Math.floor((loyalty.sellos || 0) * 10) / 10, vis = Math.min(Math.floor(sellos), meta);
       $('#loyaltyCount').textContent = `${sellos} / ${meta} kg`;
       let html = ''; for (let i = 1; i <= meta; i++) html += `<div class="stamp${i <= vis ? ' done' : ''}">${i <= vis ? '🫓' : i}</div>`;
       html += `<div class="stamp${sellos >= meta ? ' free' : ''}">🎁</div>`;
       $('#stampsGrid').innerHTML = html;
-      $('#loyaltyMsg').textContent = sellos >= meta ? '🎉 ¡Ya tienes 1 kg gratis! Canjéalo en tu carrito.' : `Te faltan ${meta - vis} kg para tu 11° kilo gratis.`;
+      $('#loyaltyMsg').textContent = sellos >= meta ? '🎉 ¡Ya tienes 1 kg gratis! Canjéalo en tu carrito.' : `Te faltan ${Math.max(0, Math.round((meta - sellos)*10)/10)} kg para tu 11° kilo gratis.`;
     }
     $('#btnStampCounter').addEventListener('click', () => { sfx.tap(); $('#stampPin').value = ''; openModal('#stampOverlay'); });
     $('#btnConfirmStamp').addEventListener('click', () => {
-      const kg = parseInt($('#stampKilos').value, 10) || 0, pin = $('#stampPin').value.trim();
-      if (kg < 1 || kg > 50) { sfx.error(); return toast('Ingresa kilos válidos'); }
+      const kg = parseFloat($('#stampKilos').value) || 0, pin = $('#stampPin').value.trim();
+      if (kg < 0.5 || kg > 50) { sfx.error(); return toast('Ingresa kilos válidos'); }
       if (pin !== CONFIG.lealtad.pinVendedor) { sfx.error(); return toast('PIN incorrecto 🔐'); }
-      loyalty.sellos = (loyalty.sellos || 0) + kg; store.set('te_loyalty', loyalty);
+      loyalty.sellos = Math.round(((loyalty.sellos || 0) + kg) * 10) / 10; store.set('te_loyalty', loyalty);
       renderLoyalty(); closeModal('#stampOverlay'); sfx.success(); toast(`✅ +${kg} kg sellados`);
     });
 
     function calcCartPricing() {
       let totalQualifyingKg = 0, totalLoyaltyKg = 0;
-      Object.entries(cart).forEach(([id, q]) => { const it = ITEMS[id]; if (!it) return; if (it.kg) totalLoyaltyKg += it.kg * q; if (it.descuentoKg && it.kg) totalQualifyingKg += it.kg * q; });
-      const rangos = CONFIG.mayoreo.activo ? [...CONFIG.mayoreo.rangos].sort((a, b) => a.minKg - b.minKg) : [];
-      let activeTier = null, nextTier = null;
-      for (const r of rangos) { if (totalQualifyingKg >= r.minKg) activeTier = r; else if (!nextTier) nextTier = r; }
+      Object.entries(cart).forEach(([id, q]) => {
+        const it = ITEMS[id]; if (!it) return;
+        if (it.kg) totalLoyaltyKg += it.kg * q;
+        if (it.kg && !it.esPromo) totalQualifyingKg += it.kg * q;
+      });
+      totalQualifyingKg = Math.round(totalQualifyingKg * 1000) / 1000;
+      totalLoyaltyKg = Math.round(totalLoyaltyKg * 10) / 10;
+
+      const mayActivo = CONFIG.mayoreo.activo && CONFIG.mayoreo.descuentoKg > 0 && totalQualifyingKg >= CONFIG.mayoreo.minKg;
       let subtotalNormal = 0, subtotalFinal = 0;
       const lines = Object.entries(cart).map(([id, q]) => {
-        const it = ITEMS[id]; let unitPrice = it.precio;
-        if (it.descuentoKg && activeTier) {
-          const min = Object.keys(it.descuentoKg).map(Number).filter(m => totalQualifyingKg >= m).sort((a, b) => b - a)[0];
-          if (min) unitPrice = Math.max(1, it.precio - it.descuentoKg[min]);
-        }
-        subtotalNormal += it.precio * q; subtotalFinal += unitPrice * q;
-        return { id, item: it, qty: q, unitNormal: it.precio, unitFinal: unitPrice, lineFinal: unitPrice * q, hasWholesale: unitPrice < it.precio };
+        const it = ITEMS[id];
+        let unitPrice = it.precio;
+        if (mayActivo && it.kg && !it.esPromo) unitPrice = Math.max(1, it.precio - CONFIG.mayoreo.descuentoKg);
+        const lnNormal = Math.round(it.precio * q * 100) / 100;
+        const lnFinal = Math.round(unitPrice * q * 100) / 100;
+        subtotalNormal += lnNormal; subtotalFinal += lnFinal;
+        return { id, item: it, qty: q, unitNormal: it.precio, unitFinal: unitPrice, lineFinal: lnFinal, hasWholesale: unitPrice < it.precio };
       });
-      return { lines, totalQualifyingKg, totalLoyaltyKg, activeTier, nextTier, subtotalNormal, subtotalFinal, ahorroMayoreo: subtotalNormal - subtotalFinal };
+      return { lines, totalQualifyingKg, totalLoyaltyKg, mayActivo, subtotalNormal: Math.round(subtotalNormal*100)/100, subtotalFinal: Math.round(subtotalFinal*100)/100, ahorroMayoreo: Math.round((subtotalNormal - subtotalFinal)*100)/100 };
     }
 
-    const stepperHTML = (id, small) => (cart[id] || 0) > 0 ? `<div class="stepper${small ? ' sm' : ''}"><button type="button" data-dec="${id}" aria-label="Quitar">−</button><b>${cart[id]}</b><button type="button" data-inc="${id}" aria-label="Agregar">+</button></div>` : `<button type="button" class="add-btn${small ? ' sm' : ''}" data-add="${id}">Agregar</button>`;
+    const stepVal = id => (ITEMS[id]?.kg && !ITEMS[id]?.esPromo) ? 0.5 : 1;
+    const stepperHTML = (id, small) => {
+      const q = cart[id] || 0, it = ITEMS[id];
+      return q > 0
+        ? `<div class="stepper${small ? ' sm' : ''}"><button type="button" data-dec="${id}" aria-label="Quitar">−</button><b>${fmtQty(q, it)}</b><button type="button" data-inc="${id}" aria-label="Agregar">+</button></div>`
+        : `<button type="button" class="add-btn${small ? ' sm' : ''}" data-add="${id}">Agregar</button>`;
+    };
     const updateSteppers = () => $$('#menuContainer [data-stepper]').forEach(el => { el.innerHTML = stepperHTML(el.dataset.stepper, false); });
-    const cartCount = () => Object.values(cart).reduce((a, b) => a + b, 0);
+    const cartCount = () => Object.keys(cart).length;
     const envioCosto = () => (CONFIG.envio.disponible && $('#optDomicilio').checked) ? CONFIG.envio.costo : 0;
 
     function changeQty(id, d, silentSfx = false) {
-      cart[id] = (cart[id] || 0) + d; if (cart[id] <= 0) delete cart[id]; store.set('te_cart', cart);
+      cart[id] = Math.round(((cart[id] || 0) + d) * 1000) / 1000;
+      if (cart[id] <= 0.01) delete cart[id];
+      store.set('te_cart', cart);
       const pricing = calcCartPricing();
       if (!silentSfx) {
-        if (d > 0 && pricing.activeTier && prevWholesaleKg < pricing.activeTier.minKg) { sfx.promo(); toast(`🎉 ¡${pricing.activeTier.nombre} activado!`); }
+        if (d > 0 && pricing.mayActivo && prevWholesaleKg < CONFIG.mayoreo.minKg) { sfx.promo(); toast(`🎉 ¡Mayoreo activado!`); }
         else if (d > 0) sfx.add(); else if (d < 0) sfx.dec();
       }
       prevWholesaleKg = pricing.totalQualifyingKg; updateSteppers(); refreshCartUI();
@@ -592,7 +714,11 @@
     function refreshCartUI() {
       const n = cartCount(), pricing = calcCartPricing(), env = envioCosto();
       $('#cartCount').textContent = n; $('#cartTotal').textContent = money(pricing.subtotalFinal + env);
-      $('#cartSubHint').textContent = pricing.ahorroMayoreo > 0 ? `Ahorras ${money(pricing.ahorroMayoreo)} en mayoreo` : (pricing.nextTier ? `Faltan ${pricing.nextTier.minKg - pricing.totalQualifyingKg} kg para mayoreo` : '');
+      if (pricing.ahorroMayoreo > 0) $('#cartSubHint').textContent = `Ahorras ${money(pricing.ahorroMayoreo)} en mayoreo`;
+      else if (CONFIG.mayoreo.activo && CONFIG.mayoreo.descuentoKg > 0 && pricing.totalQualifyingKg > 0) {
+        const faltan = Math.max(0, Math.round((CONFIG.mayoreo.minKg - pricing.totalQualifyingKg) * 100) / 100);
+        $('#cartSubHint').textContent = faltan > 0 ? `Faltan ${faltan} kg para mayoreo` : '';
+      } else $('#cartSubHint').textContent = '';
       $('#cartBar').classList.toggle('show', n > 0);
       if ($('#cartOverlay').classList.contains('open')) renderCart();
     }
@@ -601,27 +727,61 @@
       const n = cartCount(), pricing = calcCartPricing();
       $('#cartEmpty').hidden = n > 0; $('#cartItems').hidden = n === 0; $('#cartTotals').hidden = n === 0; $('#orderForm').hidden = n === 0; $('#sheetFoot').hidden = n === 0;
       const wb = $('#wholesaleBanner');
-      if (n > 0 && CONFIG.mayoreo.activo) {
+      if (n > 0 && CONFIG.mayoreo.activo && CONFIG.mayoreo.descuentoKg > 0) {
         wb.hidden = false;
-        if (pricing.ahorroMayoreo > 0) { wb.className = 'wholesale-box active'; wb.textContent = `✅ ${pricing.activeTier.nombre} aplicado: ahorras ${money(pricing.ahorroMayoreo)}`; }
-        else if (pricing.nextTier) { wb.className = 'wholesale-box'; wb.textContent = `📦 Llevas ${pricing.totalQualifyingKg} kg. Agrega ${pricing.nextTier.minKg - pricing.totalQualifyingKg} kg más para precio de mayoreo.`; }
-        else wb.hidden = true;
+        if (pricing.mayActivo) { wb.className = 'wholesale-box active'; wb.textContent = `✅ Mayoreo (${CONFIG.mayoreo.minKg}+ kg) aplicado: ahorras ${money(pricing.ahorroMayoreo)}`; }
+        else { const f = Math.round((CONFIG.mayoreo.minKg - pricing.totalQualifyingKg)*100)/100; wb.className = 'wholesale-box'; wb.textContent = `📦 Llevas ${pricing.totalQualifyingKg} kg. Agrega ${f} kg más para ahorrar ${money(CONFIG.mayoreo.descuentoKg)}/kg.`; }
       } else wb.hidden = true;
 
       const canRedeem = CONFIG.lealtad.activo && (loyalty.sellos || 0) >= CONFIG.lealtad.metaKg && n > 0;
       $('#loyaltyRedeemBox').hidden = !canRedeem; if (!canRedeem) $('#chkRedeemFree').checked = false;
       $('#cartItems').innerHTML = pricing.lines.map(l => `<div class="cart-row"><div class="cart-row-info"><b>${esc(l.item.nombre)}</b><span>${l.hasWholesale ? `<s>${money(l.unitNormal)}</s> <b style="display:inline;color:var(--ok)">${money(l.unitFinal)} c/u</b>` : `${money(l.unitFinal)} c/u`}</span></div>${stepperHTML(l.id, true)}<span class="cart-line">${money(l.lineFinal)}</span></div>`).join('');
-      const env = envioCosto(), total = pricing.subtotalFinal + env;
+      const env = envioCosto(), total = Math.round((pricing.subtotalFinal + env) * 100) / 100;
       $('#rowMayoreo').hidden = pricing.ahorroMayoreo <= 0; $('#tMayoreo').textContent = '-' + money(pricing.ahorroMayoreo);
       $('#rowEnvio').hidden = env === 0; $('#tSub').textContent = money(pricing.subtotalNormal); $('#tEnv').textContent = money(env);
       $('#tTotal').textContent = money(total); $('#btnSubmit').innerHTML = `📲 Enviar pedido por WhatsApp · <b>${money(total)}</b>`;
     }
 
+    function openPesosModal(id) {
+      const it = ITEMS[id]; if (!it) return;
+      pesosTargetId = id; sfx.tap();
+      $('#pesosTitle').textContent = `💵 ${it.nombre}`;
+      $('#pesosSub').textContent = `Precio: ${money(it.precio)} / kg`;
+      $('#pesosInput').value = 20;
+      updatePesosPreview();
+      openModal('#pesosOverlay');
+    }
+    function updatePesosPreview() {
+      const it = ITEMS[pesosTargetId]; if (!it) return;
+      const p = parseFloat($('#pesosInput').value) || 0;
+      const kg = p > 0 ? Math.round((p / it.precio) * 1000) / 1000 : 0;
+      $('#pesosPreview').textContent = p > 0 ? `${money(p)} equivale a ${kg} kg` : 'Ingresa un monto en pesos';
+    }
+    $('#pesosInput').addEventListener('input', updatePesosPreview);
+    $('#pesosOverlay').addEventListener('click', e => {
+      const chip = e.target.closest('[data-p]');
+      if (chip) { sfx.tap(); $('#pesosInput').value = chip.dataset.p; updatePesosPreview(); }
+    });
+    $('#btnPesosConfirm').addEventListener('click', () => {
+      const it = ITEMS[pesosTargetId]; if (!it) return;
+      const p = parseFloat($('#pesosInput').value) || 0;
+      if (p <= 0) { sfx.error(); return toast('Ingresa un monto válido'); }
+      const kg = Math.round((p / it.precio) * 1000) / 1000;
+      changeQty(pesosTargetId, kg);
+      closeModal('#pesosOverlay');
+      toast(`Agregado ${money(p)} (${kg} kg) 🛒`);
+    });
+
     function openCart() { sfx.tap(); fillSlots(); renderCart(); openModal('#cartOverlay'); }
     document.body.addEventListener('click', e => {
+      const qadd = e.target.closest('[data-qadd]');
+      if (qadd) { const [id, val] = qadd.dataset.qadd.split(':'); changeQty(id, parseFloat(val)); toast(`+${val} kg agregado 🛒`); return; }
+      const pbtn = e.target.closest('[data-pesos]');
+      if (pbtn) { openPesosModal(pbtn.dataset.pesos); return; }
       const add = e.target.closest('[data-add]'), inc = e.target.closest('[data-inc]'), dec = e.target.closest('[data-dec]');
-      if (add) { changeQty(add.dataset.add, 1); toast('Agregado al pedido 🛒'); }
-      else if (inc) changeQty(inc.dataset.inc, 1); else if (dec) changeQty(dec.dataset.dec, -1);
+      if (add) { changeQty(add.dataset.add, stepVal(add.dataset.add)); toast('Agregado al pedido 🛒'); }
+      else if (inc) changeQty(inc.dataset.inc, stepVal(inc.dataset.inc));
+      else if (dec) changeQty(dec.dataset.dec, -stepVal(dec.dataset.dec));
     });
     $('#cartBar').addEventListener('click', openCart);
     $('#btnVaciar').addEventListener('click', () => { cart = {}; prevWholesaleKg = 0; store.set('te_cart', cart); sfx.dec(); updateSteppers(); refreshCartUI(); toast('Carrito vaciado 🗑'); });
@@ -688,7 +848,7 @@
     function buildOrder() {
       const d = new Date(), nowM = d.getHours() * 60 + d.getMinutes(), pricing = calcCartPricing();
       const canjeoGratis = $('#chkRedeemFree').checked && CONFIG.lealtad.activo && (loyalty.sellos || 0) >= CONFIG.lealtad.metaKg;
-      const items = pricing.lines.map(l => ({ id: l.id, nombre: l.item.nombre, precio: l.unitFinal, qty: l.qty }));
+      const items = pricing.lines.map(l => ({ id: l.id, nombre: l.item.nombre, precio: l.unitFinal, qty: l.qty, esKg: !!(l.item.kg && !l.item.esPromo) }));
       if (canjeoGratis) items.push({ id: 'lealtad-premio', nombre: `🎁 ${CONFIG.lealtad.premio}`, precio: 0, qty: 1, esPremio: true });
       const envio = envioCosto();
       return {
@@ -696,14 +856,14 @@
         cliente: $('#fNombre').value.trim(), tel: $('#fTel').value.replace(/\D/g, ''), entrega: $('#optDomicilio').checked ? 'domicilio' : 'recoger',
         direccion: $('#fDireccion').value.trim(), horaProg: $('#pickupTime').value, pago: $('#optTransfer').checked ? 'transferencia' : 'efectivo',
         notas: $('#fNotas').value.trim(), items, subtotal: pricing.subtotalNormal, ahorroMayoreo: pricing.ahorroMayoreo,
-        kilosLealtad: pricing.totalLoyaltyKg, canjeoGratis, envio, total: pricing.subtotalFinal + envio
+        kilosLealtad: pricing.totalLoyaltyKg, canjeoGratis, envio, total: Math.round((pricing.subtotalFinal + envio)*100)/100
       };
     }
     function buildMessage(o) {
       const L = [`🫓 *${CONFIG.negocio.toUpperCase()}*`, `🛎️ *¡Tienes un nuevo pedido!*`, `━━━━━━━━━━━━━━`, `🎫 Folio: *${o.folio}*`, `📅 ${o.fecha} · 🕐 ${o.hora}`, `👤 ${o.cliente}`, `📱 ${o.tel}`];
       if (o.entrega === 'domicilio') { L.push(`🛵 *A domicilio* (+${money(o.envio)})`, `📍 ${o.direccion}`); } else L.push(`🏪 *Recoge en tienda*`);
       L.push(`⏰ Para: ${o.horaProg}`, `━━━━━━━━━━━━━━`, `🧾 *PRODUCTOS*`);
-      o.items.forEach(it => L.push(`▪️ ${it.qty} × ${it.nombre} — ${it.precio === 0 ? 'GRATIS' : money(it.qty * it.precio)}`));
+      o.items.forEach(it => L.push(`▪️ ${it.qty}${it.esKg ? ' kg' : ''} × ${it.nombre} — ${it.precio === 0 ? 'GRATIS' : money(Math.round(it.qty * it.precio * 100) / 100)}`));
       L.push(`━━━━━━━━━━━━━━`, `Subtotal: ${money(o.subtotal)}`);
       if (o.ahorroMayoreo > 0) L.push(`📦 Descuento mayoreo: -${money(o.ahorroMayoreo)}`);
       if (o.canjeoGratis) L.push(`🎁 *Canje Tarjeta 10+1 aplicado*`);
@@ -729,7 +889,7 @@
       add(`Tel: ${CONFIG.telefono}`, { size: 7, align: 'center', gap: 2 }); sep();
       add('COMPROBANTE DE PEDIDO', { size: 9, bold: true, align: 'center', gap: 1 });
       row('Folio:', o.folio, { bold: true }); row('Fecha:', o.fecha); row('Hora:', o.hora); row('Cliente:', o.cliente.slice(0, 26)); row('Tel:', o.tel); row('Para:', o.horaProg); sep();
-      o.items.forEach(it => row(`${it.qty}x ${it.nombre}`.slice(0, 27), it.precio === 0 ? 'GRATIS' : money2(it.qty * it.precio)));
+      o.items.forEach(it => row(`${it.qty}${it.esKg?'kg':''}x ${it.nombre}`.slice(0, 27), it.precio === 0 ? 'GRATIS' : money2(it.qty * it.precio)));
       sep(); row('Subtotal', money2(o.subtotal));
       if (o.ahorroMayoreo > 0) row('Mayoreo', '-' + money2(o.ahorroMayoreo));
       if (o.envio) row('Envio', money2(o.envio));
@@ -758,7 +918,7 @@
       store.set('te_customer', { nombre: o.cliente, tel: o.tel, direccion: o.direccion || store.get('te_customer', {})?.direccion || '' });
       if (CONFIG.lealtad.activo) {
         if (o.canjeoGratis) { loyalty.sellos = Math.max(0, (loyalty.sellos || 0) - CONFIG.lealtad.metaKg); loyalty.canjes = (loyalty.canjes || 0) + 1; }
-        if (o.kilosLealtad > 0) loyalty.sellos = (loyalty.sellos || 0) + o.kilosLealtad;
+        if (o.kilosLealtad > 0) loyalty.sellos = Math.round(((loyalty.sellos || 0) + o.kilosLealtad) * 10) / 10;
         store.set('te_loyalty', loyalty); renderLoyalty();
       }
       updateHistBadge();
@@ -768,8 +928,7 @@
       store.set('te_cart', cart); updateSteppers(); refreshCartUI(); $('#fNotas').value = '';
       closeModal('#cartOverlay'); sfx.success(); trackEvent('pedido_whatsapp');
       $('#okFolio').textContent = o.folio;
-      const n = o.items.reduce((a, i) => a + i.qty, 0);
-      $('#okResumen').textContent = `${n} artículo${n !== 1 ? 's' : ''} · ${money(o.total)} · ${o.horaProg}`;
+      $('#okResumen').textContent = `${o.items.length} concepto${o.items.length !== 1 ? 's' : ''} · ${money(o.total)} · ${o.horaProg}`;
       $('#okLoyaltyNote').textContent = CONFIG.lealtad.activo && o.kilosLealtad > 0 ? `🎴 +${o.kilosLealtad} kg en lealtad (${loyalty.sellos}/${CONFIG.lealtad.metaKg})` : '';
       $('#okWa').href = url; $('#okPdfNote').textContent = pdfOk ? 'Ticket PDF descargado. 📄' : 'Usa el botón de abajo para descargar el PDF.';
       $('#clabeBox').hidden = !(o.pago === 'transferencia' && CONFIG.clabe); $('#clabeNum').textContent = CONFIG.clabe;
@@ -782,14 +941,14 @@
     const updateHistBadge = () => { const b = $('#histCount'); b.textContent = orders.length; b.hidden = !orders.length; };
     function renderHistory() {
       $('#histEmpty').hidden = orders.length > 0; $('#btnHistClear').hidden = !orders.length;
-      $('#histList').innerHTML = orders.map(o => `<div class="hist-row"><div class="hist-info"><b>${o.folio}</b><span>${o.fecha} · ${o.hora} · ${o.items.reduce((a, i) => a + i.qty, 0)} art. · ${money(o.total)}</span></div><div class="hist-actions"><button data-act="pdf" data-f="${o.folio}">📄</button><button data-act="wa" data-f="${o.folio}">📲</button><button data-act="repeat" data-f="${o.folio}">🔁</button></div></div>`).join('');
+      $('#histList').innerHTML = orders.map(o => `<div class="hist-row"><div class="hist-info"><b>${o.folio}</b><span>${o.fecha} · ${o.hora} · ${money(o.total)}</span></div><div class="hist-actions"><button data-act="pdf" data-f="${o.folio}">📄</button><button data-act="wa" data-f="${o.folio}">📲</button><button data-act="repeat" data-f="${o.folio}">🔁</button></div></div>`).join('');
     }
     $('#histList').addEventListener('click', e => {
       const b = e.target.closest('[data-act]'); if (!b) return; const o = orders.find(x => x.folio === b.dataset.f); if (!o) return;
       if (b.dataset.act === 'pdf') try { makeTicketPDF(o); sfx.tap(); } catch { sfx.error(); }
       if (b.dataset.act === 'wa') { sfx.tap(); window.open(waUrl(o), '_blank'); }
       if (b.dataset.act === 'repeat') {
-        let ok = 0; o.items.forEach(it => { if (!it.esPremio && ITEMS[it.id]) { cart[it.id] = (cart[it.id] || 0) + it.qty; ok++; } });
+        let ok = 0; o.items.forEach(it => { if (!it.esPremio && ITEMS[it.id]) { cart[it.id] = Math.round(((cart[it.id] || 0) + it.qty) * 1000) / 1000; ok++; } });
         store.set('te_cart', cart); updateSteppers(); refreshCartUI(); closeModal('#historyOverlay');
         if (ok) { sfx.promo(); openCart(); } else toast('Productos no disponibles');
       }
@@ -847,7 +1006,9 @@
 
     updateSoundBtn(); fillConfig(); renderMenu(); renderLoyalty(); refreshCartUI();
     updateOpenBadge(); setInterval(updateOpenBadge, 60000); generateShareQR(); updateHistBadge(); initAnalytics();
-    syncConPOS();
+    syncConPOS(false);
+    setInterval(() => { if (!document.hidden) syncConPOS(true); }, 15000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) syncConPOS(true); });
   </script>
 </body>
 </html>
