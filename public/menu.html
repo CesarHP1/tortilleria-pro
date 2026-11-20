@@ -428,10 +428,10 @@
     const CONFIG = {
       negocio: "Tortillería La Esperanza",
       eslogan: "Tortillas frescas todos los días",
-      whatsapp: "525564304079",
-      telefono: "55 6430 4079",
-      direccion: "Av. del Maíz 123, Col. Centro",
-      mapsUrl: "https://maps.google.com/?q=Tortilleria+La+Esperanza",
+whatsapp: "524271972906",
+      telefono: "427 197 2906",
+      direccion: "Río Conca #105, Col. San Cayetano",
+      mapsUrl: "https://maps.app.goo.gl/hAJ3zay5vn5DhLsg7",
       clabe: "",
       horario: { abre: "07:00", cierra: "18:00" },
       preparacionMin: 20,
@@ -517,7 +517,13 @@
       const preciosPOS = datos.precios || {};
       const meta = datos.meta || {};
       const prodMeta = meta.productos || {};
-
+if (meta.negocio) {
+     if (meta.negocio.nombre) CONFIG.negocio = meta.negocio.nombre;
+     if (meta.negocio.eslogan) CONFIG.eslogan = meta.negocio.eslogan;
+     if (meta.negocio.abre) CONFIG.horario.abre = meta.negocio.abre;
+     if (meta.negocio.cierra) CONFIG.horario.cierra = meta.negocio.cierra;
+     fillConfig(); updateOpenBadge();
+   }
       // Mayoreo desde POS
       if (meta.mayoreo) {
         CONFIG.mayoreo.activo = !!meta.mayoreo.activo;
