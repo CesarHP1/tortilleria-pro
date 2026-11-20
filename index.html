@@ -1112,7 +1112,6 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
     <div class="mf"><button class="btn bnb btn-block btn-lg" onclick="doVenta()">💳 Cobrar Venta</button></div>
   </div>
 </div>
-
 <!-- PEDIDO -->
 <div class="mo" id="mpe">
   <div class="md sm">
@@ -1148,28 +1147,73 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
     <div class="mf"><button class="btn bnp btn-block btn-lg" onclick="doPedido()">Confirmar Pedido</button></div>
   </div>
 </div>
-
+   
 <!-- PRECIOS -->
 <div class="mo" id="mp">
   <div class="md lg">
-    <div class="mh"><h2>⚙️ Catálogo de Productos</h2><button class="mc" onclick="closeM('mp')">✕</button></div>
+    <div class="mh"><h2>⚙️ Catálogo, Fotos y Promos</h2><button class="mc" onclick="closeM('mp')">✕</button></div>
     <div class="mb2">
       <div class="adds">
-        <span class="slbl">Nuevo producto</span>
-        <div style="display:flex;gap:.65rem;flex-wrap:wrap">
+        <span class="slbl">➕ Nuevo producto</span>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.45rem">
           <input type="text" id="nn" placeholder="Nombre del producto" style="flex:1;min-width:130px"/>
-          <input type="number" id="nprice" placeholder="Precio $" style="width:105px" min="0"/>
+          <input type="number" id="nprice" placeholder="Precio $" style="width:95px" min="0"/>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+          <input type="text" id="ndesc" placeholder="Descripción corta (opcional)" style="flex:1;min-width:140px"/>
+          <label class="btn" style="background:var(--bll);color:var(--bl);padding:.48rem .8rem;font-size:.78rem;cursor:pointer">
+            📷 Subir foto
+            <input type="file" id="nfoto-file" accept="image/*" hidden onchange="onNuevaFoto(this)"/>
+          </label>
+          <img id="nfoto-prev" style="width:36px;height:36px;border-radius:8px;object-fit:cover;display:none;border:1px solid var(--bor)"/>
         </div>
       </div>
-      <span class="slbl">Productos actuales</span>
-      <div id="prl" style="max-height:270px;overflow-y:auto;margin-top:.4rem"></div>
-      <div style="margin-top:.875rem">
+
+      <span class="slbl">Productos actuales (toca 📷 para subir foto PNG/JPG)</span>
+      <div id="prl" style="max-height:230px;overflow-y:auto;margin-top:.4rem"></div>
+
+      <div class="rpt-box" style="margin-top:.85rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+          <h4 style="margin:0">🔥 Promo / Combo del día</h4>
+          <label style="display:flex;align-items:center;gap:.35rem;font-size:.78rem;font-weight:700;cursor:pointer">
+            <input type="checkbox" id="pm-act" checked/> Activa
+          </label>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.45rem">
+          <input type="text" id="pm-nom" placeholder="Ej. Combo: 1 kg Tortilla + Salsa" style="flex:1;min-width:150px"/>
+          <input type="text" id="pm-desc" placeholder="Descripción" style="flex:1;min-width:140px"/>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+          <div style="flex:1;min-width:105px"><label class="ilbl">Precio tachado $</label><input type="number" id="pm-old" min="0" style="width:100%"/></div>
+          <div style="flex:1;min-width:105px"><label class="ilbl">Precio promo $</label><input type="number" id="pm-new" min="0" style="width:100%"/></div>
+          <label class="btn" style="background:var(--al);color:var(--ad);padding:.5rem .8rem;font-size:.78rem;cursor:pointer;margin-top:14px">
+            📷 Foto promo
+            <input type="file" accept="image/*" hidden onchange="onPromoFoto(this)"/>
+          </label>
+          <img id="pm-prev" style="width:38px;height:38px;border-radius:8px;object-fit:cover;display:none;margin-top:14px;border:1px solid var(--bor)"/>
+        </div>
+      </div>
+
+      <div class="rpt-box" style="margin-top:.65rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+          <h4 style="margin:0">📦 Mayoreo automático en carrito</h4>
+          <label style="display:flex;align-items:center;gap:.35rem;font-size:.78rem;font-weight:700;cursor:pointer">
+            <input type="checkbox" id="my-act" checked/> Activo
+          </label>
+        </div>
+        <div class="grid2">
+          <div><label class="ilbl">A partir de (KG)</label><input type="number" id="my-kg" min="1" step="1" style="width:100%"/></div>
+          <div><label class="ilbl">Descuento por KG ($)</label><input type="number" id="my-desc" min="0" step="0.5" style="width:100%"/></div>
+        </div>
+      </div>
+
+      <div style="margin-top:.75rem">
         <label class="ilbl">🔑 Contraseña Admin (vacío = sin cambio)</label>
         <input type="password" id="apc" placeholder="••••••••" style="width:100%"/>
       </div>
     </div>
     <div class="mf" style="display:flex;flex-direction:column;gap:.5rem">
-      <button class="btn bna btn-block btn-lg" onclick="savePrecios()">💾 Guardar Cambios</button>
+      <button class="btn bna btn-block btn-lg" onclick="savePrecios()">💾 Guardar y Actualizar Menú QR</button>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
         <button class="btn" style="background:var(--pul);color:var(--pu);border:1.5px solid var(--pu)" onclick="closeM('mp');openM('m-users')">👥 Usuarios</button>
         <button class="btn bnr" onclick="if(confirm('¿Cerrar sesión de '+activeUser+'?')){doLogout()}">🚪 Cerrar Sesión</button>
@@ -2208,18 +2252,108 @@ function finPed(){
 //  PRECIOS
 // ══════════════════════════════════════════
 var preciosList=[];
+var nuevaFotoTemp='';
+var DEF_META={
+  productos:{},
+  promo:{activo:true,nombre:'Combo: 1 kg Tortilla + Salsa 250ml',desc:'Tortilla recién hecha + salsa casera',precioOriginal:42,precio:38,foto:''},
+  mayoreo:{activo:true,minKg:5,descuentoKg:2}
+};
+function getMenuMeta(){
+  var m = gs('menuMeta');
+  if(!m || typeof m !== 'object') m = JSON.parse(JSON.stringify(DEF_META));
+  m.productos = m.productos || {};
+  m.promo = Object.assign({}, DEF_META.promo, m.promo||{});
+  m.mayoreo = Object.assign({}, DEF_META.mayoreo, m.mayoreo||{});
+  return m;
+}
+function comprimirImagen(file, cb){
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    var img = new Image();
+    img.onload = function(){
+      var S = 240, c = document.createElement('canvas');
+      c.width = S; c.height = S;
+      var ctx = c.getContext('2d');
+      var side = Math.min(img.width, img.height);
+      var sx = (img.width - side)/2, sy = (img.height - side)/2;
+      ctx.fillStyle = '#fffbf2'; ctx.fillRect(0,0,S,S);
+      ctx.drawImage(img, sx, sy, side, side, 0, 0, S, S);
+      var dataUrl = c.toDataURL('image/webp', 0.78);
+      if(!dataUrl.startsWith('data:image/webp')) dataUrl = c.toDataURL('image/jpeg', 0.78);
+      cb(dataUrl);
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function onNuevaFoto(inp){
+  if(!inp.files[0]) return;
+  comprimirImagen(inp.files[0], function(url){
+    nuevaFotoTemp = url;
+    var p = document.getElementById('nfoto-prev');
+    p.src = url; p.style.display = 'block';
+    toast('Foto lista para agregar 📷');
+  });
+}
+function onProdFoto(i, inp){
+  if(!inp.files[0]) return;
+  comprimirImagen(inp.files[0], function(url){
+    preciosList[i].foto = url;
+    renderPList();
+    toast('Foto cargada 📷 (dale Guardar abajo)');
+  });
+}
+function onPromoFoto(inp){
+  if(!inp.files[0]) return;
+  comprimirImagen(inp.files[0], function(url){
+    window._promoFotoTemp = url;
+    var p = document.getElementById('pm-prev');
+    p.src = url; p.style.display = 'block';
+    toast('Foto de promo cargada 📷');
+  });
+}
 
 function buildPList(){
-  document.getElementById('nn').value='';document.getElementById('nprice').value='';document.getElementById('apc').value='';
-  preciosList=Object.entries(precios).map(function(e){return{n:e[0],p:e[1]};});renderPList();
+  var m = getMenuMeta();
+  nuevaFotoTemp = '';
+  document.getElementById('nn').value='';
+  document.getElementById('nprice').value='';
+  document.getElementById('ndesc').value='';
+  document.getElementById('nfoto-file').value='';
+  document.getElementById('nfoto-prev').style.display='none';
+  document.getElementById('apc').value='';
+
+  document.getElementById('pm-act').checked = !!m.promo.activo;
+  document.getElementById('pm-nom').value = m.promo.nombre||'';
+  document.getElementById('pm-desc').value = m.promo.desc||'';
+  document.getElementById('pm-old').value = m.promo.precioOriginal||0;
+  document.getElementById('pm-new').value = m.promo.precio||0;
+  window._promoFotoTemp = m.promo.foto||'';
+  var pp = document.getElementById('pm-prev');
+  if(window._promoFotoTemp){ pp.src=window._promoFotoTemp; pp.style.display='block'; } else pp.style.display='none';
+
+  document.getElementById('my-act').checked = !!m.mayoreo.activo;
+  document.getElementById('my-kg').value = m.mayoreo.minKg||5;
+  document.getElementById('my-desc').value = m.mayoreo.descuentoKg||0;
+
+  preciosList = Object.entries(precios).map(function(e){
+    var info = m.productos[e[0]] || {};
+    return { n:e[0], p:e[1], desc:info.desc||'', foto:info.foto||'' };
+  });
+  renderPList();
 }
 
 function renderPList(){
   document.getElementById('prl').innerHTML=preciosList.map(function(item,i){
-    return '<div class="prow" style="background:'+(item._del?'var(--rl)':'var(--bg)')+';opacity:'+(item._del?.35:1)+';transition:.2s">'+
-      '<button type="button" onclick="delPR('+i+')" style="background:none;border:1.5px solid '+(item._del?'var(--re)':'var(--bor)')+';cursor:pointer;color:'+(item._del?'var(--re)':'var(--s4)')+';font-size:15px;padding:.2rem .5rem;border-radius:8px;font-weight:900;transition:.15s;min-width:32px">'+(item._del?'↩':'✕')+'</button>'+
-      '<span class="pname" style="'+(item._del?'text-decoration:line-through;color:var(--s4)':'')+'">'+item.n+'</span>'+
-      '<div class="piw"><span>$</span><input type="number" value="'+item.p+'" min="0" step="0.5" style="width:65px" '+(item._del?'disabled':'')+' oninput="preciosList['+i+'].p=parseFloat(this.value)||0"/></div></div>';
+    var thumb = item.foto ? '<img src="'+item.foto+'" style="width:34px;height:34px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1px solid var(--bor)"/>' : '';
+    return '<div class="prow" style="flex-wrap:wrap;background:'+(item._del?'var(--rl)':'var(--bg)')+';opacity:'+(item._del?.35:1)+';transition:.2s">'+
+      '<button type="button" onclick="delPR('+i+')" style="background:none;border:1.5px solid '+(item._del?'var(--re)':'var(--bor)')+';cursor:pointer;color:'+(item._del?'var(--re)':'var(--s4)')+';font-size:15px;padding:.2rem .5rem;border-radius:8px;font-weight:900;min-width:32px">'+(item._del?'↩':'✕')+'</button>'+
+      thumb+
+      '<div style="flex:1;min-width:110px"><span class="pname" style="display:block;'+(item._del?'text-decoration:line-through;color:var(--s4)':'')+'">'+item.n+'</span>'+
+      '<input type="text" placeholder="Descripción..." value="'+(item.desc||'').replace(/"/g,'&quot;')+'" '+(item._del?'disabled':'')+' oninput="preciosList['+i+'].desc=this.value" style="width:100%;padding:.22rem .45rem;font-size:.75rem;margin-top:3px"/></div>'+
+      '<label style="cursor:pointer;padding:.32rem .5rem;border-radius:8px;border:1.5px solid var(--bor);background:var(--sur);font-size:.82rem" title="Subir foto">📷<input type="file" accept="image/*" hidden '+(item._del?'disabled':'')+' onchange="onProdFoto('+i+',this)"/></label>'+
+      '<div class="piw"><span>$</span><input type="number" value="'+item.p+'" min="0" step="0.5" style="width:60px" '+(item._del?'disabled':'')+' oninput="preciosList['+i+'].p=parseFloat(this.value)||0"/></div></div>';
   }).join('')||'<p style="text-align:center;color:var(--s4);padding:.875rem;font-size:.82rem">Sin productos</p>';
 }
 
@@ -2228,7 +2362,7 @@ function delPR(i){sndDelete();preciosList[i]._del=!preciosList[i]._del;renderPLi
 const SB_URL = 'https://beapqpwlrsqktkiyzsiw.supabase.co';
 const SB_KEY = 'sb_publishable_oxnS7x997JZgD_1aEjqWkg_MJhV9wbA';
 
-async function publicarMenuEnNube(preciosActualizados){
+async function publicarMenuEnNube(preciosActualizados, metaActualizada){
   if(!navigator.onLine){ toast('Guardado local (sin internet para subir al menú QR)','i'); return; }
   var pin = sessionStorage.getItem('tp_pub_pin') || prompt('🔑 Ingresa tu PIN secreto para actualizar el menú QR:');
   if(!pin) return;
@@ -2238,7 +2372,7 @@ async function publicarMenuEnNube(preciosActualizados){
       headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         pin_ingresado: pin,
-        nuevos_datos: { precios: preciosActualizados, actualizado: new Date().toLocaleDateString('es-MX') }
+        nuevos_datos: { precios: preciosActualizados, meta: metaActualizada, actualizado: new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) }
       })
     });
     if(!res.ok){ toast('Error al subir al menú QR ('+res.status+')','e'); return; }
@@ -2257,12 +2391,42 @@ function savePrecios(){
   var np2=document.getElementById('apc').value.trim();
   var nn=document.getElementById('nn').value.trim();
   var np=parseFloat(document.getElementById('nprice').value);
-  if(nn&&np>0){var existe=preciosList.find(function(x){return x.n===nn;});if(!existe)preciosList.push({n:nn,p:np});else existe.p=np;logOp('PROD_AGREGA',{nombre:nn,precio:np});}
-  var up={};
-  preciosList.forEach(function(item){if(!item._del)up[item.n]=item.p;else logOp('PROD_ELIMINA',{nombre:item.n,precioAntes:item.p});});
+  var nd=(document.getElementById('ndesc').value||'').trim();
+  if(nn&&np>0){
+    var existe=preciosList.find(function(x){return x.n===nn;});
+    if(!existe) preciosList.push({n:nn,p:np,desc:nd,foto:nuevaFotoTemp||''});
+    else { existe.p=np; if(nd) existe.desc=nd; if(nuevaFotoTemp) existe.foto=nuevaFotoTemp; }
+    logOp('PROD_AGREGA',{nombre:nn,precio:np});
+  }
+  var up={}, metaProd={};
+  preciosList.forEach(function(item){
+    if(!item._del){
+      up[item.n]=item.p;
+      metaProd[item.n]={ desc:item.desc||'', foto:item.foto||'' };
+    } else logOp('PROD_ELIMINA',{nombre:item.n,precioAntes:item.p});
+  });
   Object.keys(precios).forEach(function(k){if(k in up&&precios[k]!==up[k])logOp('PROD_PRECIO',{nombre:k,antes:precios[k],despues:up[k]});});
-  precios=up;if(np2)pass=np2;save();closeM('mp');toast('Catálogo guardado — '+Object.keys(precios).length+' productos 💾');
-  publicarMenuEnNube(up);
+
+  var nuevaMeta = {
+    productos: metaProd,
+    promo: {
+      activo: document.getElementById('pm-act').checked,
+      nombre: document.getElementById('pm-nom').value.trim() || 'Combo del día',
+      desc: document.getElementById('pm-desc').value.trim(),
+      precioOriginal: parseFloat(document.getElementById('pm-old').value)||0,
+      precio: parseFloat(document.getElementById('pm-new').value)||0,
+      foto: window._promoFotoTemp||''
+    },
+    mayoreo: {
+      activo: document.getElementById('my-act').checked,
+      minKg: Math.max(1, parseInt(document.getElementById('my-kg').value,10)||5),
+      descuentoKg: Math.max(0, parseFloat(document.getElementById('my-desc').value)||0)
+    }
+  };
+  ss('menuMeta', nuevaMeta);
+  precios=up;if(np2)pass=np2;save();closeM('mp');
+  toast('Catálogo guardado — '+Object.keys(precios).length+' productos 💾');
+  publicarMenuEnNube(up, nuevaMeta);
 }
 
 // ══════════════════════════════════════════
