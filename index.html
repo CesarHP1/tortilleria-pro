@@ -883,7 +883,7 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
   <div class="nb">
     <div class="nl" title="Tortillería Pro v5.0">🫓</div>
     <div class="nt">
-      <h1>Tortillería Pro</h1>
+      <h1 style="display:flex;align-items:center;gap:.35rem"><span id="nav-biz-title">Tortillería Pro</span><button type="button" onclick="openNegocio()" title="Cambiar nombre y horario" style="background:none;border:none;cursor:pointer;font-size:.95rem;padding:0;-webkit-text-fill-color:initial">✏️</button></h1>
       <p>POS v5.0 · Sistema Operativo</p>
     </div>
   </div>
@@ -2356,7 +2356,31 @@ function renderPList(){
       '<div class="piw"><span>$</span><input type="number" value="'+item.p+'" min="0" step="0.5" style="width:60px" '+(item._del?'disabled':'')+' oninput="preciosList['+i+'].p=parseFloat(this.value)||0"/></div></div>';
   }).join('')||'<p style="text-align:center;color:var(--s4);padding:.875rem;font-size:.82rem">Sin productos</p>';
 }
-
+function openNegocio(){
+  var m = getMenuMeta();
+  var neg = m.negocio || { nombre: 'Tortillería Pro', eslogan: 'Tortillas frescas todos los días', abre: '07:00', cierra: '18:00' };
+  document.getElementById('neg-nom').value = neg.nombre || 'Tortillería Pro';
+  document.getElementById('neg-tag').value = neg.eslogan || 'Tortillas frescas todos los días';
+  document.getElementById('neg-abre').value = neg.abre || '07:00';
+  document.getElementById('neg-cierra').value = neg.cierra || '18:00';
+  openM('m-negocio');
+}
+function guardarNegocio(){
+  var m = getMenuMeta();
+  m.negocio = {
+    nombre: document.getElementById('neg-nom').value.trim() || 'Tortillería Pro',
+    eslogan: document.getElementById('neg-tag').value.trim() || 'Tortillas frescas todos los días',
+    abre: document.getElementById('neg-abre').value || '07:00',
+    cierra: document.getElementById('neg-cierra').value || '18:00'
+  };
+  ss('menuMeta', m);
+  var t = document.getElementById('nav-biz-title');
+  if(t) t.textContent = m.negocio.nombre;
+  document.title = m.negocio.nombre;
+  closeM('m-negocio');
+  toast('Nombre y horario guardados 🏪');
+  publicarMenuEnNube(precios, m);
+}
 function delPR(i){sndDelete();preciosList[i]._del=!preciosList[i]._del;renderPList();}
 
 const SB_URL = 'https://beapqpwlrsqktkiyzsiw.supabase.co';
@@ -2408,6 +2432,7 @@ function savePrecios(){
   Object.keys(precios).forEach(function(k){if(k in up&&precios[k]!==up[k])logOp('PROD_PRECIO',{nombre:k,antes:precios[k],despues:up[k]});});
 
   var nuevaMeta = {
+     negocio: getMenuMeta().negocio || null,
     productos: metaProd,
     promo: {
       activo: document.getElementById('pm-act').checked,
@@ -2738,10 +2763,11 @@ function bootApp(){
 
   // Loader hide
   // Welcome — iOS needs user gesture first, so only on desktop
-  if(!_isIOS){
-    setTimeout(function(){speak('Bienvenido '+activeUser+'. Sistema listo.');},900);
-  }
-  renderUsersList();
+if(!_isIOS){
+  setTimeout(function(){speak('Bienvenido '+activeUser+'. Sistema listo.');},900);
+}
+var _nm=getMenuMeta().negocio;if(_nm&&_nm.nombre){document.getElementById('nav-biz-title').textContent=_nm.nombre;document.title=_nm.nombre;}
+renderUsersList();
 }
 
 // ══════════════════════════════════════════
@@ -2996,7 +3022,21 @@ setInterval(function(){
 
   </div>
 </div>
-
+<!-- MODAL NOMBRE Y HORARIO DEL NEGOCIO -->
+<div class="mo" id="m-negocio">
+  <div class="md sm">
+    <div class="mh"><h2>🏪 Nombre y Horario</h2><button class="mc" onclick="closeM('m-negocio')">✕</button></div>
+    <div class="mb2">
+      <div style="margin-bottom:.75rem"><label class="ilbl">Nombre de tu tortillería</label><input type="text" id="neg-nom" placeholder="Ej. Tortillería La Esperanza" style="width:100%"/></div>
+      <div style="margin-bottom:.75rem"><label class="ilbl">Eslogan</label><input type="text" id="neg-tag" placeholder="Ej. Tortillas frescas todos los días" style="width:100%"/></div>
+      <div class="grid2">
+        <div><label class="ilbl">Hora que abre</label><input type="time" id="neg-abre" style="width:100%"/></div>
+        <div><label class="ilbl">Hora que cierra</label><input type="time" id="neg-cierra" style="width:100%"/></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn bna btn-block btn-lg" onclick="guardarNegocio()">💾 Guardar y Actualizar Menú</button></div>
+  </div>
+</div>
 <!-- MODAL GESTIÓN DE USUARIOS (admin) -->
 <div class="mo" id="m-users">
   <div class="md sm">
