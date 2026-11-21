@@ -1380,6 +1380,7 @@ function authLogin(username, password){
     if(hashPass(password) !== SA_HASH) return 'Contraseña incorrecta';
     rawSet(SESS_KEY, { user: SA_USER, expires: Date.now() + SESS_DURATION });
     activeUser = SA_USER; activeUserIsSuper = true;
+    try{ sessionStorage.setItem('tp_pub_pin', password); }catch(e){}
     return null;
   }
   // Regular user (local to this device)
@@ -1388,6 +1389,7 @@ function authLogin(username, password){
   if(users[key].hash !== hashPass(password)) return 'Contraseña incorrecta';
   rawSet(SESS_KEY, { user: key, expires: Date.now() + SESS_DURATION });
   activeUser = key; activeUserIsSuper = false;
+  try{ sessionStorage.setItem('tp_pub_pin', password); }catch(e){}
   return null;
 }
 
@@ -1403,6 +1405,7 @@ function createUser(username, password){
   rawSet(USERS_KEY, users);
   rawSet(SESS_KEY, { user: key, expires: Date.now() + SESS_DURATION });
   activeUser = key; activeUserIsSuper = false;
+  try{ sessionStorage.setItem('tp_pub_pin', password); }catch(e){}
   return null;
 }
 
@@ -2213,11 +2216,17 @@ function doPedido(){
 function openPedDet(id){
   pedAct=pedidos.find(function(p){return p.id===id;});if(!pedAct)return;
   var tot=pedAct.prods.reduce(function(a,p){return a+(p.c*p.pr);},0);
+  var extra='';
+  if(pedAct.tel) extra+='<div>📱 Tel: <strong>'+pedAct.tel+'</strong></div>';
+  if(pedAct.entrega==='domicilio') extra+='<div>🛵 <strong>A domicilio:</strong> '+(pedAct.direccion||'Sin dirección')+'</div>';
+  else if(pedAct.entrega) extra+='<div>🏪 Recoge en tienda</div>';
+  if(pedAct.notas) extra+='<div>📝 Notas: '+pedAct.notas+'</div>';
   document.getElementById('dpb').innerHTML=
     '<div style="display:flex;align-items:center;gap:.65rem;margin-bottom:.875rem">'+
       '<div class="oav" style="width:50px;height:50px;font-size:1.2rem">'+pedAct.nom.charAt(0).toUpperCase()+'</div>'+
       '<div><strong style="font-size:1.1rem;font-weight:900">'+pedAct.nom+'</strong>'+
-      '<div style="font-size:.72rem;color:var(--pu);font-weight:700;font-family:\'Space Mono\',monospace">🕐 '+pedAct.hora+'</div></div></div>'+
+      '<div style="font-size:.72rem;color:var(--pu);font-weight:700;font-family:\'Space Mono\',monospace">🕐 '+(pedAct.horaTexto||pedAct.hora)+'</div></div></div>'+
+    (extra?'<div style="background:var(--bll);border-radius:11px;padding:.6rem .8rem;font-size:.78rem;margin-bottom:.7rem;line-height:1.5">'+extra+'</div>':'')+
     '<div class="dpr">'+
       pedAct.prods.map(function(p){return '<div class="drow"><span>'+p.c+' × '+p.p+'</span><strong>$'+(p.c*p.pr).toFixed(2)+'</strong></div>';}).join('')+
       '<div class="dtot"><span>Total Estimado</span><span class="dam">$'+tot.toFixed(2)+'</span></div></div>'+
@@ -3025,13 +3034,26 @@ setInterval(function(){
 <!-- MODAL NOMBRE Y HORARIO DEL NEGOCIO -->
 <div class="mo" id="m-negocio">
   <div class="md sm">
-    <div class="mh"><h2>🏪 Nombre y Horario</h2><button class="mc" onclick="closeM('m-negocio')">✕</button></div>
+    <div class="mh"><h2>🏪 Datos de tu Tortillería</h2><button class="mc" onclick="closeM('m-negocio')">✕</button></div>
     <div class="mb2">
-      <div style="margin-bottom:.75rem"><label class="ilbl">Nombre de tu tortillería</label><input type="text" id="neg-nom" placeholder="Ej. Tortillería La Esperanza" style="width:100%"/></div>
-      <div style="margin-bottom:.75rem"><label class="ilbl">Eslogan</label><input type="text" id="neg-tag" placeholder="Ej. Tortillas frescas todos los días" style="width:100%"/></div>
-      <div class="grid2">
+      <div style="margin-bottom:.65rem"><label class="ilbl">Nombre de tu tortillería</label><input type="text" id="neg-nom" placeholder="Ej. Tortillería La Esperanza" style="width:100%"/></div>
+      <div style="margin-bottom:.65rem"><label class="ilbl">Eslogan</label><input type="text" id="neg-tag" placeholder="Ej. Tortillas frescas todos los días" style="width:100%"/></div>
+      <div class="grid2" style="margin-bottom:.65rem">
+        <div><label class="ilbl">Teléfono (llamadas)</label><input type="tel" id="neg-tel" placeholder="427 197 2906" style="width:100%"/></div>
+        <div><label class="ilbl">WhatsApp pedidos (10 díg.)</label><input type="tel" id="neg-wa" placeholder="4271972906" style="width:100%"/></div>
+      </div>
+      <div style="margin-bottom:.65rem"><label class="ilbl">Dirección</label><input type="text" id="neg-dir" placeholder="Calle #105, Col. San Cayetano" style="width:100%"/></div>
+      <div style="margin-bottom:.65rem"><label class="ilbl">Link de Google Maps</label><input type="url" id="neg-maps" placeholder="https://maps.app.goo.gl/..." style="width:100%"/></div>
+      <div class="grid2" style="margin-bottom:.75rem">
         <div><label class="ilbl">Hora que abre</label><input type="time" id="neg-abre" style="width:100%"/></div>
         <div><label class="ilbl">Hora que cierra</label><input type="time" id="neg-cierra" style="width:100%"/></div>
+      </div>
+      <div class="rpt-box" style="margin:0">
+        <h4>🔗 Link único de tu Menú QR</h4>
+        <div style="display:flex;gap:.4rem;align-items:center">
+          <input type="text" id="neg-qr-url" readonly style="flex:1;font-size:.72rem"/>
+          <button type="button" class="btn bnb" onclick="copiarLinkMenu()" style="padding:.55rem .8rem;font-size:.75rem">📋 Copiar</button>
+        </div>
       </div>
     </div>
     <div class="mf"><button class="btn bna btn-block btn-lg" onclick="guardarNegocio()">💾 Guardar y Actualizar Menú</button></div>
