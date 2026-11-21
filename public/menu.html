@@ -1199,7 +1199,33 @@ $('#btnCopyClabePay').addEventListener('click', async () => {
       }
       updateHistBadge();
       let pdfOk = true; try { makeTicketPDF(o); } catch { pdfOk = false; }
-      const url = waUrl(o); lastOrder = o; window.open(url, '_blank');
+      // 1. Guardar en Supabase para que el Index (POS) lo vea
+if (navigator.onLine && CONFIG.supabase.url) {
+  fetch(`${CONFIG.supabase.url}/rest/v1/pedidos_web`, {
+    method: 'POST',
+    headers: { 
+      'apikey': CONFIG.supabase.anonKey, 
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({
+      tienda: TIENDA_ID,
+      folio: o.folio,
+      cliente: o.cliente,
+      telefono: o.tel,
+      entrega: o.entrega,
+      direccion: o.direccion || '',
+      hora_prog: o.horaProg,
+      items: o.items,
+      total: o.total,
+      estado: 'nuevo',
+      creado_en: new Date().toISOString()
+    })
+  }).catch(e => console.log('Error guardando pedido web', e));
+}
+// 2. Abrir WhatsApp como ya lo hacía
+lastOrder = o; 
+window.open(url, '_blank');
       cart = {}; prevWholesaleKg = 0; $('#chkRedeemFree').checked = false;
       store.set('te_cart', cart); updateSteppers(); refreshCartUI(); $('#fNotas').value = '';
       closeModal('#cartOverlay'); sfx.success(); trackEvent('pedido_whatsapp');
