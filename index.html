@@ -1,1 +1,1020 @@
-<!-- TEST NUMBER ACCOUNT FIELD -- test change placeholder -->
+<!-- TEST NUMBER ACCOUNT FIELD -- test change placeholder --><!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#b45309">
+  <meta name="description" content="Menú digital con pedidos por WhatsApp · Tortillería La Esperanza">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Tortillería">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <title>Menú · Tortillería La Esperanza</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    :root{
+      --primary:#d97706; --primary-2:#92400e; --accent:#f59e0b;
+      --bg:#fffbf2; --card:#ffffff; --field:#ffffff;
+      --text:#1c1917; --muted:#78716c; --border:#f0e6cf;
+      --chip:#fef3c7; --chip-text:#92400e; --ok:#16a34a; --ok-bg:#dcfce7;
+      --shadow:0 4px 20px rgba(146,64,14,.08); --radius:18px;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{
+        --primary:#f59e0b; --primary-2:#b45309;
+        --bg:#0f0d0a; --card:#1a1714; --field:#241f1a;
+        --text:#f5f0e8; --muted:#9e9189; --border:#2d2820;
+        --chip:rgba(251,191,36,.14); --chip-text:#fbbf24; --ok-bg:rgba(34,197,94,.14);
+        --shadow:0 6px 24px rgba(0,0,0,.45);
+      }
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html,body{overflow-x:hidden;width:100%}
+    [hidden]{display:none!important}
+    .hide{display:none!important}
+    body{font-family:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.45;padding-bottom:110px;-webkit-tap-highlight-color:transparent}
+    body.locked{overflow:hidden}
+    button{font:inherit}
+    :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+    .container{width:100%;max-width:1180px;margin:0 auto;padding:0 16px}
+
+    .header{background:linear-gradient(140deg,var(--primary),var(--primary-2));color:#fff;padding:58px 16px 38px;text-align:center;position:relative;overflow:hidden}
+    .header::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.14) 1.5px,transparent 1.6px);background-size:22px 22px;pointer-events:none}
+    .header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:20px;background:var(--bg);border-radius:20px 20px 0 0}
+    .header>*{position:relative}
+    .top-actions{position:absolute;top:12px;left:12px;right:12px;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:8px;max-width:1180px;margin:0 auto}
+    .hist-btn,.sound-btn{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.16);color:#fff;border-radius:99px;padding:6px 11px;font-size:.78rem;font-weight:800;cursor:pointer;display:inline-flex;gap:5px;align-items:center;backdrop-filter:blur(6px);white-space:nowrap}
+    .hist-badge{background:#fff;color:var(--primary-2);border-radius:99px;min-width:18px;height:18px;font-size:.7rem;display:grid;place-items:center;padding:0 4px}
+    .logo{font-size:2.6rem;margin-bottom:4px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.2))}
+    .header h1{font-size:clamp(1.35rem,4vw,1.9rem);font-weight:900;letter-spacing:-.3px}
+    .header p{opacity:.92;font-size:.9rem;margin-top:3px}
+    .status-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+    .status-badge,.update-badge,.install-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:4px 11px;border-radius:99px;font-size:.75rem;font-weight:700;color:#fff}
+    .install-badge{cursor:pointer;background:rgba(255,255,255,.26);font-weight:800}
+    .status-badge::before{content:'';width:8px;height:8px;border-radius:99px;background:#4ade80;animation:pulse 1.6s infinite}
+    .status-badge.closed::before{background:#f87171;animation:none}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.5)}50%{box-shadow:0 0 0 5px rgba(74,222,128,0)}}
+
+    .highlights{display:grid;grid-template-columns:1fr;gap:12px;margin:10px auto 6px}
+    @media (min-width:780px){.highlights{grid-template-columns:1.1fr .9fr}}
+    .promo-banner{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #f59e0b;border-radius:var(--radius);padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(--shadow);color:#451a03}
+    @media (prefers-color-scheme: dark){.promo-banner{background:linear-gradient(135deg,#38250b,#241707);color:#fef3c7;border-color:#b45309}}
+    .promo-img{width:64px;height:64px;border-radius:12px;object-fit:cover;flex-shrink:0;border:1px solid rgba(245,158,11,.35)}
+    .promo-info{min-width:0;flex:1}
+    .promo-tag{display:inline-block;background:#dc2626;color:#fff;font-size:.66rem;font-weight:900;padding:2px 8px;border-radius:99px;text-transform:uppercase;margin-bottom:4px}
+    .promo-title{font-weight:900;font-size:1rem;line-height:1.25}
+    .promo-desc{font-size:.78rem;opacity:.85;margin-top:2px}
+    .promo-prices{display:flex;align-items:baseline;gap:6px;margin-top:5px}
+    .price-old{text-decoration:line-through;opacity:.6;font-size:.85rem;font-weight:700}
+    .price-new{font-weight:900;font-size:1.2rem;color:#b45309}
+    @media (prefers-color-scheme: dark){.price-new{color:#fbbf24}}
+    .promo-btn{flex-shrink:0;border:none;background:var(--primary);color:#fff;font-weight:900;font-size:.85rem;padding:10px 15px;border-radius:12px;cursor:pointer;box-shadow:0 4px 12px rgba(194,87,11,.3);white-space:nowrap}
+    .promo-btn:active{transform:scale(.96)}
+
+    .loyalty-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+    .loyalty-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .loyalty-top b{font-size:.94rem;font-weight:900}
+    .loyalty-pill{background:var(--chip);color:var(--chip-text);font-size:.75rem;font-weight:900;padding:3px 10px;border-radius:99px}
+    .stamps-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+    @media (min-width:540px){.stamps-grid{grid-template-columns:repeat(11,1fr);gap:4px}}
+    .stamp{aspect-ratio:1;border-radius:9px;border:1.5px dashed var(--border);display:grid;place-items:center;font-size:.82rem;opacity:.55;background:var(--bg);font-weight:800;color:var(--muted)}
+    .stamp.done{border-style:solid;border-color:var(--primary);background:var(--chip);opacity:1;color:var(--text)}
+    .stamp.free{border-style:solid;border-color:var(--ok);background:var(--ok-bg);opacity:1;color:var(--ok)}
+    .loyalty-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:.76rem;color:var(--muted)}
+
+    .sticky-wrap{position:sticky;top:0;z-index:30;background:var(--bg);padding:10px 0 0;border-bottom:1px solid var(--border)}
+    .search-box input{width:100%;padding:11px 16px;border-radius:99px;border:1.5px solid var(--border);background:var(--card);color:var(--text);font:inherit;font-size:.92rem}
+    .search-box input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(217,119,6,.18)}
+    .nav-cats{display:flex;gap:8px;overflow-x:auto;padding:10px 0 12px;scrollbar-width:none}
+    .nav-cats::-webkit-scrollbar{display:none}
+    .cat-btn{flex-shrink:0;padding:7px 15px;border:1.5px solid var(--border);background:var(--card);border-radius:99px;font-size:.86rem;font-weight:800;color:var(--muted);cursor:pointer;transition:all .2s}
+    .cat-btn.active,.cat-btn:hover{background:var(--primary);border-color:var(--primary);color:#fff}
+
+    .menu-section{padding:18px 0 6px;scroll-margin-top:126px}
+    .section-title{font-size:1.15rem;font-weight:900;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .section-title.center{justify-content:center}
+    .items{display:grid;grid-template-columns:1fr;gap:12px}
+    @media (min-width:640px){.items{grid-template-columns:repeat(2,1fr)}}
+    @media (min-width:1024px){.items{grid-template-columns:repeat(3,1fr)}}
+
+    .item{position:relative;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s;min-width:0}
+    @media (hover:hover){.item:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(146,64,14,.15)}.item:hover .item-img{transform:scale(1.06)}}
+    .item-media{position:relative;width:104px;flex-shrink:0;overflow:hidden}
+    .item-img{width:100%;height:100%;min-height:112px;object-fit:cover;display:block;background:var(--chip);transition:transform .35s}
+    .tag{position:absolute;top:7px;left:7px;font-size:.64rem;font-weight:800;background:rgba(255,251,235,.94);color:#92400e;padding:2px 7px;border-radius:7px}
+    .tag.promo{background:#dc2626;color:#fff}
+    .item-body{padding:11px 12px;flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:7px;min-width:0}
+    .item-name{font-weight:800;font-size:.96rem;line-height:1.25}
+    .item-desc{font-size:.8rem;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px}
+    .item-meta{font-size:.72rem;color:var(--ok);font-weight:800;margin-top:3px}
+    .quick-kg-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+    .qchip{border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.7rem;font-weight:800;padding:3px 8px;border-radius:99px;cursor:pointer;transition:.15s}
+    .qchip:hover{background:var(--chip);border-color:var(--primary);color:var(--chip-text)}
+    .qchip.pesos{background:var(--chip);color:var(--chip-text);border-color:rgba(217,119,6,.35)}
+    .item-footer{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .price-wrap{display:flex;align-items:baseline;gap:5px;flex-wrap:wrap}
+    .price{font-weight:900;color:var(--primary);font-size:1.1rem}
+    .price-strike{font-size:.8rem;color:var(--muted);text-decoration:line-through;font-weight:700}
+
+    .add-btn{border:none;background:var(--primary);color:#fff;font-weight:800;font-size:.82rem;padding:7px 14px;border-radius:99px;cursor:pointer;transition:transform .15s;box-shadow:0 3px 10px rgba(194,87,11,.28);white-space:nowrap}
+    .add-btn:active{transform:scale(.94)}
+    .stepper{display:inline-flex;align-items:center;gap:2px;background:var(--chip);border-radius:99px;padding:3px}
+    .stepper button{width:28px;height:28px;border:none;border-radius:99px;background:var(--card);color:var(--primary);font-size:1rem;font-weight:900;cursor:pointer;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+    .stepper b{min-width:34px;text-align:center;font-size:.84rem;color:var(--chip-text);padding:0 3px}
+    .stepper.sm button{width:26px;height:26px;font-size:.92rem}
+    .stepper.sm b{min-width:28px;font-size:.8rem}
+
+    .cart-bar{position:fixed;left:14px;right:14px;bottom:calc(12px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:13px 16px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;font-weight:800;font-size:.96rem;cursor:pointer;box-shadow:0 10px 30px rgba(146,64,14,.4);z-index:40;transform:translateY(150%);transition:transform .3s cubic-bezier(.2,.9,.3,1.2)}
+    .cart-bar.show{transform:translateY(0)}
+    .cart-count{background:#fff;color:var(--primary-2);min-width:28px;height:28px;border-radius:99px;display:grid;place-items:center;font-size:.88rem;padding:0 6px}
+    .cart-count.bump{animation:bump .3s}
+    @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
+    .cart-label{flex:1;text-align:left;min-width:0}
+    .cart-label small{display:block;font-size:.7rem;opacity:.92;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cart-total{font-size:1.05rem;white-space:nowrap}
+
+    .overlay{position:fixed;inset:0;background:rgba(15,10,5,.58);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;z-index:60;opacity:0;transition:opacity .25s}
+    .overlay.open{opacity:1}
+    .overlay.center{align-items:center;padding:16px}
+    .sheet{background:var(--bg);width:100%;max-width:560px;max-height:92dvh;border-radius:24px 24px 0 0;display:flex;flex-direction:column;transform:translateY(40px);transition:transform .28s cubic-bezier(.2,.9,.3,1);box-shadow:0 -10px 40px rgba(0,0,0,.25)}
+    .overlay.open .sheet{transform:translateY(0)}
+    .sheet-handle{width:44px;height:5px;border-radius:99px;background:var(--border);margin:10px auto 0;flex-shrink:0}
+    .sheet-head{display:flex;align-items:center;justify-content:space-between;padding:10px 18px 8px;flex-shrink:0}
+    .sheet-head h2{font-size:1.12rem;font-weight:900}
+    .close-btn{border:none;background:var(--chip);color:var(--chip-text);width:34px;height:34px;border-radius:99px;font-size:1rem;cursor:pointer}
+    .sheet-body{overflow-y:auto;padding:4px 18px 14px;flex:1}
+    .sheet-foot{padding:12px 18px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--bg);flex-shrink:0}
+    @media (min-width:640px){.overlay{align-items:center;padding:18px}.sheet{border-radius:22px;max-height:88vh}}
+
+    .wholesale-box{background:var(--chip);color:var(--chip-text);border-radius:12px;padding:10px 12px;font-size:.82rem;font-weight:800;margin-bottom:10px;border:1px solid var(--border)}
+    .wholesale-box.active{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+    .loyalty-redeem-box{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--ok-bg);border:1.5px solid var(--ok);border-radius:12px;padding:10px 12px;margin:10px 0;font-size:.84rem;font-weight:800;color:var(--ok)}
+    .loyalty-redeem-box input{width:18px;height:18px;accent-color:var(--ok)}
+
+    .cart-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px dashed var(--border)}
+    .cart-row-info{flex:1;min-width:0}
+    .cart-row-info b{display:block;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cart-row-info span{font-size:.75rem;color:var(--muted)}
+    .cart-line{min-width:54px;text-align:right;font-weight:800;color:var(--primary);font-size:.9rem}
+    .totals{padding:12px 0 4px}
+    .t-row{display:flex;justify-content:space-between;font-size:.88rem;color:var(--muted);padding:3px 0}
+    .t-row b{color:var(--text)}
+    .t-row.saving b,.t-row.saving span{color:var(--ok);font-weight:800}
+    .t-total{font-size:1.05rem;font-weight:800;color:var(--text);border-top:1px solid var(--border);margin-top:6px;padding-top:8px}
+    .t-total b{color:var(--primary);font-size:1.2rem}
+
+    .form-title{font-size:1rem;font-weight:900;margin:14px 0 10px}
+    .field{margin-bottom:12px}
+    .field>label{display:block;font-size:.8rem;font-weight:800;margin-bottom:5px}
+    .field input,.field select,.field textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:12px;background:var(--field);color:var(--text);font:inherit;font-size:.94rem}
+    .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(217,119,6,.18)}
+    .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .seg-opt{position:relative}
+    .seg-opt input{position:absolute;opacity:0;pointer-events:none}
+    .seg-opt span{display:block;text-align:center;padding:10px 8px;border:1.5px solid var(--border);border-radius:12px;background:var(--field);font-weight:800;font-size:.88rem;cursor:pointer}
+    .seg-opt input:checked+span{background:var(--primary);border-color:var(--primary);color:#fff}
+    .seg-opt small{display:block;font-size:.7rem;font-weight:700;opacity:.85}
+    .addr{display:none}
+    .addr.show{display:block}
+    .hint{font-size:.75rem;color:var(--muted);margin-top:5px}
+    .hint.center{text-align:center}
+
+    .btn-primary{display:block;width:100%;text-align:center;border:none;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;font-weight:800;font-size:.98rem;padding:14px;border-radius:14px;cursor:pointer;text-decoration:none;box-shadow:0 8px 22px rgba(194,87,11,.35)}
+    .btn-ghost{display:block;width:100%;text-align:center;background:transparent;border:1.5px solid var(--border);color:var(--text);font-weight:800;padding:11px;border-radius:14px;cursor:pointer;text-decoration:none}
+    .btn-ghost.sm{width:auto;padding:8px 13px;font-size:.82rem}
+    .link-btn{border:none;background:none;color:var(--muted);font-size:.78rem;font-weight:700;cursor:pointer;text-decoration:underline;padding:4px}
+
+    .modal-card{background:var(--bg);border-radius:22px;padding:24px 20px;max-width:400px;width:100%;text-align:center;display:flex;flex-direction:column;gap:10px;transform:scale(.92);transition:transform .25s;max-height:90dvh;overflow:auto}
+    .overlay.open .modal-card{transform:scale(1)}
+    .modal-card h2{font-weight:900;font-size:1.2rem}
+    .check{width:70px;height:70px;margin:2px auto;display:block}
+    .check circle{stroke:var(--ok);stroke-width:3;stroke-dasharray:151;stroke-dashoffset:151;animation:dash .6s ease forwards}
+    .check path{stroke:var(--ok);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:36;stroke-dashoffset:36;animation:dash .35s .5s ease forwards}
+    @keyframes dash{to{stroke-dashoffset:0}}
+    .ok-sub{font-size:.85rem;color:var(--muted)}
+    .folio-chip{border:2px dashed var(--primary);color:var(--primary);border-radius:12px;padding:10px;font-size:.88rem;background:var(--chip)}
+    .folio-chip b{font-family:ui-monospace,'Courier New',monospace;font-size:1.05rem}
+    .ok-res{font-weight:800;font-size:.92rem}
+    .clabe-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--muted)}
+    .clabe-box b{font-family:ui-monospace,monospace;font-size:.95rem;color:var(--text)}
+
+    .pesos-chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+    .pesos-chips button{border:1.5px solid var(--border);background:var(--card);color:var(--text);font-weight:900;padding:7px 12px;border-radius:10px;cursor:pointer}
+    .pesos-chips button:hover{border-color:var(--primary);background:var(--chip);color:var(--chip-text)}
+
+    .hist-row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:11px;margin-bottom:9px}
+    .hist-info{flex:1;min-width:0}
+    .hist-info b{font-family:ui-monospace,monospace;font-size:.88rem;display:block}
+    .hist-info span{font-size:.74rem;color:var(--muted)}
+    .hist-actions{display:flex;gap:6px}
+    .hist-actions button{width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--field);cursor:pointer;font-size:.95rem}
+
+    .empty{padding:28px 10px;text-align:center;color:var(--muted)}
+    .empty-emoji{font-size:2.3rem;margin-bottom:6px}
+    .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:.85rem;font-weight:800;opacity:0;pointer-events:none;transition:all .25s;z-index:80;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:90vw;text-align:center}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    .nota{text-align:center;padding:18px 16px 4px;font-size:.8rem;color:var(--muted)}
+    .share-card{width:calc(100% - 32px);max-width:560px;margin:18px auto;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px 16px;text-align:center;box-shadow:var(--shadow)}
+    .qr-box{width:148px;height:148px;margin:12px auto;border:2px solid var(--border);border-radius:14px;padding:8px;background:#fff;display:grid;place-items:center}
+    .qr-box img,.qr-box canvas{width:100%!important;height:100%!important;display:block}
+    .biz-line{font-size:.84rem;color:var(--muted);margin-top:4px}
+    .share-links{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+    .page-footer{text-align:center;font-size:.75rem;color:var(--muted);padding:10px 16px 20px}
+
+    @media (max-width:440px){
+      .promo-banner{flex-direction:column;align-items:stretch}
+      .promo-btn{width:100%;text-align:center}
+      .item-media{width:88px}
+      .item-img{min-height:104px}
+      .item-body{padding:10px}
+      .item-name{font-size:.92rem}
+      .hist-btn,.sound-btn{padding:6px 9px;font-size:.74rem}
+    }
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="top-actions">
+      <button class="sound-btn" id="btnSound" type="button" aria-label="Sonido">🔊 Sonido</button>
+      <button class="hist-btn" id="btnHistory" type="button">🧾 Mis pedidos <span class="hist-badge" id="histCount" hidden>0</span></button>
+    </div>
+    <div class="logo">🫓</div>
+    <h1 id="bizName">Tortillería La Esperanza</h1>
+    <p id="bizTag">Tortillas frescas todos los días</p>
+    <div class="status-row">
+      <span class="status-badge" id="openBadge">Abierto</span>
+      <span class="update-badge" id="updBadge">Menú en vivo</span>
+      <button class="install-badge" id="btnInstall" type="button" hidden>📲 Instalar app</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <section class="highlights" aria-label="Promociones y lealtad">
+      <div class="promo-banner" id="promoBanner" hidden>
+        <img class="promo-img" id="promoImg" alt="Promo" hidden>
+        <div class="promo-info">
+          <span class="promo-tag" id="promoTag">🔥 Promo de hoy</span>
+          <div class="promo-title" id="promoTitle"></div>
+          <div class="promo-desc" id="promoDesc"></div>
+          <div class="promo-prices"><span class="price-old" id="promoOld"></span><span class="price-new" id="promoNew"></span></div>
+        </div>
+        <button type="button" class="promo-btn" id="btnPromoAdd">+ Agregar</button>
+      </div>
+
+      <div class="loyalty-card" id="loyaltyCard" hidden>
+        <div class="loyalty-top"><b>🎴 Tarjeta de Lealtad (10+1)</b><span class="loyalty-pill" id="loyaltyCount">0 / 10 kg</span></div>
+        <div class="stamps-grid" id="stampsGrid"></div>
+        <div class="loyalty-foot">
+          <span id="loyaltyMsg">Compra 10 kg y el 11° va gratis</span>
+          <button type="button" class="link-btn" id="btnStampCounter">🔐 Sellar en mostrador</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="sticky-wrap">
+    <div class="container">
+      <div class="search-box"><input type="search" id="searchInput" placeholder="🔍 Buscar en el menú…" aria-label="Buscar"></div>
+      <nav class="nav-cats" id="navCats" aria-label="Categorías"></nav>
+    </div>
+  </div>
+
+  <main class="container" id="menuContainer"></main>
+  <div class="empty" id="noResults" hidden><div class="empty-emoji">🌽</div>No encontramos nada con esa búsqueda.</div>
+  <p class="nota" id="notaMayoreo">Precios sincronizados en vivo · Se actualiza automáticamente</p>
+
+  <section class="share-card">
+    <h2 class="section-title center">📲 Comparte el menú</h2>
+    <div class="qr-box" id="qrBox" aria-label="Código QR del menú"></div>
+    <p class="hint center">Escanea o comparte el enlace. El QR nunca cambia.</p>
+    <p class="biz-line" id="bizAddr"></p>
+    <p class="biz-line" id="bizHours"></p>
+    <div class="share-links">
+      <a id="linkMaps" target="_blank" rel="noopener" class="btn-ghost sm">📍 Cómo llegar</a>
+      <a id="linkTel" class="btn-ghost sm">📞 Llamar</a>
+    </div>
+  </section>
+
+  <footer class="page-footer">© 2026 Tortillería La Esperanza · Hecho con 🌽</footer>
+
+  <button id="cartBar" class="cart-bar" type="button" aria-label="Ver mi pedido">
+    <span class="cart-count" id="cartCount">0</span>
+    <span class="cart-label">Ver mi pedido <small id="cartSubHint"></small></span>
+    <span class="cart-total" id="cartTotal">$0</span>
+  </button>
+
+  <!-- MODAL CARRITO -->
+  <div class="overlay" id="cartOverlay" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="Tu pedido">
+      <div class="sheet-handle"></div>
+      <header class="sheet-head"><h2>🛒 Tu pedido</h2><button class="close-btn" type="button" data-close="cartOverlay" aria-label="Cerrar">✕</button></header>
+      <div class="sheet-body">
+        <div class="wholesale-box" id="wholesaleBanner" hidden></div>
+        <div id="cartItems"></div>
+        <div class="empty" id="cartEmpty" hidden><div class="empty-emoji">🛒</div>Tu carrito está vacío.<br><button class="link-btn" type="button" data-close="cartOverlay">← Ver el menú</button></div>
+        <label class="loyalty-redeem-box" id="loyaltyRedeemBox" hidden><span>🎁 ¡Tienes 10 sellos! Canjear <b>1 kg gratis</b></span><input type="checkbox" id="chkRedeemFree"></label>
+        <div class="totals" id="cartTotals">
+          <div class="t-row"><span>Subtotal</span><b id="tSub">$0</b></div>
+          <div class="t-row saving" id="rowMayoreo" hidden><span>Ahorro mayoreo</span><b id="tMayoreo">-$0</b></div>
+          <div class="t-row" id="rowEnvio" hidden><span>Envío</span><b id="tEnv">$0</b></div>
+          <div class="t-row t-total"><span>Total</span><b id="tTotal">$0</b></div>
+          <button type="button" class="link-btn" id="btnVaciar">🗑 Vaciar carrito</button>
+        </div>
+        <form id="orderForm" novalidate>
+          <h3 class="form-title">📋 Tus datos</h3>
+          <div class="field"><label for="fNombre">Nombre *</label><input id="fNombre" type="text" autocomplete="name" placeholder="Ej. María López" maxlength="40" required></div>
+          <div class="field"><label for="fTel">Tu WhatsApp (10 dígitos) *</label><input id="fTel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="5512345678" maxlength="14" required></div>
+          <div class="field">
+            <label>¿Cómo lo recibes?</label>
+            <div class="seg">
+              <label class="seg-opt"><input type="radio" name="entrega" id="optRecoger" checked><span>🏪 Recoger</span></label>
+              <label class="seg-opt" id="segDomicilio"><input type="radio" name="entrega" id="optDomicilio"><span>🛵 Domicilio <small id="envioNota"></small></span></label>
+            </div>
+          </div>
+          <div class="field addr" id="addrWrap"><label for="fDireccion">Dirección y referencias *</label><textarea id="fDireccion" rows="2" maxlength="160" placeholder="Calle, número, colonia y referencias"></textarea></div>
+          <div class="field"><label for="pickupTime">⏰ ¿A qué hora lo quieres?</label><select id="pickupTime"></select><p class="hint" id="slotHint"></p></div>
+          <div class="field">
+            <label>Forma de pago</label>
+            <div class="seg">
+              <label class="seg-opt"><input type="radio" name="pago" id="optEfectivo" checked><span>💵 Efectivo</span></label>
+              <label class="seg-opt"><input type="radio" name="pago" id="optTransfer"><span>💳 Transferencia</span></label>
+            </div>
+          </div>
+          <div class="field"><label for="fNotas">Notas (opcional)</label><textarea id="fNotas" rows="2" maxlength="200" placeholder="Ej. tortillas bien cocidas…"></textarea></div>
+        </form>
+      </div>
+      <div class="sheet-foot" id="sheetFoot">
+        <button type="submit" form="orderForm" class="btn-primary" id="btnSubmit">📲 Enviar pedido por WhatsApp</button>
+        <p class="hint center">Solo toca <b>Enviar</b> en WhatsApp y tu ticket PDF se descarga solo.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PEDIR POR PESOS -->
+  <div class="overlay center" id="pesosOverlay" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Pedir por pesos">
+      <h2 id="pesosTitle">💵 Pedir por pesos</h2>
+      <p class="ok-sub" id="pesosSub"></p>
+      <div class="pesos-chips">
+        <button type="button" data-p="10">$10</button>
+        <button type="button" data-p="15">$15</button>
+        <button type="button" data-p="20">$20</button>
+        <button type="button" data-p="30">$30</button>
+        <button type="button" data-p="50">$50</button>
+      </div>
+      <div class="field" style="text-align:left;margin-top:4px">
+        <label for="pesosInput">¿Cuántos pesos quieres? ($)</label>
+        <input id="pesosInput" type="number" min="1" step="1" value="20">
+        <p class="hint center" id="pesosPreview"></p>
+      </div>
+      <button type="button" class="btn-primary" id="btnPesosConfirm">➕ Agregar al pedido</button>
+      <button type="button" class="link-btn" data-close="pesosOverlay">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL ÉXITO -->
+  <div class="overlay center" id="successOverlay" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Pedido registrado">
+      <svg class="check" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24" fill="none"/><path fill="none" d="M14 27l8 8 16-16"/></svg>
+      <h2>¡Pedido registrado!</h2>
+      <p class="ok-sub">Toca <b>Enviar</b> en WhatsApp para mandarlo a la tortillería.</p>
+      <div class="folio-chip">Folio <b id="okFolio">—</b></div>
+      <p class="ok-res" id="okResumen"></p>
+      <p class="hint center" id="okLoyaltyNote"></p>
+      <p class="hint center" id="okPdfNote"></p>
+      <div class="clabe-box" id="clabeBox" hidden><span>CLABE para transferir</span><b id="clabeNum"></b><button type="button" class="link-btn" id="btnCopyClabe">📋 Copiar CLABE</button></div>
+      <a class="btn-primary" id="okWa" target="_blank" rel="noopener">📲 Abrir WhatsApp</a>
+      <button type="button" class="btn-ghost" id="btnOkPdf">📄 Descargar ticket PDF</button>
+      <button type="button" class="link-btn" data-close="successOverlay">Volver al menú</button>
+    </div>
+  </div>
+
+  <!-- MODAL HISTORIAL -->
+  <div class="overlay" id="historyOverlay" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="Mis pedidos">
+      <div class="sheet-handle"></div>
+      <header class="sheet-head"><h2>🧾 Mis pedidos</h2><button class="close-btn" type="button" data-close="historyOverlay" aria-label="Cerrar">✕</button></header>
+      <div class="sheet-body">
+        <div id="histList"></div>
+        <div class="empty" id="histEmpty" hidden><div class="empty-emoji">🌮</div>Aún no tienes pedidos.</div>
+        <button type="button" class="link-btn" id="btnHistClear" hidden>Borrar historial</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL SELLAR EN MOSTRADOR -->
+  <div class="overlay center" id="stampOverlay" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Sellar lealtad">
+      <h2>🔐 Sellar compra en mostrador</h2>
+      <p class="ok-sub">El encargado ingresa su PIN para sumar kilos comprados en tienda.</p>
+      <div class="field" style="text-align:left"><label for="stampKilos">Kilos comprados</label><input id="stampKilos" type="number" min="1" max="20" value="1"></div>
+      <div class="field" style="text-align:left"><label for="stampPin">PIN del vendedor</label><input id="stampPin" type="password" inputmode="numeric" maxlength="12" placeholder="••••"></div>
+      <button type="button" class="btn-primary" id="btnConfirmStamp">✅ Aplicar sellos</button>
+      <button type="button" class="link-btn" data-close="stampOverlay">Cancelar</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <div id="qrTicket" style="position:absolute;left:-9999px;top:-9999px" aria-hidden="true"></div>
+
+  <script>
+    const CONFIG = {
+      negocio: "Tortillería La Esperanza",
+      eslogan: "Tortillas frescas todos los días",
+whatsapp: "524271972906",
+      telefono: "427 197 2906",
+      direccion: "Río Conca #105, Col. San Cayetano",
+      mapsUrl: "https://maps.app.goo.gl/hAJ3zay5vn5DhLsg7",
+      clabe: "",
+      horario: { abre: "07:00", cierra: "18:00" },
+      preparacionMin: 20,
+      envio: { disponible: true, costo: 25 },
+      actualizado: "En vivo",
+      supabase: {
+        url: "https://beapqpwlrsqktkiyzsiw.supabase.co",
+        anonKey: "sb_publishable_oxnS7x997JZgD_1aEjqWkg_MJhV9wbA"
+      },
+      lealtad: { activo: true, metaKg: 10, premio: "1 kg de Tortilla GRATIS", pinVendedor: "Cesar2106" },
+      mayoreo: { activo: true, minKg: 5, descuentoKg: 2 },
+      promoDia: { activo: true, etiqueta: "🔥 Promo de hoy", itemId: "combos-0" },
+      analitica: { tipo: "ninguno", goatcounterCodigo: "", umamiId: "", umamiSrc: "https://cloud.umami.is/script.js" }
+    };
+
+    const DEFAULT_COMBO = {
+      nombre: "Combo: 1 kg Tortilla + Salsa 250ml",
+      descripcion: "Tortilla recién hecha + salsa casera",
+      precio: 38,
+      precioOriginal: 42,
+      kg: 1,
+      foto: "",
+      tag: "Ahorra $4",
+      esPromo: true
+    };
+
+    let menuData = {
+      categorias: [
+        { id: "combos", nombre: "Combos", emoji: "🔥", items: [ { ...DEFAULT_COMBO } ] },
+        { id: "tortillas", nombre: "Tortillas", emoji: "🫓", items: [
+          { nombre: "Tortilla blanca", descripcion: "Hechas al día, nixtamal propio", precio: 15, kg: 1, foto: "", tag: "Fresco" },
+          { nombre: "Tortilla integral", descripcion: "Maíz integral recién hecho", precio: 18, kg: 1, foto: "", tag: "Especial" },
+          { nombre: "Tortilla harina", descripcion: "Suaves y calientitas", precio: 12, kg: 0, foto: "" }
+        ]},
+        { id: "tacos", nombre: "Tacos y Otros", emoji: "🌮", items: [
+          { nombre: "Taco", descripcion: "De canasta o guisado", precio: 8, kg: 0, foto: "", tag: "Popular" }
+        ]}
+      ]
+    };
+
+    const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const money = n => '$' + Number(n).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    const money2 = n => '$' + Number(n).toFixed(2);
+    const pad = n => String(n).padStart(2, '0');
+    const toMin = s => { const [a, b] = s.split(':').map(Number); return a * 60 + b; };
+    const fmt12 = m => { const h = Math.floor(m / 60), mm = m % 60, h12 = h % 12 || 12; return `${pad(h12)}:${pad(mm)} ${h < 12 ? 'AM' : 'PM'}`; };
+    const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const fmtQty = (q, it) => (Math.round(q * 100) / 100) + (it?.kg && !it?.esPromo ? ' kg' : '');
+    const store = { get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+    const FALLBACK_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="300" height="300" fill="#fef3c7"/><text x="150" y="190" font-size="110" text-anchor="middle">🫓</text></svg>');
+
+    let audioCtx = null, soundOn = store.get('te_sound', true);
+    function unlockAudio() { if (!soundOn) return; const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return; if (!audioCtx) audioCtx = new AC(); if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {}); }
+    function tone(freq, dur = 0.06, type = 'sine', vol = 0.08, delay = 0, freqEnd = null) {
+      if (!soundOn) return;
+      try {
+        unlockAudio(); if (!audioCtx) return;
+        const t = audioCtx.currentTime + delay, osc = audioCtx.createOscillator(), g = audioCtx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, t);
+        if (freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, t + dur);
+        g.gain.setValueAtTime(0.001, t); g.gain.linearRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(t); osc.stop(t + dur + 0.02);
+      } catch {}
+    }
+    const sfx = {
+      tap: () => { tone(520, 0.04, 'triangle', 0.045, 0, 380); try { navigator.vibrate?.(6); } catch {} },
+      add: () => { tone(440, 0.07, 'sine', 0.08, 0, 680); try { navigator.vibrate?.(10); } catch {} },
+      dec: () => { tone(380, 0.06, 'sine', 0.06, 0, 260); try { navigator.vibrate?.(8); } catch {} },
+      promo: () => { tone(587, 0.08, 'triangle', 0.08, 0); tone(880, 0.12, 'triangle', 0.08, 0.07); try { navigator.vibrate?.(14); } catch {} },
+      success: () => { tone(523, 0.09, 'sine', 0.08, 0); tone(659, 0.09, 'sine', 0.08, 0.08); tone(784, 0.16, 'sine', 0.09, 0.16); try { navigator.vibrate?.([15, 30, 15]); } catch {} },
+      error: () => { tone(210, 0.09, 'sawtooth', 0.05, 0); tone(170, 0.11, 'sawtooth', 0.05, 0.09); try { navigator.vibrate?.(25); } catch {} }
+    };
+    const updateSoundBtn = () => { $('#btnSound').textContent = soundOn ? '🔊 Sonido' : '🔇 Silencio'; };
+    $('#btnSound').addEventListener('click', () => { soundOn = !soundOn; store.set('te_sound', soundOn); updateSoundBtn(); if (soundOn) { unlockAudio(); sfx.promo(); toast('Sonidos activados 🔊'); } else toast('Sonidos silenciados 🔇'); });
+    document.addEventListener('pointerdown', unlockAudio, { once: true });
+
+    let cart = store.get('te_cart', {}), orders = store.get('te_orders', []), loyalty = store.get('te_loyalty', { sellos: 0, canjes: 0 });
+    const ITEMS = {}; let lastOrder = null, prevWholesaleKg = 0, lastSnapshot = '', pesosTargetId = null;
+
+    function aplicarDatosPOS(datos) {
+      if (!datos || typeof datos !== 'object') return;
+      const preciosPOS = datos.precios || {};
+      const meta = datos.meta || {};
+      const prodMeta = meta.productos || {};
+if (meta.negocio) {
+     if (meta.negocio.nombre) CONFIG.negocio = meta.negocio.nombre;
+     if (meta.negocio.eslogan) CONFIG.eslogan = meta.negocio.eslogan;
+     if (meta.negocio.abre) CONFIG.horario.abre = meta.negocio.abre;
+     if (meta.negocio.cierra) CONFIG.horario.cierra = meta.negocio.cierra;
+     fillConfig(); updateOpenBadge();
+   }
+      // Mayoreo desde POS
+      if (meta.mayoreo) {
+        CONFIG.mayoreo.activo = !!meta.mayoreo.activo;
+        CONFIG.mayoreo.minKg = Math.max(1, Number(meta.mayoreo.minKg) || 5);
+        CONFIG.mayoreo.descuentoKg = Math.max(0, Number(meta.mayoreo.descuentoKg) || 0);
+      }
+
+      // Promo / Combo desde POS
+      const combosCat = [];
+      if (meta.promo) {
+        CONFIG.promoDia.activo = !!meta.promo.activo;
+        if (meta.promo.activo) {
+          const orig = Number(meta.promo.precioOriginal) || 0;
+          const prec = Number(meta.promo.precio) || 0;
+          const ahorro = orig > prec ? `Ahorra ${money(orig - prec)}` : 'Promo';
+          combosCat.push({
+            nombre: meta.promo.nombre || DEFAULT_COMBO.nombre,
+            descripcion: meta.promo.desc || DEFAULT_COMBO.descripcion,
+            precio: prec,
+            precioOriginal: orig > prec ? orig : 0,
+            kg: 1,
+            foto: meta.promo.foto || '',
+            tag: ahorro,
+            esPromo: true
+          });
+        }
+      } else if (CONFIG.promoDia.activo) {
+        combosCat.push({ ...DEFAULT_COMBO });
+      }
+
+      // Productos desde POS
+      const tortItems = [], otroItems = [];
+      Object.entries(preciosPOS).forEach(([nombre, precio]) => {
+        const info = prodMeta[nombre] || {};
+        const esTortilla = /tortilla|masa/i.test(nombre) && !/harina/i.test(nombre);
+        const obj = {
+          nombre,
+          descripcion: info.desc || (esTortilla ? 'Hechas al día, recién salidas' : 'Disponible hoy'),
+          precio: Number(precio),
+          kg: esTortilla ? 1 : 0,
+          foto: info.foto || '',
+          tag: esTortilla ? 'Fresco' : ''
+        };
+        if (/tortilla|masa/i.test(nombre)) tortItems.push(obj);
+        else otroItems.push(obj);
+      });
+
+      const cats = [];
+      if (combosCat.length) cats.push({ id: 'combos', nombre: 'Combos', emoji: '🔥', items: combosCat });
+      if (tortItems.length) cats.push({ id: 'tortillas', nombre: 'Tortillas', emoji: '🫓', items: tortItems });
+      if (otroItems.length) cats.push({ id: 'tacos', nombre: 'Tacos y Otros', emoji: '🌮', items: otroItems });
+      if (cats.length) menuData = { categorias: cats };
+    }
+
+    async function syncConPOS(silencioso = false) {
+      if (!silencioso) {
+        const cached = store.get('te_pos_datos', null);
+        if (cached) { lastSnapshot = JSON.stringify(cached); aplicarDatosPOS(cached); renderMenu(); refreshCartUI(); }
+      }
+      if (!CONFIG.supabase.url || !CONFIG.supabase.anonKey || !navigator.onLine) return;
+      try {
+        const res = await fetch(`${CONFIG.supabase.url}/rest/v1/menu_publico?id=eq.principal&select=datos`, {
+          headers: { 'apikey': CONFIG.supabase.anonKey },
+          cache: 'no-store'
+        });
+        const rows = await res.json();
+        const datos = rows?.[0]?.datos;
+        if (!datos?.precios) return;
+        const snap = JSON.stringify(datos);
+        if (snap !== lastSnapshot) {
+          const huboCambioPrevio = !!lastSnapshot;
+          lastSnapshot = snap;
+          store.set('te_pos_datos', datos);
+          aplicarDatosPOS(datos);
+          renderMenu(); refreshCartUI();
+          $('#updBadge').textContent = datos.actualizado ? `En vivo · ${datos.actualizado}` : 'Precios al día · En vivo';
+          if (huboCambioPrevio) { sfx.promo(); toast('🔄 Menú actualizado automáticamente'); }
+        }
+      } catch {}
+    }
+
+    function renderMenu() {
+      Object.keys(ITEMS).forEach(k => delete ITEMS[k]);
+      $('#navCats').innerHTML = menuData.categorias.map((c, i) => `<button class="cat-btn${i === 0 ? ' active' : ''}" data-cat="${c.id}">${c.emoji} ${c.nombre}</button>`).join('');
+      $('#menuContainer').innerHTML = menuData.categorias.map(c => `
+        <section class="menu-section" id="${c.id}">
+          <h2 class="section-title"><span>${c.emoji}</span>${c.nombre}</h2>
+          <div class="items">
+            ${c.items.map((it, i) => {
+              const id = `${c.id}-${i}`; ITEMS[id] = { ...it, id };
+              const tieneMay = it.kg && !it.esPromo && CONFIG.mayoreo.activo && CONFIG.mayoreo.descuentoKg > 0;
+              const precMay = tieneMay ? Math.max(1, it.precio - CONFIG.mayoreo.descuentoKg) : null;
+              const esKilo = it.kg > 0 && !it.esPromo;
+              return `<article class="item" data-q="${norm(it.nombre + ' ' + it.descripcion)}">
+                <div class="item-media"><img class="item-img" src="${it.foto || FALLBACK_IMG}" alt="${esc(it.nombre)}" loading="lazy" onerror="this.onerror=null;this.src=FALLBACK_IMG">${it.tag ? `<span class="tag${it.esPromo ? ' promo' : ''}">${esc(it.tag)}</span>` : ''}</div>
+                <div class="item-body">
+                  <div>
+                    <div class="item-name">${esc(it.nombre)}</div>
+                    <div class="item-desc">${esc(it.descripcion)}</div>
+                    ${precMay ? `<div class="item-meta">Mayoreo ${CONFIG.mayoreo.minKg}+ kg: ${money(precMay)}/kg</div>` : ''}
+                    ${esKilo ? `<div class="quick-kg-row"><button type="button" class="qchip" data-qadd="${id}:0.5">+½ kg</button><button type="button" class="qchip" data-qadd="${id}:1">+1 kg</button><button type="button" class="qchip pesos" data-pesos="${id}">💵 Por $</button></div>` : ''}
+                  </div>
+                  <div class="item-footer"><div class="price-wrap">${it.precioOriginal ? `<span class="price-strike">${money(it.precioOriginal)}</span>` : ''}<span class="price">${money(it.precio)}</span></div><div data-stepper="${id}"></div></div>
+                </div>
+              </article>`; }).join('')}
+          </div>
+        </section>`).join('');
+      Object.keys(cart).forEach(id => { if (!ITEMS[id] || cart[id] <= 0) delete cart[id]; });
+      updateSteppers(); renderPromoBanner(); initSpy();
+      const notaMay = CONFIG.mayoreo.activo && CONFIG.mayoreo.descuentoKg > 0
+        ? ` · Mayoreo desde ${CONFIG.mayoreo.minKg} kg (-${money(CONFIG.mayoreo.descuentoKg)}/kg)` : '';
+      $('#notaMayoreo').textContent = `Precios sincronizados en vivo${notaMay}`;
+    }
+
+    function renderPromoBanner() {
+      const p = CONFIG.promoDia, box = $('#promoBanner');
+      if (!p.activo || !ITEMS[p.itemId]) { box.hidden = true; return; }
+      const it = ITEMS[p.itemId];
+      $('#promoTag').textContent = p.etiqueta; $('#promoTitle').textContent = it.nombre; $('#promoDesc').textContent = it.descripcion;
+      $('#promoOld').textContent = it.precioOriginal ? money(it.precioOriginal) : ''; $('#promoNew').textContent = money(it.precio);
+      const pImg = $('#promoImg');
+      if (it.foto) { pImg.src = it.foto; pImg.hidden = false; } else pImg.hidden = true;
+      box.hidden = false;
+    }
+    $('#btnPromoAdd').addEventListener('click', () => { const id = CONFIG.promoDia.itemId; if (ITEMS[id]) { changeQty(id, 1, true); sfx.promo(); toast('🔥 ¡Promo agregada!'); } });
+
+    function renderLoyalty() {
+      const card = $('#loyaltyCard'); if (!CONFIG.lealtad.activo) { card.hidden = true; return; }
+      card.hidden = false;
+      const meta = CONFIG.lealtad.metaKg, sellos = Math.floor((loyalty.sellos || 0) * 10) / 10, vis = Math.min(Math.floor(sellos), meta);
+      $('#loyaltyCount').textContent = `${sellos} / ${meta} kg`;
+      let html = ''; for (let i = 1; i <= meta; i++) html += `<div class="stamp${i <= vis ? ' done' : ''}">${i <= vis ? '🫓' : i}</div>`;
+      html += `<div class="stamp${sellos >= meta ? ' free' : ''}">🎁</div>`;
+      $('#stampsGrid').innerHTML = html;
+      $('#loyaltyMsg').textContent = sellos >= meta ? '🎉 ¡Ya tienes 1 kg gratis! Canjéalo en tu carrito.' : `Te faltan ${Math.max(0, Math.round((meta - sellos)*10)/10)} kg para tu 11° kilo gratis.`;
+    }
+    $('#btnStampCounter').addEventListener('click', () => { sfx.tap(); $('#stampPin').value = ''; openModal('#stampOverlay'); });
+    $('#btnConfirmStamp').addEventListener('click', () => {
+      const kg = parseFloat($('#stampKilos').value) || 0, pin = $('#stampPin').value.trim();
+      if (kg < 0.5 || kg > 50) { sfx.error(); return toast('Ingresa kilos válidos'); }
+      if (pin !== CONFIG.lealtad.pinVendedor) { sfx.error(); return toast('PIN incorrecto 🔐'); }
+      loyalty.sellos = Math.round(((loyalty.sellos || 0) + kg) * 10) / 10; store.set('te_loyalty', loyalty);
+      renderLoyalty(); closeModal('#stampOverlay'); sfx.success(); toast(`✅ +${kg} kg sellados`);
+    });
+
+    function calcCartPricing() {
+      let totalQualifyingKg = 0, totalLoyaltyKg = 0;
+      Object.entries(cart).forEach(([id, q]) => {
+        const it = ITEMS[id]; if (!it) return;
+        if (it.kg) totalLoyaltyKg += it.kg * q;
+        if (it.kg && !it.esPromo) totalQualifyingKg += it.kg * q;
+      });
+      totalQualifyingKg = Math.round(totalQualifyingKg * 1000) / 1000;
+      totalLoyaltyKg = Math.round(totalLoyaltyKg * 10) / 10;
+
+      const mayActivo = CONFIG.mayoreo.activo && CONFIG.mayoreo.descuentoKg > 0 && totalQualifyingKg >= CONFIG.mayoreo.minKg;
+      let subtotalNormal = 0, subtotalFinal = 0;
+      const lines = Object.entries(cart).map(([id, q]) => {
+        const it = ITEMS[id];
+        let unitPrice = it.precio;
+        if (mayActivo && it.kg && !it.esPromo) unitPrice = Math.max(1, it.precio - CONFIG.mayoreo.descuentoKg);
+        const lnNormal = Math.round(it.precio * q * 100) / 100;
+        const lnFinal = Math.round(unitPrice * q * 100) / 100;
+        subtotalNormal += lnNormal; subtotalFinal += lnFinal;
+        return { id, item: it, qty: q, unitNormal: it.precio, unitFinal: unitPrice, lineFinal: lnFinal, hasWholesale: unitPrice < it.precio };
+      });
+      return { lines, totalQualifyingKg, totalLoyaltyKg, mayActivo, subtotalNormal: Math.round(subtotalNormal*100)/100, subtotalFinal: Math.round(subtotalFinal*100)/100, ahorroMayoreo: Math.round((subtotalNormal - subtotalFinal)*100)/100 };
+    }
+
+    const stepVal = id => (ITEMS[id]?.kg && !ITEMS[id]?.esPromo) ? 0.5 : 1;
+    const stepperHTML = (id, small) => {
+      const q = cart[id] || 0, it = ITEMS[id];
+      return q > 0
+        ? `<div class="stepper${small ? ' sm' : ''}"><button type="button" data-dec="${id}" aria-label="Quitar">−</button><b>${fmtQty(q, it)}</b><button type="button" data-inc="${id}" aria-label="Agregar">+</button></div>`
+        : `<button type="button" class="add-btn${small ? ' sm' : ''}" data-add="${id}">Agregar</button>`;
+    };
+    const updateSteppers = () => $$('#menuContainer [data-stepper]').forEach(el => { el.innerHTML = stepperHTML(el.dataset.stepper, false); });
+    const cartCount = () => Object.keys(cart).length;
+    const envioCosto = () => (CONFIG.envio.disponible && $('#optDomicilio').checked) ? CONFIG.envio.costo : 0;
+
+    function changeQty(id, d, silentSfx = false) {
+      cart[id] = Math.round(((cart[id] || 0) + d) * 1000) / 1000;
+      if (cart[id] <= 0.01) delete cart[id];
+      store.set('te_cart', cart);
+      const pricing = calcCartPricing();
+      if (!silentSfx) {
+        if (d > 0 && pricing.mayActivo && prevWholesaleKg < CONFIG.mayoreo.minKg) { sfx.promo(); toast(`🎉 ¡Mayoreo activado!`); }
+        else if (d > 0) sfx.add(); else if (d < 0) sfx.dec();
+      }
+      prevWholesaleKg = pricing.totalQualifyingKg; updateSteppers(); refreshCartUI();
+      if (d > 0) { const b = $('#cartCount'); b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); }
+    }
+
+    function refreshCartUI() {
+      const n = cartCount(), pricing = calcCartPricing(), env = envioCosto();
+      $('#cartCount').textContent = n; $('#cartTotal').textContent = money(pricing.subtotalFinal + env);
+      if (pricing.ahorroMayoreo > 0) $('#cartSubHint').textContent = `Ahorras ${money(pricing.ahorroMayoreo)} en mayoreo`;
+      else if (CONFIG.mayoreo.activo && CONFIG.mayoreo.descuentoKg > 0 && pricing.totalQualifyingKg > 0) {
+        const faltan = Math.max(0, Math.round((CONFIG.mayoreo.minKg - pricing.totalQualifyingKg) * 100) / 100);
+        $('#cartSubHint').textContent = faltan > 0 ? `Faltan ${faltan} kg para mayoreo` : '';
+      } else $('#cartSubHint').textContent = '';
+      $('#cartBar').classList.toggle('show', n > 0);
+      if ($('#cartOverlay').classList.contains('open')) renderCart();
+    }
+
+    function renderCart() {
+      const n = cartCount(), pricing = calcCartPricing();
+      $('#cartEmpty').hidden = n > 0; $('#cartItems').hidden = n === 0; $('#cartTotals').hidden = n === 0; $('#orderForm').hidden = n === 0; $('#sheetFoot').hidden = n === 0;
+      const wb = $('#wholesaleBanner');
+      if (n > 0 && CONFIG.mayoreo.activo && CONFIG.mayoreo.descuentoKg > 0) {
+        wb.hidden = false;
+        if (pricing.mayActivo) { wb.className = 'wholesale-box active'; wb.textContent = `✅ Mayoreo (${CONFIG.mayoreo.minKg}+ kg) aplicado: ahorras ${money(pricing.ahorroMayoreo)}`; }
+        else { const f = Math.round((CONFIG.mayoreo.minKg - pricing.totalQualifyingKg)*100)/100; wb.className = 'wholesale-box'; wb.textContent = `📦 Llevas ${pricing.totalQualifyingKg} kg. Agrega ${f} kg más para ahorrar ${money(CONFIG.mayoreo.descuentoKg)}/kg.`; }
+      } else wb.hidden = true;
+
+      const canRedeem = CONFIG.lealtad.activo && (loyalty.sellos || 0) >= CONFIG.lealtad.metaKg && n > 0;
+      $('#loyaltyRedeemBox').hidden = !canRedeem; if (!canRedeem) $('#chkRedeemFree').checked = false;
+      $('#cartItems').innerHTML = pricing.lines.map(l => `<div class="cart-row"><div class="cart-row-info"><b>${esc(l.item.nombre)}</b><span>${l.hasWholesale ? `<s>${money(l.unitNormal)}</s> <b style="display:inline;color:var(--ok)">${money(l.unitFinal)} c/u</b>` : `${money(l.unitFinal)} c/u`}</span></div>${stepperHTML(l.id, true)}<span class="cart-line">${money(l.lineFinal)}</span></div>`).join('');
+      const env = envioCosto(), total = Math.round((pricing.subtotalFinal + env) * 100) / 100;
+      $('#rowMayoreo').hidden = pricing.ahorroMayoreo <= 0; $('#tMayoreo').textContent = '-' + money(pricing.ahorroMayoreo);
+      $('#rowEnvio').hidden = env === 0; $('#tSub').textContent = money(pricing.subtotalNormal); $('#tEnv').textContent = money(env);
+      $('#tTotal').textContent = money(total); $('#btnSubmit').innerHTML = `📲 Enviar pedido por WhatsApp · <b>${money(total)}</b>`;
+    }
+
+    function openPesosModal(id) {
+      const it = ITEMS[id]; if (!it) return;
+      pesosTargetId = id; sfx.tap();
+      $('#pesosTitle').textContent = `💵 ${it.nombre}`;
+      $('#pesosSub').textContent = `Precio: ${money(it.precio)} / kg`;
+      $('#pesosInput').value = 20;
+      updatePesosPreview();
+      openModal('#pesosOverlay');
+    }
+    function updatePesosPreview() {
+      const it = ITEMS[pesosTargetId]; if (!it) return;
+      const p = parseFloat($('#pesosInput').value) || 0;
+      const kg = p > 0 ? Math.round((p / it.precio) * 1000) / 1000 : 0;
+      $('#pesosPreview').textContent = p > 0 ? `${money(p)} equivale a ${kg} kg` : 'Ingresa un monto en pesos';
+    }
+    $('#pesosInput').addEventListener('input', updatePesosPreview);
+    $('#pesosOverlay').addEventListener('click', e => {
+      const chip = e.target.closest('[data-p]');
+      if (chip) { sfx.tap(); $('#pesosInput').value = chip.dataset.p; updatePesosPreview(); }
+    });
+    $('#btnPesosConfirm').addEventListener('click', () => {
+      const it = ITEMS[pesosTargetId]; if (!it) return;
+      const p = parseFloat($('#pesosInput').value) || 0;
+      if (p <= 0) { sfx.error(); return toast('Ingresa un monto válido'); }
+      const kg = Math.round((p / it.precio) * 1000) / 1000;
+      changeQty(pesosTargetId, kg);
+      closeModal('#pesosOverlay');
+      toast(`Agregado ${money(p)} (${kg} kg) 🛒`);
+    });
+
+    function openCart() { sfx.tap(); fillSlots(); renderCart(); openModal('#cartOverlay'); }
+    document.body.addEventListener('click', e => {
+      const qadd = e.target.closest('[data-qadd]');
+      if (qadd) { const [id, val] = qadd.dataset.qadd.split(':'); changeQty(id, parseFloat(val)); toast(`+${val} kg agregado 🛒`); return; }
+      const pbtn = e.target.closest('[data-pesos]');
+      if (pbtn) { openPesosModal(pbtn.dataset.pesos); return; }
+      const add = e.target.closest('[data-add]'), inc = e.target.closest('[data-inc]'), dec = e.target.closest('[data-dec]');
+      if (add) { changeQty(add.dataset.add, stepVal(add.dataset.add)); toast('Agregado al pedido 🛒'); }
+      else if (inc) changeQty(inc.dataset.inc, stepVal(inc.dataset.inc));
+      else if (dec) changeQty(dec.dataset.dec, -stepVal(dec.dataset.dec));
+    });
+    $('#cartBar').addEventListener('click', openCart);
+    $('#btnVaciar').addEventListener('click', () => { cart = {}; prevWholesaleKg = 0; store.set('te_cart', cart); sfx.dec(); updateSteppers(); refreshCartUI(); toast('Carrito vaciado 🗑'); });
+    $$('input[name="entrega"]').forEach(r => r.addEventListener('change', () => { sfx.tap(); $('#addrWrap').classList.toggle('show', $('#optDomicilio').checked); refreshCartUI(); }));
+    $$('input[name="pago"]').forEach(r => r.addEventListener('change', () => sfx.tap()));
+    $('#chkRedeemFree').addEventListener('change', () => $('#chkRedeemFree').checked ? sfx.promo() : sfx.tap());
+
+    $('#navCats').addEventListener('click', e => {
+      const b = e.target.closest('.cat-btn'); if (!b) return; sfx.tap();
+      $('#searchInput').value = ''; filterMenu(''); $$('.cat-btn').forEach(x => x.classList.toggle('active', x === b));
+      document.getElementById(b.dataset.cat).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    let spyIO = null;
+    function initSpy() {
+      if (spyIO) spyIO.disconnect();
+      spyIO = new IntersectionObserver(es => {
+        es.forEach(en => {
+          if (!en.isIntersecting) return;
+          $$('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === en.target.id));
+          const act = $(`.cat-btn[data-cat="${en.target.id}"]`);
+          if (act) { const nav = $('#navCats'); nav.scrollTo({ left: act.offsetLeft - nav.clientWidth / 2 + act.clientWidth / 2, behavior: 'smooth' }); }
+        });
+      }, { rootMargin: '-140px 0px -65% 0px' });
+      $$('.menu-section').forEach(s => spyIO.observe(s));
+    }
+    function filterMenu(q) {
+      q = norm(q.trim()); let any = false;
+      $$('.menu-section').forEach(sec => {
+        let vis = 0; sec.querySelectorAll('.item').forEach(it => { const ok = !q || it.dataset.q.includes(q); it.classList.toggle('hide', !ok); if (ok) vis++; });
+        sec.classList.toggle('hide', vis === 0); if (vis) any = true;
+      });
+      $('#noResults').hidden = any || !q;
+    }
+    $('#searchInput').addEventListener('input', e => filterMenu(e.target.value));
+
+    function updateOpenBadge() {
+      const d = new Date(), nowM = d.getHours() * 60 + d.getMinutes(), a = toMin(CONFIG.horario.abre), c = toMin(CONFIG.horario.cierra);
+      const open = nowM >= a && nowM < c, b = $('#openBadge');
+      b.classList.toggle('closed', !open); b.textContent = open ? `Abierto · cierra ${fmt12(c)}` : `Cerrado · abre ${fmt12(a)}${nowM >= c ? ' mañana' : ''}`;
+    }
+    function getSlots() {
+      const a = toMin(CONFIG.horario.abre), c = toMin(CONFIG.horario.cierra), d = new Date(), nowM = d.getHours() * 60 + d.getMinutes();
+      let start = Math.ceil(Math.max(a, nowM + CONFIG.preparacionMin) / 15) * 15, day = 'hoy';
+      if (start > c - 10) { start = a; day = 'mañana'; }
+      const out = []; for (let m = start; m <= c - 5; m += 15) out.push({ label: `${fmt12(m)} (${day})`, day });
+      return out;
+    }
+    function fillSlots() {
+      const sel = $('#pickupTime'), prev = sel.value, slots = getSlots();
+      sel.innerHTML = slots.map(s => `<option>${s.label}</option>`).join('');
+      if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+      $('#slotHint').textContent = slots[0]?.day === 'mañana' ? 'Cerrado por hoy: queda para mañana. 🌙' : `Listo en ~${CONFIG.preparacionMin} min.`;
+    }
+
+    function openModal(sel) { const ov = $(sel); ov.hidden = false; requestAnimationFrame(() => ov.classList.add('open')); document.body.classList.add('locked'); }
+    function closeModal(sel) { const ov = $(sel); ov.classList.remove('open'); setTimeout(() => { ov.hidden = true; if (!$('.overlay.open')) document.body.classList.remove('locked'); }, 260); }
+    $$('.overlay').forEach(ov => ov.addEventListener('click', e => { if (e.target === ov) { sfx.tap(); closeModal('#' + ov.id); } }));
+    $$('[data-close]').forEach(b => b.addEventListener('click', () => { sfx.tap(); closeModal('#' + b.dataset.close); }));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') $$('.overlay.open').forEach(ov => closeModal('#' + ov.id)); });
+    let toastTimer;
+    const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2300); };
+
+    const nuevoFolio = () => { const d = new Date(); return `LE-${pad(d.getDate())}${pad(d.getMonth() + 1)}${String(d.getFullYear()).slice(-2)}-${Math.floor(100 + Math.random() * 900)}`; };
+    function buildOrder() {
+      const d = new Date(), nowM = d.getHours() * 60 + d.getMinutes(), pricing = calcCartPricing();
+      const canjeoGratis = $('#chkRedeemFree').checked && CONFIG.lealtad.activo && (loyalty.sellos || 0) >= CONFIG.lealtad.metaKg;
+      const items = pricing.lines.map(l => ({ id: l.id, nombre: l.item.nombre, precio: l.unitFinal, qty: l.qty, esKg: !!(l.item.kg && !l.item.esPromo) }));
+      if (canjeoGratis) items.push({ id: 'lealtad-premio', nombre: `🎁 ${CONFIG.lealtad.premio}`, precio: 0, qty: 1, esPremio: true });
+      const envio = envioCosto();
+      return {
+        folio: nuevoFolio(), ts: d.getTime(), fecha: d.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' }), hora: fmt12(nowM),
+        cliente: $('#fNombre').value.trim(), tel: $('#fTel').value.replace(/\D/g, ''), entrega: $('#optDomicilio').checked ? 'domicilio' : 'recoger',
+        direccion: $('#fDireccion').value.trim(), horaProg: $('#pickupTime').value, pago: $('#optTransfer').checked ? 'transferencia' : 'efectivo',
+        notas: $('#fNotas').value.trim(), items, subtotal: pricing.subtotalNormal, ahorroMayoreo: pricing.ahorroMayoreo,
+        kilosLealtad: pricing.totalLoyaltyKg, canjeoGratis, envio, total: Math.round((pricing.subtotalFinal + envio)*100)/100
+      };
+    }
+    function buildMessage(o) {
+      const L = [`🫓 *${CONFIG.negocio.toUpperCase()}*`, `🛎️ *¡Tienes un nuevo pedido!*`, `━━━━━━━━━━━━━━`, `🎫 Folio: *${o.folio}*`, `📅 ${o.fecha} · 🕐 ${o.hora}`, `👤 ${o.cliente}`, `📱 ${o.tel}`];
+      if (o.entrega === 'domicilio') { L.push(`🛵 *A domicilio* (+${money(o.envio)})`, `📍 ${o.direccion}`); } else L.push(`🏪 *Recoge en tienda*`);
+      L.push(`⏰ Para: ${o.horaProg}`, `━━━━━━━━━━━━━━`, `🧾 *PRODUCTOS*`);
+      o.items.forEach(it => L.push(`▪️ ${it.qty}${it.esKg ? ' kg' : ''} × ${it.nombre} — ${it.precio === 0 ? 'GRATIS' : money(Math.round(it.qty * it.precio * 100) / 100)}`));
+      L.push(`━━━━━━━━━━━━━━`, `Subtotal: ${money(o.subtotal)}`);
+      if (o.ahorroMayoreo > 0) L.push(`📦 Descuento mayoreo: -${money(o.ahorroMayoreo)}`);
+      if (o.canjeoGratis) L.push(`🎁 *Canje Tarjeta 10+1 aplicado*`);
+      if (o.envio) L.push(`Envío: ${money(o.envio)}`);
+      L.push(`💰 *TOTAL: ${money(o.total)} MXN*`, o.pago === 'transferencia' ? `💳 Pago: Transferencia` : `💵 Pago: Efectivo al recibir`);
+      if (o.notas) L.push(`📝 Notas: ${o.notas}`);
+      return L.join('\n');
+    }
+    const waUrl = o => `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(buildMessage(o))}`;
+
+    const wrapText = (t, n) => { const out = []; let line = ''; String(t).split(/\s+/).forEach(w => { if ((line + ' ' + w).trim().length > n) { if (line) out.push(line); line = w; } else line = (line ? line + ' ' : '') + w; }); if (line) out.push(line); return out; };
+    function ticketQR(o) {
+      try { if (!window.QRCode) return null; const box = $('#qrTicket'); box.innerHTML = ''; new QRCode(box, { text: `${o.folio}|${o.fecha} ${o.hora}|TOTAL:${money2(o.total)}`, width: 220, height: 220 }); return box.querySelector('canvas')?.toDataURL('image/png') || null; } catch { return null; }
+    }
+    function makeTicketPDF(o) {
+      if (!window.jspdf) throw new Error('jsPDF');
+      const { jsPDF } = window.jspdf, lines = [];
+      const add = (t, opt = {}) => lines.push({ t, size: 8, bold: false, align: 'left', gap: 0, ...opt });
+      const row = (l, r, opt = {}) => lines.push({ l, r, size: 8, bold: false, align: 'row', gap: 0, ...opt });
+      const sep = () => add('-'.repeat(38), { gap: 1 });
+      wrapText(CONFIG.negocio.toUpperCase(), 26).forEach(t => add(t, { size: 12, bold: true, align: 'center' }));
+      wrapText(CONFIG.direccion, 40).forEach(t => add(t, { size: 7, align: 'center' }));
+      add(`Tel: ${CONFIG.telefono}`, { size: 7, align: 'center', gap: 2 }); sep();
+      add('COMPROBANTE DE PEDIDO', { size: 9, bold: true, align: 'center', gap: 1 });
+      row('Folio:', o.folio, { bold: true }); row('Fecha:', o.fecha); row('Hora:', o.hora); row('Cliente:', o.cliente.slice(0, 26)); row('Tel:', o.tel); row('Para:', o.horaProg); sep();
+      o.items.forEach(it => row(`${it.qty}${it.esKg?'kg':''}x ${it.nombre}`.slice(0, 27), it.precio === 0 ? 'GRATIS' : money2(it.qty * it.precio)));
+      sep(); row('Subtotal', money2(o.subtotal));
+      if (o.ahorroMayoreo > 0) row('Mayoreo', '-' + money2(o.ahorroMayoreo));
+      if (o.envio) row('Envio', money2(o.envio));
+      row('TOTAL', money2(o.total) + ' MXN', { size: 10, bold: true, gap: 1 }); sep();
+      const qr = ticketQR(o); let h = 14 + (qr ? 28 : 0); lines.forEach(l => h += l.size * 0.5 + 1.1 + (l.gap || 0));
+      const doc = new jsPDF({ unit: 'mm', format: [80, Math.ceil(h)] }); let y = 8;
+      lines.forEach(l => {
+        doc.setFont('courier', l.bold ? 'bold' : 'normal'); doc.setFontSize(l.size); y += l.size * 0.36;
+        if (l.align === 'row') { doc.text(l.l, 6, y); doc.text(l.r, 74, y, { align: 'right' }); }
+        else if (l.align === 'center') doc.text(l.t, 40, y, { align: 'center' });
+        else doc.text(l.t, 6, y);
+        y += l.size * 0.14 + 1.1 + (l.gap || 0);
+      });
+      if (qr) doc.addImage(qr, 'PNG', 27, y + 2, 26, 26);
+      doc.save(`Ticket-${o.folio}.pdf`);
+    }
+
+    $('#orderForm').addEventListener('submit', e => {
+      e.preventDefault();
+      if (!cartCount()) { sfx.error(); return toast('Tu carrito está vacío 🛒'); }
+      if ($('#fNombre').value.trim().length < 3) { sfx.error(); return toast('Escribe tu nombre ✍️'); }
+      if ($('#fTel').value.replace(/\D/g, '').length !== 10) { sfx.error(); return toast('Tu teléfono debe tener 10 dígitos 📱'); }
+      if ($('#optDomicilio').checked && $('#fDireccion').value.trim().length < 8) { sfx.error(); return toast('Escribe tu dirección 📍'); }
+      const o = buildOrder();
+      orders.unshift(o); orders = orders.slice(0, 12); store.set('te_orders', orders);
+      store.set('te_customer', { nombre: o.cliente, tel: o.tel, direccion: o.direccion || store.get('te_customer', {})?.direccion || '' });
+      if (CONFIG.lealtad.activo) {
+        if (o.canjeoGratis) { loyalty.sellos = Math.max(0, (loyalty.sellos || 0) - CONFIG.lealtad.metaKg); loyalty.canjes = (loyalty.canjes || 0) + 1; }
+        if (o.kilosLealtad > 0) loyalty.sellos = Math.round(((loyalty.sellos || 0) + o.kilosLealtad) * 10) / 10;
+        store.set('te_loyalty', loyalty); renderLoyalty();
+      }
+      updateHistBadge();
+      let pdfOk = true; try { makeTicketPDF(o); } catch { pdfOk = false; }
+      const url = waUrl(o); lastOrder = o; window.open(url, '_blank');
+      cart = {}; prevWholesaleKg = 0; $('#chkRedeemFree').checked = false;
+      store.set('te_cart', cart); updateSteppers(); refreshCartUI(); $('#fNotas').value = '';
+      closeModal('#cartOverlay'); sfx.success(); trackEvent('pedido_whatsapp');
+      $('#okFolio').textContent = o.folio;
+      $('#okResumen').textContent = `${o.items.length} concepto${o.items.length !== 1 ? 's' : ''} · ${money(o.total)} · ${o.horaProg}`;
+      $('#okLoyaltyNote').textContent = CONFIG.lealtad.activo && o.kilosLealtad > 0 ? `🎴 +${o.kilosLealtad} kg en lealtad (${loyalty.sellos}/${CONFIG.lealtad.metaKg})` : '';
+      $('#okWa').href = url; $('#okPdfNote').textContent = pdfOk ? 'Ticket PDF descargado. 📄' : 'Usa el botón de abajo para descargar el PDF.';
+      $('#clabeBox').hidden = !(o.pago === 'transferencia' && CONFIG.clabe); $('#clabeNum').textContent = CONFIG.clabe;
+      openModal('#successOverlay');
+    });
+
+    $('#btnOkPdf').addEventListener('click', () => { if (lastOrder) try { makeTicketPDF(lastOrder); sfx.tap(); } catch { sfx.error(); } });
+    $('#btnCopyClabe').addEventListener('click', async () => { try { await navigator.clipboard.writeText(CONFIG.clabe); sfx.tap(); toast('CLABE copiada 📋'); } catch {} });
+
+    const updateHistBadge = () => { const b = $('#histCount'); b.textContent = orders.length; b.hidden = !orders.length; };
+    function renderHistory() {
+      $('#histEmpty').hidden = orders.length > 0; $('#btnHistClear').hidden = !orders.length;
+      $('#histList').innerHTML = orders.map(o => `<div class="hist-row"><div class="hist-info"><b>${o.folio}</b><span>${o.fecha} · ${o.hora} · ${money(o.total)}</span></div><div class="hist-actions"><button data-act="pdf" data-f="${o.folio}">📄</button><button data-act="wa" data-f="${o.folio}">📲</button><button data-act="repeat" data-f="${o.folio}">🔁</button></div></div>`).join('');
+    }
+    $('#histList').addEventListener('click', e => {
+      const b = e.target.closest('[data-act]'); if (!b) return; const o = orders.find(x => x.folio === b.dataset.f); if (!o) return;
+      if (b.dataset.act === 'pdf') try { makeTicketPDF(o); sfx.tap(); } catch { sfx.error(); }
+      if (b.dataset.act === 'wa') { sfx.tap(); window.open(waUrl(o), '_blank'); }
+      if (b.dataset.act === 'repeat') {
+        let ok = 0; o.items.forEach(it => { if (!it.esPremio && ITEMS[it.id]) { cart[it.id] = Math.round(((cart[it.id] || 0) + it.qty) * 1000) / 1000; ok++; } });
+        store.set('te_cart', cart); updateSteppers(); refreshCartUI(); closeModal('#historyOverlay');
+        if (ok) { sfx.promo(); openCart(); } else toast('Productos no disponibles');
+      }
+    });
+    $('#btnHistClear').addEventListener('click', () => { if (confirm('¿Borrar historial?')) { orders = []; store.set('te_orders', orders); updateHistBadge(); renderHistory(); sfx.dec(); } });
+    $('#btnHistory').addEventListener('click', () => { sfx.tap(); renderHistory(); openModal('#historyOverlay'); });
+
+    let deferredPrompt = null;
+    const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; if (!isStandalone()) $('#btnInstall').hidden = false; });
+    if (isIOS() && !isStandalone()) $('#btnInstall').hidden = false;
+    $('#btnInstall').addEventListener('click', async () => {
+      sfx.tap();
+      if (deferredPrompt) { deferredPrompt.prompt(); const r = await deferredPrompt.userChoice; if (r.outcome === 'accepted') $('#btnInstall').hidden = true; deferredPrompt = null; }
+      else if (isIOS()) toast('En Safari toca Compartir ⬆️ → "Agregar a inicio"');
+    });
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+
+    function initAnalytics() {
+      if (!navigator.onLine) return;
+      const a = CONFIG.analitica, p = new URLSearchParams(location.search), fromQR = p.get('utm_source') === 'qr';
+      if (a.tipo === 'goatcounter' && a.goatcounterCodigo) {
+        window.goatcounter = { path: path => fromQR ? path + '?utm_source=qr' : path };
+        const s = document.createElement('script'); s.async = true;
+        s.dataset.goatcounter = `https://${a.goatcounterCodigo}.goatcounter.com/count`; s.src = '//gc.zgo.at/count.js';
+        document.head.appendChild(s);
+      } else if (a.tipo === 'umami' && a.umamiId) {
+        const s = document.createElement('script'); s.defer = true; s.dataset.websiteId = a.umamiId; s.src = a.umamiSrc;
+        document.head.appendChild(s);
+      }
+    }
+    const trackEvent = name => { if (navigator.onLine) try { window.goatcounter?.count?.({ path: name, event: true }); window.umami?.track?.(name); } catch {} };
+
+    function generateShareQR() {
+      const box = $('#qrBox'), u = new URL(location.href); u.searchParams.set('utm_source', 'qr'); const qrUrl = u.toString();
+      const draw = () => {
+        if (window.QRCode) { box.innerHTML = ''; new QRCode(box, { text: qrUrl, width: 132, height: 132 }); }
+        else box.innerHTML = `<img alt="QR" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=8&data=${encodeURIComponent(qrUrl)}">`;
+      };
+      if (document.readyState === 'complete') draw(); else window.addEventListener('load', draw);
+    }
+
+    function fillConfig() {
+      document.title = `Menú · ${CONFIG.negocio}`; $('#bizName').textContent = CONFIG.negocio; $('#bizTag').textContent = CONFIG.eslogan;
+      $('#updBadge').textContent = 'Menú · ' + CONFIG.actualizado;
+      $('#bizAddr').textContent = '📍 ' + CONFIG.direccion;
+      $('#bizHours').textContent = `🕐 Horario: ${fmt12(toMin(CONFIG.horario.abre))} – ${fmt12(toMin(CONFIG.horario.cierra))}`;
+      $('#linkMaps').href = CONFIG.mapsUrl; $('#linkTel').href = 'tel:' + CONFIG.telefono.replace(/\s/g, '');
+      $('#envioNota').textContent = `+${money(CONFIG.envio.costo)}`;
+      if (!CONFIG.envio.disponible) $('#segDomicilio').hidden = true;
+      const c = store.get('te_customer', null);
+      if (c) { $('#fNombre').value = c.nombre || ''; $('#fTel').value = c.tel || ''; $('#fDireccion').value = c.direccion || ''; }
+    }
+
+    updateSoundBtn(); fillConfig(); renderMenu(); renderLoyalty(); refreshCartUI();
+    updateOpenBadge(); setInterval(updateOpenBadge, 60000); generateShareQR(); updateHistBadge(); initAnalytics();
+    syncConPOS(false);
+    setInterval(() => { if (!document.hidden) syncConPOS(true); }, 15000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) syncConPOS(true); });
+  </script>
+</body>
+</html>
