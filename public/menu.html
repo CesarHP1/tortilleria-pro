@@ -544,7 +544,7 @@
     </div>
   </section>
 
-  <footer class="page-footer">© 2026 Tortillería La Esperanza · Hecho con 🌽</footer>
+  <footer class="page-footer" id="bizFooter">© 2026 Tortillería La Esperanza · Hecho con 🌽</footer>
 
   <button id="cartBar" class="cart-bar" type="button" aria-label="Ver mi pedido">
     <span class="cart-count" id="cartCount">0</span>
@@ -1144,6 +1144,7 @@ $('#btnCopyClabePay').addEventListener('click', async () => {
       if (o.canjeoGratis) L.push(`🎁 *Canje Tarjeta 10+1 aplicado*`);
       if (o.envio) L.push(`Envío: ${money(o.envio)}`);
       L.push(`💰 *TOTAL: ${money(o.total)} MXN*`, o.pago === 'transferencia' ? `💳 Pago: Transferencia` : `💵 Pago: Efectivo al recibir`);
+      if (o.pago === 'transferencia' && CONFIG.clabe) L.push(`🏦 Transferir a: ${CONFIG.clabe}`, `📎 Comprobante: se enviará por este chat`);
       if (o.notas) L.push(`📝 Notas: ${o.notas}`);
       return L.join('\n');
     }
@@ -1268,7 +1269,7 @@ $('#btnCopyClabePay').addEventListener('click', async () => {
     }
 
     function fillConfig() {
-      document.title = `Menú · ${CONFIG.negocio}`; $('#bizName').textContent = CONFIG.negocio; $('#bizTag').textContent = CONFIG.eslogan;
+      document.title = `Menú · ${CONFIG.negocio}`; $('#bizName').textContent = CONFIG.negocio; $('#bizTag').textContent = CONFIG.eslogan; const f=$('#bizFooter'); if(f) f.textContent='© 2026 '+CONFIG.negocio+' · Hecho con 🌽';
       $('#updBadge').textContent = 'Menú · ' + CONFIG.actualizado;
       $('#bizAddr').textContent = '📍 ' + CONFIG.direccion;
       $('#bizHours').textContent = `🕐 Horario: ${fmt12(toMin(CONFIG.horario.abre))} – ${fmt12(toMin(CONFIG.horario.cierra))}`;
@@ -1420,6 +1421,108 @@ $('#btnCopyClabePay').addEventListener('click', async () => {
   colocar(); window.addEventListener('resize', colocar);
   window.addEventListener('load', function () { colocar(); setTimeout(function () { colocar(); imagen().catch(function () {}); }, 1200); });
   if (window.ResizeObserver) new ResizeObserver(colocar).observe(card);
+})();
+</script>
+  <script>
+(function () {
+  'use strict';
+  /* ── EXTRA: lealtad abajo + más flotación + modo Navidad ──
+     No modifica tu lógica: solo mueve la tarjeta y agrega adornos. */
+  var st = document.createElement('style');
+  st.textContent =
+    '.highlights{grid-template-columns:1fr}' +
+    '#loyaltyCard{width:calc(100% - 32px);max-width:560px;margin:18px auto 0}' +
+    '@keyframes tlFlot{0%,100%{translate:0 0}50%{translate:0 -7px}}' +
+    '.item{animation-duration:4.2s}' +
+    'body.tl-navidad .header h1::after{content:" 🎄";font-size:.8em}' +
+    '.tl-luces{position:absolute;top:0;left:0;right:0;height:16px;display:flex;justify-content:space-around;align-items:flex-start;pointer-events:none;z-index:1}' +
+    '.tl-luces::before{content:"";position:absolute;top:3px;left:0;right:0;height:2px;background:rgba(0,0,0,.28);border-radius:2px}' +
+    '.tl-luces i{width:8px;height:12px;margin-top:4px;border-radius:50%/45% 45% 60% 60%;animation:tlBrilla 1.7s ease-in-out infinite}' +
+    '.tl-luces i:nth-child(4n+1){background:#f87171;box-shadow:0 0 8px #f87171}' +
+    '.tl-luces i:nth-child(4n+2){background:#4ade80;box-shadow:0 0 8px #4ade80}' +
+    '.tl-luces i:nth-child(4n+3){background:#fbbf24;box-shadow:0 0 8px #fbbf24}' +
+    '.tl-luces i:nth-child(4n+4){background:#60a5fa;box-shadow:0 0 8px #60a5fa}' +
+    '.tl-luces i:nth-child(2n){animation-delay:.55s}' +
+    '.tl-luces i:nth-child(3n){animation-delay:1.1s}' +
+    '@keyframes tlBrilla{0%,100%{opacity:.55;transform:scale(.92)}50%{opacity:1;transform:scale(1.06)}}' +
+    '#tlNieve{position:fixed;inset:0;z-index:55;pointer-events:none}' +
+    '@media (prefers-reduced-motion:reduce){.tl-luces i{animation:none!important}}';
+  document.head.appendChild(st);
+
+  /* 1) Lealtad hasta abajo: después de los productos, antes del QR */
+  var leal = document.getElementById('loyaltyCard'), qr = document.querySelector('.share-card');
+  if (leal && qr && qr.parentNode) qr.parentNode.insertBefore(leal, qr);
+
+  /* 2) Modo Navidad con botón 🎄 (recuerda tu elección) */
+  var menosMov = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var colorNieve = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? '#ffffff' : '#93c5fd';
+  var header = document.querySelector('.header'), fila = document.querySelector('.status-row');
+  var luces = null, cv = null, cx = null, raf = 0, copos = [], W = 0, H = 0;
+
+  function temporada() {
+    var d = new Date(), m = d.getMonth(), dia = d.getDate();
+    return (m === 10 && dia >= 20) || m === 11 || (m === 0 && dia <= 6);
+  }
+  function medir() {
+    if (!cv) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function copo(inicio) {
+    return { x: Math.random() * W, y: inicio ? Math.random() * H : -6, r: 1 + Math.random() * 2.4, v: .35 + Math.random() * .9, f: Math.random() * 6.28, a: .35 + Math.random() * .5 };
+  }
+  function bucle() {
+    raf = requestAnimationFrame(bucle);
+    if (document.hidden || !cx) return;
+    cx.clearRect(0, 0, W, H);
+    cx.fillStyle = colorNieve;
+    for (var i = 0; i < copos.length; i++) {
+      var c = copos[i];
+      c.y += c.v; c.f += .02; c.x += Math.sin(c.f) * .4;
+      if (c.y > H + 6) copos[i] = copo(false);
+      cx.globalAlpha = c.a;
+      cx.beginPath(); cx.arc(c.x, c.y, c.r, 0, 6.283); cx.fill();
+    }
+    cx.globalAlpha = 1;
+  }
+  function nieveOn() {
+    if (menosMov || cv) return;
+    cv = document.createElement('canvas'); cv.id = 'tlNieve'; document.body.appendChild(cv);
+    cx = cv.getContext('2d'); medir();
+    copos = []; for (var i = 0; i < 45; i++) copos.push(copo(true));
+    bucle();
+  }
+  function nieveOff() { if (cv) { cancelAnimationFrame(raf); raf = 0; cv.remove(); cv = null; cx = null; copos = []; } }
+  function lucesOn() {
+    if (luces || !header) return;
+    luces = document.createElement('div'); luces.className = 'tl-luces'; luces.setAttribute('aria-hidden', 'true');
+    for (var i = 0; i < 26; i++) luces.appendChild(document.createElement('i'));
+    header.insertBefore(luces, header.firstChild);
+  }
+  function lucesOff() { if (luces) { luces.remove(); luces = null; } }
+
+  var btn = null, activo = false;
+  function aplicar(v, avisar) {
+    activo = v;
+    document.body.classList.toggle('tl-navidad', v);
+    if (v) { lucesOn(); nieveOn(); } else { lucesOff(); nieveOff(); }
+    if (btn) { btn.textContent = v ? '🎄 Navidad' : '🎄 Apagado'; btn.title = v ? 'Apagar modo Navidad' : 'Encender modo Navidad'; }
+    if (avisar) { try { sfx.tap(); toast(v ? 'Modo Navidad activado 🎄❄️' : 'Modo Navidad apagado'); } catch (e) {} }
+  }
+  window.addEventListener('resize', medir);
+  if (fila) {
+    btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'install-badge'; btn.id = 'btnNavidad';
+    btn.addEventListener('click', function () {
+      try { localStorage.setItem('te_navidad', !activo ? '1' : '0'); } catch (e) {}
+      aplicar(!activo, true);
+    });
+    fila.appendChild(btn);
+  }
+  var pref = null; try { pref = localStorage.getItem('te_navidad'); } catch (e) {}
+  aplicar(pref !== null ? pref === '1' : temporada(), false);
 })();
 </script>
 </body>
