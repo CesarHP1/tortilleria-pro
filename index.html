@@ -2385,6 +2385,7 @@ function openNegocio(){
   document.getElementById('neg-tag').value = neg.eslogan || 'Tortillas frescas todos los días';
   document.getElementById('neg-tel').value = neg.telefono || '427 197 2906';
   document.getElementById('neg-wa').value = neg.whatsapp || '4271972906';
+document.getElementById('neg-clabe').value = neg.clabe || '';
   document.getElementById('neg-dir').value = neg.direccion || 'Río Conca #105, Col. San Cayetano';
   document.getElementById('neg-maps').value = neg.mapsUrl || 'https://maps.app.goo.gl/hAJ3zay5vn5DhLsg7';
   document.getElementById('neg-abre').value = neg.abre || '07:00';
@@ -2401,6 +2402,7 @@ function guardarNegocio(){
     eslogan: document.getElementById('neg-tag').value.trim() || 'Tortillas frescas todos los días',
     telefono: document.getElementById('neg-tel').value.trim() || '427 197 2906',
     whatsapp: waRaw || '524271972906',
+clabe: document.getElementById('neg-clabe').value.replace(/\s/g,''),
     direccion: document.getElementById('neg-dir').value.trim() || '',
     mapsUrl: document.getElementById('neg-maps').value.trim() || '',
     abre: document.getElementById('neg-abre').value || '07:00',
@@ -3126,7 +3128,12 @@ setInterval(function(){
         <div><label class="ilbl">Teléfono (llamadas)</label><input type="tel" id="neg-tel" placeholder="427 197 2906" style="width:100%"/></div>
         <div><label class="ilbl">WhatsApp pedidos (10 díg.)</label><input type="tel" id="neg-wa" placeholder="4271972906" style="width:100%"/></div>
       </div>
-      <div style="margin-bottom:.65rem"><label class="ilbl">Dirección</label><input type="text" id="neg-dir" placeholder="Calle #105, Col. San Cayetano" style="width:100%"/></div>
+      <div style="margin-bottom:.65rem">
+<label class="ilbl">💳 Número de transferencia (CLABE, tarjeta o celular)</label>
+<input type="text" id="neg-clabe" inputmode="numeric" placeholder="Ej. 012345678901234567" style="width:100%;font-family:'Space Mono',monospace;letter-spacing:.06em"/>
+<p style="font-size:.62rem;color:var(--s4);font-weight:600;margin-top:.3rem">Se mostrará en el menú de ESTA cuenta cuando el cliente elija "Transferencia". Vacío = no se muestra.</p>
+</div>
+<div style="margin-bottom:.65rem"><label class="ilbl">Dirección</label><input type="text" id="neg-dir" placeholder="Calle #105, Col. San Cayetano" style="width:100%"/></div>
       <div style="margin-bottom:.65rem"><label class="ilbl">Link de Google Maps</label><input type="url" id="neg-maps" placeholder="https://maps.app.goo.gl/..." style="width:100%"/></div>
       <div class="grid2" style="margin-bottom:.75rem">
         <div><label class="ilbl">Hora que abre</label><input type="time" id="neg-abre" style="width:100%"/></div>
