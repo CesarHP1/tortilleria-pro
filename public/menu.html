@@ -323,6 +323,14 @@
   .tl-bar i{display:block;height:100%;border-radius:inherit;background:#fff;transform-origin:left center;animation:tlLoad 2s cubic-bezier(.4,0,.2,1) forwards}
   @keyframes tlLoad{from{transform:scaleX(0)}to{transform:scaleX(1)}}
   @media (prefers-reduced-motion:reduce){.tl-t,.tl-steam i,.logo{animation:none!important}}
+/* Flotación suave de productos */
+@keyframes tlFlot{0%,100%{translate:0 0}50%{translate:0 -3px}}
+.item{animation:tlFlot 5.5s ease-in-out infinite}
+.item:nth-child(2n){animation-delay:.9s}
+.item:nth-child(3n){animation-delay:1.8s}
+.item:nth-child(4n){animation-delay:2.7s}
+.item:hover{animation-play-state:paused}
+@media (prefers-reduced-motion:reduce){.item{animation:none!important}}
   `;
 
   /* ───────── 2. Sonido y voz de la pantalla de carga ───────── */
@@ -420,6 +428,25 @@
   function sonidoActivo() {
     try { return JSON.parse(localStorage.getItem('te_sound')) !== false; } catch (e) { return true; }
   }
+  function gotaFuturista() {
+  if (!sonidoActivo()) return;
+  try {
+    tone(240, 0.18, 'sine', 0.06, 0, 950);         /* la gota: sube rápido */
+    tone(1500, 0.09, 'sine', 0.022, 0.05, 2300);   /* brillo futurista */
+    tone(620, 0.24, 'triangle', 0.012, 0.03, 330); /* eco grave suave */
+    unlockAudio();
+    if (!audioCtx) return;
+    var t = audioCtx.currentTime, dur = 0.12;
+    var buf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * dur), audioCtx.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2.2);
+    var src = audioCtx.createBufferSource(); src.buffer = buf;
+    var bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 9;
+    var g = audioCtx.createGain(); g.gain.setValueAtTime(0.05, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(bp); bp.connect(g); g.connect(audioCtx.destination);
+    src.start(t); src.stop(t + dur);
+  } catch (x) {}
+}
   function decir(texto) {
     try {
       var ss = window.speechSynthesis; if (!ss) return;
@@ -440,7 +467,7 @@
     if (!it || it === actual) return;
     actual = it; clearTimeout(timer);
     if (!sonidoActivo()) return;
-    try { tone(700, 0.04, 'triangle', 0.035, 0, 520); } catch (x) {}
+    try { gotaFuturista(); } catch (x) {}
     if (HABLAR_NOMBRE) {
       var n = it.querySelector('.item-name'), txt = n && n.textContent.trim();
       if (txt) timer = setTimeout(function () { decir(txt); }, ESPERA_VOZ);
@@ -562,6 +589,12 @@
               <label class="seg-opt"><input type="radio" name="pago" id="optTransfer"><span>💳 Transferencia</span></label>
             </div>
           </div>
+          <div class="clabe-box" id="clabePayBox" hidden style="margin-bottom:12px">
+  <span>🏦 Transfiere a este número / CLABE:</span>
+  <b id="clabePayNum"></b>
+  <button type="button" class="link-btn" id="btnCopyClabePay">📋 Copiar número</button>
+  <span>Después envía tu comprobante por WhatsApp. 📎</span>
+</div>
           <div class="field"><label for="fNotas">Notas (opcional)</label><textarea id="fNotas" rows="2" maxlength="200" placeholder="Ej. tortillas bien cocidas…"></textarea></div>
         </form>
       </div>
@@ -696,7 +729,14 @@ whatsapp: "524271972906",
     const fmt12 = m => { const h = Math.floor(m / 60), mm = m % 60, h12 = h % 12 || 12; return `${pad(h12)}:${pad(mm)} ${h < 12 ? 'AM' : 'PM'}`; };
     const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const fmtQty = (q, it) => (Math.round(q * 100) / 100) + (it?.kg && !it?.esPromo ? ' kg' : '');
-    const store = { get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+   const TIENDA_ID = ((new URLSearchParams(location.search).get('tienda') || 'principal').toLowerCase().replace(/[^a-z0-9_\-]/g, '')) || 'principal';
+const store = {
+  get(k, d) { try { const v = JSON.parse(localStorage.getItem(k === 'te_sound' ? k : k + '_' + TIENDA_ID)); return v ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k === 'te_sound' ? k : k + '_' + TIENDA_ID, JSON.stringify(v)); } catch {} }
+};
+if (TIENDA_ID === 'principal') ['te_pos_datos','te_cart','te_orders','te_loyalty','te_customer'].forEach(k => {
+  try { if (localStorage.getItem(k) !== null && localStorage.getItem(k + '_principal') === null) localStorage.setItem(k + '_principal', localStorage.getItem(k)); } catch {}
+});
     const FALLBACK_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="300" height="300" fill="#fef3c7"/><text x="150" y="190" font-size="110" text-anchor="middle">🫓</text></svg>');
 
     let audioCtx = null, soundOn = store.get('te_sound', true);
@@ -737,7 +777,12 @@ if (meta.negocio) {
      if (meta.negocio.eslogan) CONFIG.eslogan = meta.negocio.eslogan;
      if (meta.negocio.abre) CONFIG.horario.abre = meta.negocio.abre;
      if (meta.negocio.cierra) CONFIG.horario.cierra = meta.negocio.cierra;
-     fillConfig(); updateOpenBadge();
+     if (meta.negocio.whatsapp) CONFIG.whatsapp = String(meta.negocio.whatsapp).replace(/\D/g,'');
+     if (meta.negocio.telefono) CONFIG.telefono = meta.negocio.telefono;
+     if (meta.negocio.direccion) CONFIG.direccion = meta.negocio.direccion;
+     if (meta.negocio.mapsUrl) CONFIG.mapsUrl = meta.negocio.mapsUrl;
+     if (meta.negocio.clabe !== undefined) CONFIG.clabe = String(meta.negocio.clabe || '').replace(/\s/g,'');
+     fillConfig(); updateOpenBadge(); updateClabeUI();
    }
       // Mayoreo desde POS
       if (meta.mayoreo) {
@@ -800,7 +845,7 @@ if (meta.negocio) {
       }
       if (!CONFIG.supabase.url || !CONFIG.supabase.anonKey || !navigator.onLine) return;
       try {
-        const res = await fetch(`${CONFIG.supabase.url}/rest/v1/menu_publico?id=eq.principal&select=datos`, {
+        const res = await fetch(`${CONFIG.supabase.url}/rest/v1/menu_publico?id=eq.${encodeURIComponent(TIENDA_ID)}&select=datos`, {
           headers: { 'apikey': CONFIG.supabase.anonKey },
           cache: 'no-store'
         });
@@ -993,7 +1038,7 @@ if (meta.negocio) {
       toast(`Agregado ${money(p)} (${kg} kg) 🛒`);
     });
 
-    function openCart() { sfx.tap(); fillSlots(); renderCart(); openModal('#cartOverlay'); }
+    function openCart() { sfx.tap(); fillSlots(); renderCart(); updateClabeUI(); openModal('#cartOverlay'); }
     document.body.addEventListener('click', e => {
       const qadd = e.target.closest('[data-qadd]');
       if (qadd) { const [id, val] = qadd.dataset.qadd.split(':'); changeQty(id, parseFloat(val)); toast(`+${val} kg agregado 🛒`); return; }
@@ -1007,7 +1052,16 @@ if (meta.negocio) {
     $('#cartBar').addEventListener('click', openCart);
     $('#btnVaciar').addEventListener('click', () => { cart = {}; prevWholesaleKg = 0; store.set('te_cart', cart); sfx.dec(); updateSteppers(); refreshCartUI(); toast('Carrito vaciado 🗑'); });
     $$('input[name="entrega"]').forEach(r => r.addEventListener('change', () => { sfx.tap(); $('#addrWrap').classList.toggle('show', $('#optDomicilio').checked); refreshCartUI(); }));
-    $$('input[name="pago"]').forEach(r => r.addEventListener('change', () => sfx.tap()));
+    $$('input[name="pago"]').forEach(r => r.addEventListener('change', () => { sfx.tap(); updateClabeUI(); }));
+function updateClabeUI() {
+  const box = $('#clabePayBox'); if (!box) return;
+  const show = $('#optTransfer').checked && !!CONFIG.clabe;
+  box.hidden = !show;
+  if (show) $('#clabePayNum').textContent = CONFIG.clabe;
+}
+$('#btnCopyClabePay').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(CONFIG.clabe); sfx.tap(); toast('Número copiado 📋'); } catch { toast('Copia el número manualmente'); }
+});
     $('#chkRedeemFree').addEventListener('change', () => $('#chkRedeemFree').checked ? sfx.promo() : sfx.tap());
 
     $('#navCats').addEventListener('click', e => {
