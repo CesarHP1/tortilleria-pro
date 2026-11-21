@@ -239,7 +239,223 @@
   </style>
 </head>
 <body>
+<script>
+(function () {
+  'use strict';
 
+  /* ───────── 1. CSS (se agrega al final del <head>, solo diseño) ───────── */
+  var CSS = `
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  .container{max-width:1240px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+
+  /* Encabezado */
+  .header{padding:calc(66px + env(safe-area-inset-top)) 16px 48px}
+  .top-actions{top:calc(12px + env(safe-area-inset-top))}
+  .logo{animation:tlFloat 3.4s ease-in-out infinite}
+  .header h1{text-shadow:0 2px 14px rgba(0,0,0,.2)}
+  @keyframes tlFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+  /* Zona fija de búsqueda y categorías */
+  .sticky-wrap{padding-top:calc(10px + env(safe-area-inset-top));box-shadow:0 6px 18px -12px rgba(0,0,0,.35)}
+  .menu-section{scroll-margin-top:calc(132px + env(safe-area-inset-top))}
+  .section-title{font-size:clamp(1.1rem,3vw,1.35rem);letter-spacing:-.2px}
+  .search-box input{min-height:46px;font-size:16px}
+  .cat-btn{min-height:40px}
+
+  /* Tarjetas de producto */
+  .item{border-radius:20px}
+  @media (min-width:441px){.item-media{width:112px}}
+  .item-name{font-size:clamp(.94rem,2.4vw,1.02rem)}
+  .price{font-size:clamp(1.05rem,2.6vw,1.2rem)}
+  .add-btn{min-height:38px;padding:8px 16px}
+  .stepper button{width:32px;height:32px}
+  .stepper b{min-width:38px}
+  .qchip{min-height:30px;padding:5px 11px}
+  .promo-btn,.btn-primary,.btn-ghost{min-height:46px}
+  .close-btn{width:38px;height:38px}
+
+  /* Hoja del carrito y formularios */
+  .sheet{max-width:600px}
+  .sheet-body{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  .field input,.field select,.field textarea{font-size:16px;min-height:46px}
+  .field textarea{min-height:76px}
+  .seg-opt span{min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .modal-card{max-width:420px}
+
+  /* Barra del carrito */
+  .cart-bar{min-height:56px}
+  @media (min-width:900px){.cart-bar{left:auto;right:28px;margin:0;width:380px}}
+
+  /* Responsive */
+  @media (max-width:360px){
+    .header h1{font-size:1.2rem}
+    .item-media{width:80px}
+    .item-footer{gap:6px}
+    .hist-btn,.sound-btn{padding:5px 8px;font-size:.7rem}
+  }
+  @media (min-width:640px) and (max-width:1023px){.item-media{width:120px}}
+  @media (min-width:1280px){.items{gap:16px}}
+  @media (max-height:520px) and (orientation:landscape){
+    .sheet{max-height:100dvh;border-radius:16px}
+    .header{padding-top:calc(56px + env(safe-area-inset-top));padding-bottom:36px}
+  }
+
+  /* ───────── Pantalla de carga ───────── */
+  #tlLoader{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center;color:#fff;
+    background:radial-gradient(circle at 50% 32%,var(--primary) 0%,var(--primary-2) 78%);transition:opacity .45s ease,visibility .45s}
+  #tlLoader.out{opacity:0;visibility:hidden}
+  #tlLoader::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.12) 1.5px,transparent 1.6px);background-size:22px 22px;pointer-events:none}
+  #tlLoader>*{position:relative}
+  .tl-comal{width:132px;height:132px;border-radius:50%;display:grid;place-items:center;position:relative;
+    background:radial-gradient(circle at 40% 35%,#4a3626,#1c1410);box-shadow:0 18px 44px rgba(0,0,0,.4),inset 0 0 0 5px rgba(255,255,255,.08)}
+  .tl-t{font-size:70px;line-height:1;animation:tlFlip 1s cubic-bezier(.45,0,.55,1) infinite}
+  @keyframes tlFlip{0%{transform:translateY(0) rotateX(0)}50%{transform:translateY(-30px) rotateX(180deg)}100%{transform:translateY(0) rotateX(360deg)}}
+  .tl-steam{position:absolute;left:0;right:0;top:-6px;height:0}
+  .tl-steam i{position:absolute;bottom:0;width:10px;height:28px;border-radius:99px;background:rgba(255,255,255,.6);filter:blur(5px);opacity:0;animation:tlSteam 1.7s ease-out infinite}
+  .tl-steam i:nth-child(1){left:34%}
+  .tl-steam i:nth-child(2){left:50%;animation-delay:.5s}
+  .tl-steam i:nth-child(3){left:66%;animation-delay:1s}
+  @keyframes tlSteam{0%{opacity:0;transform:translateY(0) scaleY(.6)}30%{opacity:.8}100%{opacity:0;transform:translateY(-46px) scaleY(1.3)}}
+  #tlLoader h2{font-size:clamp(1.35rem,5vw,1.9rem);font-weight:900;letter-spacing:-.3px;text-shadow:0 2px 14px rgba(0,0,0,.25)}
+  #tlLoader p{font-size:.92rem;font-weight:700;opacity:.92}
+  .tl-bar{width:min(240px,70vw);height:8px;border-radius:99px;background:rgba(255,255,255,.28);overflow:hidden}
+  .tl-bar i{display:block;height:100%;border-radius:inherit;background:#fff;transform-origin:left center;animation:tlLoad 2s cubic-bezier(.4,0,.2,1) forwards}
+  @keyframes tlLoad{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  @media (prefers-reduced-motion:reduce){.tl-t,.tl-steam i,.logo{animation:none!important}}
+  `;
+
+  /* ───────── 2. Sonido y voz de la pantalla de carga ───────── */
+  var DURACION = 2000, ac = null, sono = false, hablo = false, intento = false, cerrado = false;
+
+  function sonidoActivo() {
+    try { return JSON.parse(localStorage.getItem('te_sound')) !== false; } catch (e) { return true; }
+  }
+  function nombreNegocio() {
+    try { return CONFIG.negocio; } catch (e) { return 'la tortillería'; }
+  }
+  function campanita() {
+    if (sono || !sonidoActivo()) return;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      ac = ac || new AC();
+      var tocar = function () {
+        if (ac.state !== 'running' || sono) return;
+        sono = true;
+        [[523, 0], [659, .13], [784, .26], [1047, .4]].forEach(function (n) {
+          var o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + n[1];
+          o.type = 'triangle'; o.frequency.value = n[0];
+          g.gain.setValueAtTime(.001, t); g.gain.linearRampToValueAtTime(.11, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .32);
+          o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + .35);
+        });
+      };
+      if (ac.state === 'suspended') ac.resume().then(tocar).catch(function () {}); else tocar();
+    } catch (e) {}
+  }
+  function hablar(forzar) {
+    if (hablo || intento || !sonidoActivo()) return;
+    try {
+      var ss = window.speechSynthesis; if (!ss || sessionStorage.getItem('tl_voz')) return;
+      if (!ss.getVoices().length && !forzar) return;
+      intento = true;
+      var u = new SpeechSynthesisUtterance('¡Bienvenido a ' + nombreNegocio() + '! Pide tus tortillas frescas.');
+      var vs = ss.getVoices().filter(function (v) { return /^es/i.test(v.lang); });
+      var mujer = /paulina|monica|mónica|sabina|helena|dalia|paloma|elvira|laura|lucia|lucía|marisol|female|mujer|google español/i;
+      var v = vs.filter(function (x) { return /es[-_](MX|US)/i.test(x.lang) && mujer.test(x.name); })[0] ||
+              vs.filter(function (x) { return mujer.test(x.name); })[0] ||
+              vs.filter(function (x) { return /es[-_](MX|US)/i.test(x.lang); })[0] || vs[0];
+      if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'es-MX';
+      u.pitch = 1.25; u.rate = 1.02; u.volume = 1;
+      u.onerror = function () { intento = false; };
+      u.onstart = function () { hablo = true; try { sessionStorage.setItem('tl_voz', '1'); } catch (e) {} };
+      ss.cancel(); ss.speak(u);
+    } catch (e) {}
+  }
+  function bienvenida() { campanita(); hablar(); }
+
+  /* ───────── 3. Arranque ───────── */
+  function iniciar() {
+    var st = document.createElement('style'); st.id = 'tlMejoras'; st.textContent = CSS; document.head.appendChild(st);
+
+    var L = document.createElement('div');
+    L.id = 'tlLoader'; L.setAttribute('role', 'status'); L.setAttribute('aria-live', 'polite');
+    L.innerHTML = '<div class="tl-comal"><div class="tl-steam"><i></i><i></i><i></i></div><div class="tl-t" aria-hidden="true">🫓</div></div>' +
+      '<h2 id="tlNombre"></h2><p>Calentando el comal…</p><div class="tl-bar"><i></i></div>';
+    document.body.insertBefore(L, document.body.firstChild);
+    L.querySelector('#tlNombre').textContent = nombreNegocio();
+
+    setTimeout(function () { var n = L.querySelector('#tlNombre'); if (n) n.textContent = nombreNegocio(); bienvenida(); }, 150);
+    setTimeout(function () { if (!cerrado && !hablo) hablar(true); }, 700);
+
+    /* Si el navegador bloqueó el audio, se reintenta con el primer toque */
+    var gesto = function () { if (!cerrado) bienvenida(); };
+    ['pointerdown', 'touchstart', 'keydown'].forEach(function (ev) { document.addEventListener(ev, gesto, { once: true, passive: true }); });
+    if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = function () { if (!cerrado && !hablo) hablar(); };
+
+    setTimeout(function () {
+      cerrado = true; L.classList.add('out');
+      setTimeout(function () { if (L.parentNode) L.parentNode.removeChild(L); }, 520);
+    }, DURACION);
+
+    /* ───── Sonido extra en los botones que no lo tenían (usa el mismo sfx y respeta el botón 🔊) ───── */
+    var sinSonido = 'a.btn-ghost, a.btn-primary, #btnSubmit';
+    document.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest(sinSonido)) { try { sfx.tap(); } catch (x) {} }
+    });
+    document.addEventListener('focusin', function (e) {
+      if (e.target && e.target.id === 'searchInput') { try { sfx.tap(); } catch (x) {} }
+    });
+  }
+
+  if (document.body) iniciar(); else document.addEventListener('DOMContentLoaded', iniciar);
+})();
+</script>
+  <script>
+(function () {
+  'use strict';
+  var HABLAR_NOMBRE = true;  /* false = solo sonido, sin voz */
+  var ESPERA_VOZ = 700;      /* ms con el cursor encima antes de decir el nombre */
+  if (!window.matchMedia || !matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  var actual = null, timer = null;
+
+  function sonidoActivo() {
+    try { return JSON.parse(localStorage.getItem('te_sound')) !== false; } catch (e) { return true; }
+  }
+  function decir(texto) {
+    try {
+      var ss = window.speechSynthesis; if (!ss) return;
+      var vs = ss.getVoices().filter(function (v) { return /^es/i.test(v.lang); });
+      var m = /paulina|monica|mónica|sabina|helena|dalia|paloma|elvira|laura|lucia|lucía|marisol|female|mujer|google español/i;
+      var v = vs.filter(function (x) { return /es[-_](MX|US)/i.test(x.lang) && m.test(x.name); })[0] ||
+              vs.filter(function (x) { return m.test(x.name); })[0] ||
+              vs.filter(function (x) { return /es[-_](MX|US)/i.test(x.lang); })[0] || vs[0];
+      var u = new SpeechSynthesisUtterance(texto);
+      if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'es-MX';
+      u.pitch = 1.25; u.rate = 1.02;
+      ss.cancel(); ss.speak(u);
+    } catch (e) {}
+  }
+
+  document.addEventListener('mouseover', function (e) {
+    var it = e.target.closest && e.target.closest('.item');
+    if (!it || it === actual) return;
+    actual = it; clearTimeout(timer);
+    if (!sonidoActivo()) return;
+    try { tone(700, 0.04, 'triangle', 0.035, 0, 520); } catch (x) {}
+    if (HABLAR_NOMBRE) {
+      var n = it.querySelector('.item-name'), txt = n && n.textContent.trim();
+      if (txt) timer = setTimeout(function () { decir(txt); }, ESPERA_VOZ);
+    }
+  });
+  document.addEventListener('mouseout', function (e) {
+    var it = e.target.closest && e.target.closest('.item');
+    if (!it || it !== actual) return;
+    if (e.relatedTarget && it.contains(e.relatedTarget)) return;
+    actual = null; clearTimeout(timer);
+    try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (x) {}
+  });
+})();
+</script>
   <header class="header">
     <div class="top-actions">
       <button class="sound-btn" id="btnSound" type="button" aria-label="Sonido">🔊 Sonido</button>
