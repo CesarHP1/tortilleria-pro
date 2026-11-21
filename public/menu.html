@@ -355,7 +355,7 @@
   function hablar(forzar) {
     if (hablo || intento || !sonidoActivo()) return;
     try {
-      var ss = window.speechSynthesis; if (!ss || sessionStorage.getItem('tl_voz')) return;
+      var ss = window.speechSynthesis; if (!ss) return;
       if (!ss.getVoices().length && !forzar) return;
       intento = true;
       var u = new SpeechSynthesisUtterance('¡Bienvenido a ' + nombreNegocio() + '! Pide tus tortillas frescas.');
@@ -367,11 +367,10 @@
       if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'es-MX';
       u.pitch = 1.25; u.rate = 1.02; u.volume = 1;
       u.onerror = function () { intento = false; };
-      u.onstart = function () { hablo = true; try { sessionStorage.setItem('tl_voz', '1'); } catch (e) {} };
+      u.onstart = function () { hablo = true; };
       ss.cancel(); ss.speak(u);
     } catch (e) {}
   }
-  function bienvenida() { campanita(); hablar(); }
 
   /* ───────── 3. Arranque ───────── */
   function iniciar() {
@@ -1232,5 +1231,142 @@ if (meta.negocio) {
     setInterval(() => { if (!document.hidden) syncConPOS(true); }, 15000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) syncConPOS(true); });
   </script>
+  <script>
+(function () {
+  'use strict';
+  /* Botón para copiar el QR como imagen y botón para compartir el menú.
+     No modifica el QR ni nada de tu lógica: solo agrega los botones. */
+  var card = document.querySelector('.share-card'), links = document.querySelector('.share-links');
+  if (!card || !links) return;
+  var cache = null, F = 'Nunito, system-ui, sans-serif';
+
+  var st = document.createElement('style');
+  st.textContent = '.share-card{position:relative}' +
+    '.tl-qrcopy{position:absolute;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:1.05rem;cursor:pointer;display:grid;place-items:center;box-shadow:var(--shadow);transition:border-color .2s,transform .15s}' +
+    '.tl-qrcopy:hover{border-color:var(--primary)}.tl-qrcopy:active{transform:scale(.92)}';
+  document.head.appendChild(st);
+
+  function son(n) { try { sfx[n](); } catch (e) {} }
+  function aviso(m) { try { toast(m); } catch (e) {} }
+  function nombre() { try { return CONFIG.negocio; } catch (e) { return 'Menú'; } }
+  function urlMenu(conQR) {
+    var u = new URL(location.href); u.hash = '';
+    if (conQR) u.searchParams.set('utm_source', 'qr'); else u.searchParams.delete('utm_source');
+    return u.toString();
+  }
+  function texto() { return 'Mira el menú de ' + nombre() + ' y haz tu pedido por WhatsApp 🫓'; }
+
+  /* ── Imagen del QR (con nombre del negocio) ── */
+  function lienzoQR() {
+    if (window.QRCode) {
+      try { var d = document.createElement('div'); new QRCode(d, { text: urlMenu(true), width: 560, height: 560 }); var c = d.querySelector('canvas'); if (c) return c; } catch (e) {}
+    }
+    var q = document.querySelector('#qrBox canvas'); if (q) return q;
+    var im = document.querySelector('#qrBox img');
+    if (im) { var c2 = document.createElement('canvas'); c2.width = c2.height = 560; c2.getContext('2d').drawImage(im, 0, 0, 560, 560); return c2; }
+    return null;
+  }
+  function crearImagen() {
+    return new Promise(function (ok, fail) {
+      var q = lienzoQR(); if (!q) return fail(new Error('qr'));
+      var W = 720, H = 900, c = document.createElement('canvas'); c.width = W; c.height = H;
+      var x = c.getContext('2d'), n = nombre(), f = 44;
+      x.fillStyle = '#fff'; x.fillRect(0, 0, W, H); x.textAlign = 'center';
+      do { x.font = '800 ' + f + 'px ' + F; f -= 2; } while (x.measureText(n).width > 640 && f > 20);
+      x.fillStyle = '#92400e'; x.fillText(n, W / 2, 95);
+      x.imageSmoothingEnabled = false; x.drawImage(q, 80, 140, 560, 560);
+      x.fillStyle = '#1c1917'; x.font = '700 32px ' + F; x.fillText('Escanea para ver el menú', W / 2, 780);
+      x.fillStyle = '#78716c'; x.font = '600 26px ' + F; x.fillText('y haz tu pedido por WhatsApp', W / 2, 826);
+      c.toBlob(function (b) { b ? ok(b) : fail(new Error('blob')); }, 'image/png');
+    });
+  }
+  function imagen() { return cache ? Promise.resolve(cache) : crearImagen().then(function (b) { return (cache = b); }); }
+
+  function descargar() {
+    imagen().then(function (b) {
+      var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'QR-menu.png';
+      document.body.appendChild(a); a.click(); a.remove();
+      aviso('Tu navegador no deja copiar: se guardó la imagen 📥');
+    }).catch(function () { son('error'); aviso('No se pudo crear la imagen'); });
+  }
+  function copiarImagen() {
+    son('tap');
+    if (navigator.clipboard && window.ClipboardItem) {
+      try {
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': imagen() })])
+          .then(function () { son('success'); aviso('QR copiado como imagen 🖼️ Pégalo en WhatsApp'); })
+          .catch(descargar);
+        return;
+      } catch (e) {}
+    }
+    descargar();
+  }
+
+  /* ── Compartir ── */
+  var hoja = document.createElement('div');
+  hoja.className = 'overlay center'; hoja.id = 'tlShare'; hoja.hidden = true;
+  hoja.innerHTML = '<div class="modal-card" role="dialog" aria-modal="true" aria-label="Compartir menú">' +
+    '<h2>📤 Compartir menú</h2><p class="ok-sub">Elige dónde enviarlo</p>' +
+    '<a class="btn-ghost" data-k="wa" target="_blank" rel="noopener">💬 WhatsApp</a>' +
+    '<a class="btn-ghost" data-k="fb" target="_blank" rel="noopener">📘 Facebook</a>' +
+    '<a class="btn-ghost" data-k="tg" target="_blank" rel="noopener">✈️ Telegram</a>' +
+    '<a class="btn-ghost" data-k="mail">✉️ Correo</a>' +
+    '<button type="button" class="btn-ghost" data-k="link">🔗 Copiar enlace</button>' +
+    '<button type="button" class="btn-ghost" data-k="img">🖼️ Copiar QR como imagen</button>' +
+    '<button type="button" class="link-btn" data-k="close">Cerrar</button></div>';
+  document.body.appendChild(hoja);
+
+  function abrirHoja() {
+    var u = encodeURIComponent(urlMenu(false)), t = encodeURIComponent(texto());
+    hoja.querySelector('[data-k=wa]').href = 'https://wa.me/?text=' + encodeURIComponent(texto() + ' ' + urlMenu(false));
+    hoja.querySelector('[data-k=fb]').href = 'https://www.facebook.com/sharer/sharer.php?u=' + u;
+    hoja.querySelector('[data-k=tg]').href = 'https://t.me/share/url?url=' + u + '&text=' + t;
+    hoja.querySelector('[data-k=mail]').href = 'mailto:?subject=' + encodeURIComponent(nombre()) + '&body=' + t + '%20' + u;
+    openModal('#tlShare');
+  }
+  function compartir() {
+    son('tap');
+    if (navigator.share) {
+      imagen().then(function (b) {
+        var f = new File([b], 'QR-menu.png', { type: 'image/png' }), d = { title: nombre(), text: texto(), url: urlMenu(false) };
+        if (navigator.canShare && navigator.canShare({ files: [f] })) d.files = [f];
+        return navigator.share(d);
+      }).catch(function (e) { if (!e || e.name !== 'AbortError') abrirHoja(); });
+      return;
+    }
+    abrirHoja();
+  }
+  hoja.addEventListener('click', function (e) {
+    if (e.target === hoja) { son('tap'); closeModal('#tlShare'); return; }
+    var k = e.target.closest('[data-k]'); if (!k) return;
+    var a = k.getAttribute('data-k');
+    if (a === 'close') { son('tap'); closeModal('#tlShare'); }
+    else if (a === 'img') copiarImagen();
+    else if (a === 'link') {
+      son('tap');
+      try { navigator.clipboard.writeText(urlMenu(false)).then(function () { aviso('Enlace copiado 📋'); }); } catch (x) { aviso('No se pudo copiar el enlace'); }
+    }
+  });
+
+  /* ── Botones ── */
+  var b1 = document.createElement('button');
+  b1.type = 'button'; b1.className = 'tl-qrcopy'; b1.textContent = '📋';
+  b1.title = 'Copiar QR como imagen'; b1.setAttribute('aria-label', 'Copiar QR como imagen');
+  b1.addEventListener('click', copiarImagen); card.appendChild(b1);
+
+  var b2 = document.createElement('button');
+  b2.type = 'button'; b2.className = 'btn-ghost sm'; b2.textContent = '📤 Compartir menú';
+  b2.addEventListener('click', compartir); links.appendChild(b2);
+
+  function colocar() {
+    var q = document.getElementById('qrBox'); if (!q) return;
+    b1.style.top = (q.offsetTop + q.offsetHeight / 2 - 20) + 'px';
+    b1.style.left = (q.offsetLeft + q.offsetWidth + 10) + 'px';
+  }
+  colocar(); window.addEventListener('resize', colocar);
+  window.addEventListener('load', function () { colocar(); setTimeout(function () { colocar(); imagen().catch(function () {}); }, 1200); });
+  if (window.ResizeObserver) new ResizeObserver(colocar).observe(card);
+})();
+</script>
 </body>
 </html>
