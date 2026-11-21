@@ -2365,20 +2365,44 @@ function renderPList(){
       '<div class="piw"><span>$</span><input type="number" value="'+item.p+'" min="0" step="0.5" style="width:60px" '+(item._del?'disabled':'')+' oninput="preciosList['+i+'].p=parseFloat(this.value)||0"/></div></div>';
   }).join('')||'<p style="text-align:center;color:var(--s4);padding:.875rem;font-size:.82rem">Sin productos</p>';
 }
+function getTiendaId(){
+  return (!activeUser || activeUser === 'admin') ? 'principal' : activeUser;
+}
+function getMenuUrlCuenta(){
+  var t = getTiendaId();
+  return 'https://tortilleria-pro.vercel.app/menu.html' + (t === 'principal' ? '' : '?tienda=' + encodeURIComponent(t));
+}
+function copiarLinkMenu(){
+  var inp = document.getElementById('neg-qr-url');
+  if(!inp) return;
+  try{ navigator.clipboard.writeText(inp.value); toast('Link de tu menú copiado 📋'); }
+  catch(e){ inp.select(); document.execCommand('copy'); toast('Link copiado 📋'); }
+}
 function openNegocio(){
   var m = getMenuMeta();
-  var neg = m.negocio || { nombre: 'Tortillería Pro', eslogan: 'Tortillas frescas todos los días', abre: '07:00', cierra: '18:00' };
-  document.getElementById('neg-nom').value = neg.nombre || 'Tortillería Pro';
+  var neg = m.negocio || {};
+  document.getElementById('neg-nom').value = neg.nombre || 'Tortillería La Esperanza';
   document.getElementById('neg-tag').value = neg.eslogan || 'Tortillas frescas todos los días';
+  document.getElementById('neg-tel').value = neg.telefono || '427 197 2906';
+  document.getElementById('neg-wa').value = neg.whatsapp || '4271972906';
+  document.getElementById('neg-dir').value = neg.direccion || 'Río Conca #105, Col. San Cayetano';
+  document.getElementById('neg-maps').value = neg.mapsUrl || 'https://maps.app.goo.gl/hAJ3zay5vn5DhLsg7';
   document.getElementById('neg-abre').value = neg.abre || '07:00';
   document.getElementById('neg-cierra').value = neg.cierra || '18:00';
+  document.getElementById('neg-qr-url').value = getMenuUrlCuenta();
   openM('m-negocio');
 }
 function guardarNegocio(){
   var m = getMenuMeta();
+  var waRaw = document.getElementById('neg-wa').value.replace(/\D/g,'');
+  if(waRaw.length === 10) waRaw = '52' + waRaw;
   m.negocio = {
-    nombre: document.getElementById('neg-nom').value.trim() || 'Tortillería Pro',
+    nombre: document.getElementById('neg-nom').value.trim() || 'Tortillería La Esperanza',
     eslogan: document.getElementById('neg-tag').value.trim() || 'Tortillas frescas todos los días',
+    telefono: document.getElementById('neg-tel').value.trim() || '427 197 2906',
+    whatsapp: waRaw || '524271972906',
+    direccion: document.getElementById('neg-dir').value.trim() || '',
+    mapsUrl: document.getElementById('neg-maps').value.trim() || '',
     abre: document.getElementById('neg-abre').value || '07:00',
     cierra: document.getElementById('neg-cierra').value || '18:00'
   };
@@ -2387,7 +2411,7 @@ function guardarNegocio(){
   if(t) t.textContent = m.negocio.nombre;
   document.title = m.negocio.nombre;
   closeM('m-negocio');
-  toast('Nombre y horario guardados 🏪');
+  toast('Datos del negocio guardados 🏪');
   publicarMenuEnNube(precios, m);
 }
 function delPR(i){sndDelete();preciosList[i]._del=!preciosList[i]._del;renderPList();}
@@ -2397,14 +2421,15 @@ const SB_KEY = 'sb_publishable_oxnS7x997JZgD_1aEjqWkg_MJhV9wbA';
 
 async function publicarMenuEnNube(preciosActualizados, metaActualizada){
   if(!navigator.onLine){ toast('Guardado local (sin internet para subir al menú QR)','i'); return; }
-  var pin = sessionStorage.getItem('tp_pub_pin') || prompt('🔑 Ingresa tu PIN secreto para actualizar el menú QR:');
+  var pin = sessionStorage.getItem('tp_pub_pin') || prompt('🔑 Ingresa tu contraseña/PIN para publicar tu menú:');
   if(!pin) return;
   try{
-    var res = await fetch(SB_URL + '/rest/v1/rpc/actualizar_menu', {
+    var res = await fetch(SB_URL + '/rest/v1/rpc/actualizar_menu_tienda', {
       method: 'POST',
       headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        pin_ingresado: pin,
+        p_tienda: getTiendaId(),
+        p_pin: pin,
         nuevos_datos: { precios: preciosActualizados, meta: metaActualizada, actualizado: new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) }
       })
     });
@@ -2415,10 +2440,69 @@ async function publicarMenuEnNube(preciosActualizados, metaActualizada){
       toast('☁️ Menú QR actualizado en vivo ✅');
     } else {
       sessionStorage.removeItem('tp_pub_pin');
-      toast('❌ PIN incorrecto — el menú QR no cambió','e');
+      toast('❌ Contraseña/PIN incorrecto — el menú QR no cambió','e');
     }
   }catch(e){ toast('No se pudo conectar con Supabase','e'); }
 }
+
+function parseHora24(lbl){
+  var m = String(lbl||'').match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if(!m) return new Date().toTimeString().slice(0,5);
+  var h = parseInt(m[1],10), mm = m[2], ap = (m[3]||'').toUpperCase();
+  if(ap === 'PM' && h < 12) h += 12;
+  if(ap === 'AM' && h === 12) h = 0;
+  return String(h).padStart(2,'0') + ':' + mm;
+}
+async function revisarPedidosWeb(){
+  if(!activeUser || !navigator.onLine) return;
+  var pin = sessionStorage.getItem('tp_pub_pin');
+  if(!pin) return;
+  try{
+    var t = getTiendaId();
+    var res = await fetch(SB_URL + '/rest/v1/rpc/obtener_pedidos_web', {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_tienda: t, p_pin: pin })
+    });
+    if(!res.ok) return;
+    var lista = await res.json();
+    if(!Array.isArray(lista) || !lista.length) return;
+    var nuevos = 0;
+    for(var i=0; i<lista.length; i++){
+      var pw = lista[i];
+      if(!pedidos.some(function(x){ return x.webId === pw.id; })){
+        var prods = (pw.items||[]).map(function(it){ return { p: it.nombre, c: Number(it.qty)||1, pr: Number(it.precio)||0 }; });
+        pedidos.push({
+          id: Date.now() + i,
+          webId: pw.id,
+          folioWeb: pw.folio,
+          nom: pw.cliente + ' 🌐',
+          tel: pw.telefono || '',
+          entrega: pw.entrega || 'recoger',
+          direccion: pw.direccion || '',
+          notas: pw.notas || '',
+          prods: prods,
+          hora: parseHora24(pw.hora_prog),
+          horaTexto: pw.hora_prog || '',
+          fecha: new Date().toISOString().split('T')[0]
+        });
+        logOp('PEDIDO_NUEVO', { nom: pw.cliente + ' (Web)', hora: pw.hora_prog||'', total: Number(pw.total)||0, prods: prods });
+        nuevos++;
+      }
+      await fetch(SB_URL + '/rest/v1/rpc/marcar_pedido_atendido', {
+        method: 'POST',
+        headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_id: pw.id, p_tienda: t, p_pin: pin })
+      });
+    }
+    if(nuevos > 0){
+      save(); renderP(); sndSuccess();
+      toast('🌐 ¡'+nuevos+' pedido'+(nuevos>1?'s':'')+' nuevo'+(nuevos>1?'s':'')+' desde el menú!');
+      speak('Atención. Llegó un pedido nuevo desde el menú web.');
+    }
+  }catch(e){}
+}
+if(!window._webPedInt){ window._webPedInt = setInterval(revisarPedidosWeb, 15000); }
 
 function savePrecios(){
   var np2=document.getElementById('apc').value.trim();
@@ -2441,7 +2525,7 @@ function savePrecios(){
   Object.keys(precios).forEach(function(k){if(k in up&&precios[k]!==up[k])logOp('PROD_PRECIO',{nombre:k,antes:precios[k],despues:up[k]});});
 
   var nuevaMeta = {
-     negocio: getMenuMeta().negocio || null,
+    negocio: getMenuMeta().negocio || null,
     productos: metaProd,
     promo: {
       activo: document.getElementById('pm-act').checked,
