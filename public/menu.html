@@ -729,6 +729,22 @@ whatsapp: "524271972906",
     const fmt12 = m => { const h = Math.floor(m / 60), mm = m % 60, h12 = h % 12 || 12; return `${pad(h12)}:${pad(mm)} ${h < 12 ? 'AM' : 'PM'}`; };
     const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const fmtQty = (q, it) => (Math.round(q * 100) / 100) + (it?.kg && !it?.esPromo ? ' kg' : '');
+    // ── Contador de visitas al menú (suma +1 cada vez que alguien abre el link) ──
+async function registrarVisitaMenu() {
+  if (!navigator.onLine || !CONFIG.supabase.url) return;
+  try {
+    const res = await fetch(CONFIG.supabase.url + '/rest/v1/menu_publico?select=vistas&id=eq.' + encodeURIComponent(TIENDA_ID), {
+      headers: { 'apikey': CONFIG.supabase.anonKey }
+    });
+    const data = await res.json();
+    const actual = (data && data[0] && data[0].vistas) ? data[0].vistas : 0;
+    await fetch(CONFIG.supabase.url + '/rest/v1/menu_publico?id=eq.' + encodeURIComponent(TIENDA_ID), {
+      method: 'PATCH',
+      headers: { 'apikey': CONFIG.supabase.anonKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vistas: actual + 1 })
+    });
+  } catch (e) {}
+}
    const TIENDA_ID = ((new URLSearchParams(location.search).get('tienda') || 'principal').toLowerCase().replace(/[^a-z0-9_\-]/g, '')) || 'principal';
 const store = {
   get(k, d) { try { const v = JSON.parse(localStorage.getItem(k === 'te_sound' ? k : k + '_' + TIENDA_ID)); return v ?? d; } catch { return d; } },
@@ -1306,7 +1322,8 @@ window.open(url, '_blank');
       if (c) { $('#fNombre').value = c.nombre || ''; $('#fTel').value = c.tel || ''; $('#fDireccion').value = c.direccion || ''; }
     }
 
-    updateSoundBtn(); fillConfig(); renderMenu(); renderLoyalty(); refreshCartUI();
+    updateSoundBtn(); fillConfig(); renderMenu(); refreshCartUI();
+registrarVisitaMenu();
     updateOpenBadge(); setInterval(updateOpenBadge, 60000); generateShareQR(); updateHistBadge(); initAnalytics();
     syncConPOS(false);
     setInterval(() => { if (!document.hidden) syncConPOS(true); }, 15000);
