@@ -1574,6 +1574,15 @@ registrarVisitaMenu();
   lucesOn();
   nieveOn();
   window.addEventListener('resize', medir);
+
+  // 🎄 Mensaje navideño en el footer
+  var ft = document.querySelector('.page-footer');
+  if (ft) ft.textContent = '🎄 ¡Feliz Navidad y Próspero Año Nuevo! · © 2026 ' + (CONFIG.negocio || 'Tortillería');
+    // 🎄 Emoji navideño junto al nombre
+  var bizName = document.getElementById('bizName');
+  if (bizName && !bizName.textContent.includes('🎄')) {
+    bizName.textContent += ' 🎄';
+  }
 })();
 </script>
 <!-- ═══ EXTRA: lealtad abajo + modo Navidad ═══ -->
