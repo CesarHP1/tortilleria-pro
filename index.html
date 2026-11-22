@@ -884,7 +884,11 @@ kbd{background:rgba(255,255,255,.15);padding:.05rem .35rem;border-radius:5px;fon
     <div class="nl" title="Tortillería Pro v5.0">🫓</div>
     <div class="nt">
       <h1 style="display:flex;align-items:center;gap:.35rem"><span id="nav-biz-title">Tortillería Pro</span><button type="button" onclick="openNegocio()" title="Cambiar nombre y horario" style="background:none;border:none;cursor:pointer;font-size:.95rem;padding:0;-webkit-text-fill-color:initial">✏️</button></h1>
-      <p>POS v5.0 · Sistema Operativo</p>
+       <span id="menu-vistas-badge" style="font-size:.65rem; background:var(--al); color:var(--ad); padding:2px 8px; border-radius:99px; font-weight:700; display:inline-flex; align-items:center; gap:4px; margin-left:.5rem;">
+  👁️ <span id="vistas-num">0</span> visitas
+</span>
+     
+       <p>POS v5.0 · Sistema Operativo</p>
     </div>
   </div>
   <div class="nr">
@@ -1650,11 +1654,9 @@ function adminDeleteUser(){
   if(err){ toast('❌ '+err,'e'); return; }
   document.getElementById('del-user').value='';
   toast('🗑️ Usuario '+user+' eliminado');
-  renderUsersList();
+renderUsersList();
+actualizarVistasPOS();
 }
-
-
-
 // ── APP STATE (populated by bootApp after login) ──
 var MASA_MAX = 500;          // ← single source of truth for capacity
 var masa = 150, precios = {}, ventas = [], pedidos = [],
@@ -2504,6 +2506,22 @@ async function revisarPedidosWeb(){
     }
   }catch(e){}
 }
+   // ── Contador de visitas al menú ──
+async function actualizarVistasPOS() {
+  if (!activeUser || !navigator.onLine) return;
+  try {
+    const res = await fetch(SB_URL + '/rest/v1/menu_publico?select=vistas&id=eq.' + encodeURIComponent(getTiendaId()), {
+      headers: { 'apikey': SB_KEY }
+    });
+    const data = await res.json();
+    const numEl = document.getElementById('vistas-num');
+    if (numEl && data && data[0]) {
+      numEl.textContent = data[0].vistas || 0;
+    }
+  } catch(e) {}
+}
+actualizarVistasPOS();
+setInterval(actualizarVistasPOS, 30000);
 if(!window._webPedInt){ window._webPedInt = setInterval(revisarPedidosWeb, 15000); }
 
 function savePrecios(){
@@ -3150,38 +3168,52 @@ setInterval(function(){
     <div class="mf"><button class="btn bna btn-block btn-lg" onclick="guardarNegocio()">💾 Guardar y Actualizar Menú</button></div>
   </div>
 </div>
-<!-- MODAL GESTIÓN DE USUARIOS (admin) -->
+<!-- MODAL GESTIÓN DE USUARIOS (Seguro) -->
 <div class="mo" id="m-users">
   <div class="md sm">
-    <div class="mh"><h2>👥 Gestión de Usuarios</h2><button class="mc" onclick="closeM('m-users')">✕</button></div>
+    <div class="mh">
+      <h2>👥 Gestión de Cuentas</h2>
+      <button class="mc" onclick="closeM('m-users')">✕</button>
+    </div>
     <div class="mb2">
-      <div class="adds" style="margin-bottom:.875rem">
-        <span class="slbl">🔒 Requiere contraseña admin para cambios</span>
-        <input type="password" id="adm-pass-users" placeholder="Contraseña admin ••••••••" style="width:100%;margin-bottom:.5rem;letter-spacing:.2em"/>
+      <!-- ZONA DE SEGURIDAD -->
+      <div class="adds" style="margin-bottom:1rem; border-color:var(--re); background:var(--rl);">
+        <span class="slbl" style="color:var(--re)">🔒 ZONA RESTRINGIDA</span>
+        <p style="font-size:.75rem; color:var(--s2); margin-bottom:.5rem; line-height:1.4;">
+          Por seguridad, las contraseñas están encriptadas y no se pueden mostrar. 
+          Para <strong>restablecer</strong> o <strong>eliminar</strong> una cuenta, debes ingresar tu contraseña de admin abajo.
+        </p>
+        <input type="password" id="adm-pass-users" placeholder="Tu contraseña de admin para autorizar" 
+               style="width:100%; letter-spacing:.2em; border-color:var(--re);"/>
       </div>
-      <div id="users-list" style="max-height:280px;overflow-y:auto;margin-bottom:.875rem"></div>
+
+      <!-- LISTA DE USUARIOS -->
+      <div id="users-list" style="max-height:250px; overflow-y:auto; margin-bottom:1rem;"></div>
+
+      <!-- ACCIONES -->
       <div class="rpt-box">
-        <h4>🔄 Restablecer contraseña</h4>
+        <h4>🔄 Restablecer Contraseña</h4>
         <div class="grid2" style="gap:.5rem">
-          <div><label class="ilbl">Usuario</label><input type="text" id="rst-user" placeholder="nombre usuario" style="width:100%"/></div>
-          <div><label class="ilbl">Nueva contraseña</label><input type="password" id="rst-pass" placeholder="••••" style="width:100%;letter-spacing:.15em"/></div>
+          <div><label class="ilbl">Usuario</label><input type="text" id="rst-user" placeholder="ej: caja1" style="width:100%"/></div>
+          <div><label class="ilbl">Nueva Contraseña</label><input type="text" id="rst-pass" placeholder="Nueva clave" style="width:100%"/></div>
         </div>
-        <button class="btn bna btn-block" onclick="adminResetPass()" style="margin-top:.6rem;padding:.6rem">🔑 Restablecer</button>
+        <button class="btn bna btn-block" onclick="adminResetPass()" style="margin-top:.6rem; padding:.6rem">🔑 Autorizar y Restablecer</button>
       </div>
-      <div class="rpt-box" style="margin-top:.65rem">
-        <h4>🗑️ Eliminar usuario</h4>
-        <div style="display:flex;gap:.5rem">
-          <input type="text" id="del-user" placeholder="nombre usuario a eliminar" style="flex:1"/>
+
+      <div class="rpt-box" style="margin-top:.65rem; border-color:var(--re);">
+        <h4 style="color:var(--re)">🗑️ Eliminar Cuenta (Irreversible)</h4>
+        <div style="display:flex; gap:.5rem;">
+          <input type="text" id="del-user" placeholder="Usuario a eliminar" style="flex:1; border-color:var(--re);"/>
           <button class="btn bnr" onclick="adminDeleteUser()" style="padding:.6rem .9rem">🗑️</button>
         </div>
       </div>
     </div>
     <div class="mf">
-      <button class="btn bno btn-block btn-lg" onclick="closeM('m-users')">Cerrar</button>
+      <button class="btn bno btn-block btn-lg" onclick="closeM('m-users')">Cerrar Panel</button>
     </div>
   </div>
 </div>
-
+  
 <!-- React + Babel for the cylinder -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
