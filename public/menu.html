@@ -1240,7 +1240,8 @@ if (navigator.onLine && CONFIG.supabase.url) {
   }).catch(e => console.log('Error guardando pedido web', e));
 }
 // 2. Abrir WhatsApp como ya lo hacía
-lastOrder = o; 
+const url = waUrl(o);
+lastOrder = o;
 window.open(url, '_blank');
       cart = {}; prevWholesaleKg = 0; $('#chkRedeemFree').checked = false;
       store.set('te_cart', cart); updateSteppers(); refreshCartUI(); $('#fNotas').value = '';
@@ -1550,6 +1551,11 @@ registrarVisitaMenu();
   window.addEventListener('resize', medir);
 })();
 </script>
+<!-- ═══ EXTRA: lealtad abajo + modo Navidad ═══ -->
+<script>
+/* ── EXTRA: lealtad abajo + más flotación + modo Navidad ──
+     No modifica tu lógica: solo mueve la tarjeta y agrega adornos. */
+(function(){
   var st = document.createElement('style');
   st.textContent =
     '.highlights{grid-template-columns:1fr}' +
@@ -1646,6 +1652,7 @@ registrarVisitaMenu();
   var pref = null; try { pref = localStorage.getItem('te_navidad'); } catch (e) {}
   aplicar(pref !== null ? pref === '1' : temporada(), false);
 })();
+</script>
 </script>
 </body>
 </html>
