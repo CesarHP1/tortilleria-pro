@@ -1362,6 +1362,7 @@ function saveUsers(u){
 /* Active user */
 let activeUser = null;
 let activeUserIsSuper = false;
+let logoBase64 = ''; // Variable para guardar el logo
 
 /* Session check */
 function checkSession(){
@@ -2881,6 +2882,7 @@ if(!_isIOS){
 }
 var _nm=getMenuMeta().negocio;if(_nm&&_nm.nombre){document.getElementById('nav-biz-title').textContent=_nm.nombre;document.title=_nm.nombre;}
 renderUsersList();
+actualizarVistasPOS();
 }
 
 // ══════════════════════════════════════════
@@ -3152,7 +3154,18 @@ setInterval(function(){
 <p style="font-size:.62rem;color:var(--s4);font-weight:600;margin-top:.3rem">Se mostrará en el menú de ESTA cuenta cuando el cliente elija "Transferencia". Vacío = no se muestra.</p>
 </div>
 <div style="margin-bottom:.65rem"><label class="ilbl">Dirección</label><input type="text" id="neg-dir" placeholder="Calle #105, Col. San Cayetano" style="width:100%"/></div>
-      <div style="margin-bottom:.65rem"><label class="ilbl">Link de Google Maps</label><input type="url" id="neg-maps" placeholder="https://maps.app.goo.gl/..." style="width:100%"/></div>
+      <div style="margin-bottom:.65rem">
+  <label class="ilbl">🖼️ Logo del negocio (PNG/JPG)</label>
+  <div style="display:flex;gap:.5rem;align-items:center">
+    <img id="neg-logo-prev" style="width:46px;height:46px;border-radius:14px;object-fit:cover;background:var(--sur);display:none;border:1px solid var(--bor)">
+    <label class="btn" style="background:var(--bll);color:var(--bl);padding:.48rem .8rem;font-size:.78rem;cursor:pointer">
+      📷 Subir Logo
+      <input type="file" id="neg-logo-file" accept="image/*" hidden onchange="onSubirLogo(this)">
+    </label>
+    <button type="button" class="btn bno" style="padding:.48rem .8rem;font-size:.78rem" onclick="quitarLogo()">✕ Quitar</button>
+  </div>
+</div>
+<div style="margin-bottom:.65rem"><label class="ilbl">Link de Google Maps</label><input type="url" id="neg-maps" placeholder="https://maps.app.goo.gl/..." style="width:100%"/></div>
       <div class="grid2" style="margin-bottom:.75rem">
         <div><label class="ilbl">Hora que abre</label><input type="time" id="neg-abre" style="width:100%"/></div>
         <div><label class="ilbl">Hora que cierra</label><input type="time" id="neg-cierra" style="width:100%"/></div>
@@ -3165,6 +3178,7 @@ setInterval(function(){
         </div>
       </div>
     </div>
+     
     <div class="mf"><button class="btn bna btn-block btn-lg" onclick="guardarNegocio()">💾 Guardar y Actualizar Menú</button></div>
   </div>
 </div>
