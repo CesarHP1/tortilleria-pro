@@ -2394,28 +2394,80 @@ document.getElementById('neg-clabe').value = neg.clabe || '';
   document.getElementById('neg-abre').value = neg.abre || '07:00';
   document.getElementById('neg-cierra').value = neg.cierra || '18:00';
   document.getElementById('neg-qr-url').value = getMenuUrlCuenta();
+   logoBase64 = neg.logo || '';
+var lp = document.getElementById('neg-logo-prev');
+if(lp){ if(logoBase64){ lp.src=logoBase64; lp.style.display='block'; } else lp.style.display='none'; }
   openM('m-negocio');
+}
+function onSubirLogo(inp){
+  if(!inp.files[0]) return;
+  comprimirImagen(inp.files[0], function(url){
+    logoBase64 = url;
+    document.getElementById('neg-logo-prev').src = url;
+    document.getElementById('neg-logo-prev').style.display = 'block';
+    actualizarLogoNav(logoBase64); // <--- ESTA LÍNEA HACE QUE SE VEA AL INSTANTE ARRIBA
+    toast('Logo listo 🖼️ (dale Guardar abajo)');
+  });
+}
+function quitarLogo(){
+  logoBase64 = '';
+  document.getElementById('neg-logo-prev').style.display = 'none';
+  document.getElementById('neg-logo-file').value = '';
+}
+function actualizarLogoNav(logoUrl){
+  const nl = document.querySelector('.nl');
+  if(!nl) return;
+  if(logoUrl){
+    nl.innerHTML = '<img src="'+logoUrl+'" style="width:100%;height:100%;border-radius:14px;object-fit:cover;background:var(--sur)">';
+  } else {
+    nl.innerHTML = '🫓';
+  }
+}
+   function onSubirLogo(inp){
+  if(!inp.files[0]) return;
+  comprimirImagen(inp.files[0], function(url){
+    logoBase64 = url;
+    document.getElementById('neg-logo-prev').src = url;
+    document.getElementById('neg-logo-prev').style.display = 'block';
+    toast('Logo listo 🖼️ (dale Guardar abajo)');
+  });
+}
+function quitarLogo(){
+  logoBase64 = '';
+  document.getElementById('neg-logo-prev').style.display = 'none';
+  document.getElementById('neg-logo-file').value = '';
+}
+function actualizarLogoNav(logoUrl){
+  const nl = document.querySelector('.nl');
+  if(!nl) return;
+  if(logoUrl){
+    nl.innerHTML = '<img src="'+logoUrl+'" style="width:100%;height:100%;border-radius:14px;object-fit:cover;background:var(--sur)">';
+  } else {
+    nl.innerHTML = '🫓';
+  }
 }
 function guardarNegocio(){
   var m = getMenuMeta();
   var waRaw = document.getElementById('neg-wa').value.replace(/\D/g,'');
   if(waRaw.length === 10) waRaw = '52' + waRaw;
-  m.negocio = {
-    nombre: document.getElementById('neg-nom').value.trim() || 'Tortillería La Esperanza',
-    eslogan: document.getElementById('neg-tag').value.trim() || 'Tortillas frescas todos los días',
-    telefono: document.getElementById('neg-tel').value.trim() || '427 197 2906',
-    whatsapp: waRaw || '524271972906',
+m.negocio = {
+nombre: document.getElementById('neg-nom').value.trim() || 'Tortillería La Esperanza',
+eslogan: document.getElementById('neg-tag').value.trim() || 'Tortillas frescas todos los días',
+telefono: document.getElementById('neg-tel').value.trim() || '427 197 2906',
+whatsapp: waRaw || '524271972906',
 clabe: document.getElementById('neg-clabe').value.replace(/\s/g,''),
-    direccion: document.getElementById('neg-dir').value.trim() || '',
-    mapsUrl: document.getElementById('neg-maps').value.trim() || '',
-    abre: document.getElementById('neg-abre').value || '07:00',
-    cierra: document.getElementById('neg-cierra').value || '18:00'
-  };
+direccion: document.getElementById('neg-dir').value.trim() || '',
+mapsUrl: document.getElementById('neg-maps').value.trim() || '',
+logo: logoBase64,
+abre: document.getElementById('neg-abre').value || '07:00',
+cierra: document.getElementById('neg-cierra').value || '18:00'
+};
   ss('menuMeta', m);
   var t = document.getElementById('nav-biz-title');
   if(t) t.textContent = m.negocio.nombre;
   document.title = m.negocio.nombre;
   closeM('m-negocio');
+  actualizarLogoNav(logoBase64);
   toast('Datos del negocio guardados 🏪');
   publicarMenuEnNube(precios, m);
 }
@@ -2881,6 +2933,7 @@ if(!_isIOS){
   setTimeout(function(){speak('Bienvenido '+activeUser+'. Sistema listo.');},900);
 }
 var _nm=getMenuMeta().negocio;if(_nm&&_nm.nombre){document.getElementById('nav-biz-title').textContent=_nm.nombre;document.title=_nm.nombre;}
+actualizarLogoNav(_nm && _nm.logo);
 renderUsersList();
 actualizarVistasPOS();
 }
@@ -3199,35 +3252,7 @@ setInterval(function(){
         </p>
         <input type="password" id="adm-pass-users" placeholder="Tu contraseña de admin para autorizar" 
                style="width:100%; letter-spacing:.2em; border-color:var(--re);"/>
-      </div>
-
-      <!-- LISTA DE USUARIOS -->
-      <div id="users-list" style="max-height:250px; overflow-y:auto; margin-bottom:1rem;"></div>
-
-      <!-- ACCIONES -->
-      <div class="rpt-box">
-        <h4>🔄 Restablecer Contraseña</h4>
-        <div class="grid2" style="gap:.5rem">
-          <div><label class="ilbl">Usuario</label><input type="text" id="rst-user" placeholder="ej: caja1" style="width:100%"/></div>
-          <div><label class="ilbl">Nueva Contraseña</label><input type="text" id="rst-pass" placeholder="Nueva clave" style="width:100%"/></div>
-        </div>
-        <button class="btn bna btn-block" onclick="adminResetPass()" style="margin-top:.6rem; padding:.6rem">🔑 Autorizar y Restablecer</button>
-      </div>
-
-      <div class="rpt-box" style="margin-top:.65rem; border-color:var(--re);">
-        <h4 style="color:var(--re)">🗑️ Eliminar Cuenta (Irreversible)</h4>
-        <div style="display:flex; gap:.5rem;">
-          <input type="text" id="del-user" placeholder="Usuario a eliminar" style="flex:1; border-color:var(--re);"/>
-          <button class="btn bnr" onclick="adminDeleteUser()" style="padding:.6rem .9rem">🗑️</button>
-        </div>
-      </div>
-    </div>
-    <div class="mf">
-      <button class="btn bno btn-block btn-lg" onclick="closeM('m-users')">Cerrar Panel</button>
-    </div>
-  </div>
-</div>
-  
+      </div>  
 <!-- React + Babel for the cylinder -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
