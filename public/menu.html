@@ -814,6 +814,7 @@ if (meta.negocio) {
      if (meta.negocio.direccion) CONFIG.direccion = meta.negocio.direccion;
      if (meta.negocio.mapsUrl) CONFIG.mapsUrl = meta.negocio.mapsUrl;
      if (meta.negocio.clabe !== undefined) CONFIG.clabe = String(meta.negocio.clabe || '').replace(/\s/g,'');
+     if (meta.negocio.logo) CONFIG.logo = meta.negocio.logo;
      fillConfig(); updateOpenBadge(); updateClabeUI();
    }
       // Mayoreo desde POS
@@ -1328,7 +1329,15 @@ window.open(url, '_blank');
     }
 
     function fillConfig() {
-      document.title = `Menú · ${CONFIG.negocio}`; $('#bizName').textContent = CONFIG.negocio; $('#bizTag').textContent = CONFIG.eslogan; const f=$('#bizFooter'); if(f) f.textContent='© 2026 '+CONFIG.negocio+' · Hecho con 🌽';
+  document.title = `Menú · ${CONFIG.negocio}`; $('#bizName').textContent = CONFIG.negocio; $('#bizTag').textContent = CONFIG.eslogan;
+  const lg = document.querySelector('.logo');
+  if (lg) {
+    if (CONFIG.logo) {
+      lg.innerHTML = '<img src="' + CONFIG.logo + '" alt="Logo" style="width:60px;height:60px;border-radius:16px;object-fit:cover;background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.2);display:inline-block">';
+    } else {
+      lg.innerHTML = '🫓';
+    }
+  }
       $('#updBadge').textContent = 'Menú · ' + CONFIG.actualizado;
       $('#bizAddr').textContent = '📍 ' + CONFIG.direccion;
       $('#bizHours').textContent = `🕐 Horario: ${fmt12(toMin(CONFIG.horario.abre))} – ${fmt12(toMin(CONFIG.horario.cierra))}`;
